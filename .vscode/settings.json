@@ -22,5 +22,6 @@
         "**/UserSettings": true,
         "**/ProjectSettings": true,
         "**/Packages": true,
+        "**/Assets/Scenes": true,
     }
 }
