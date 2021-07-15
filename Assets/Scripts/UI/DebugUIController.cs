@@ -7,9 +7,14 @@ public class DebugUIController : MonoBehaviour
 {
     private float update = 0.0f;
     public Text debugTextDisplay, debugLogDisplay;
-    private StringBuilder log = new StringBuilder();
     private int numFrames = 0;
     private float totalFps = 0f;
+
+    private void Start()
+    {
+        // Listen for new log messages to display
+        Logger.OnNewMessage.AddListener(UpdateLog);
+    }
 
     private void Update()
     {
@@ -20,6 +25,12 @@ public class DebugUIController : MonoBehaviour
             update = 0.0f;
             UpdateDebugTextDisplay();
         }
+    }
+
+    // Update log to render new messages
+    private void UpdateLog()
+    {
+        debugLogDisplay.text = Logger.Print();
     }
 
     // Update debug text display
@@ -79,13 +90,6 @@ public class DebugUIController : MonoBehaviour
         debugText.Append(")");
 
         debugTextDisplay.text = debugText.ToString();
-    }
-
-    // Add message to debug log
-    public void Log(string message)
-    {
-        log.AppendLine(message);
-        debugLogDisplay.text = log.ToString();
     }
 
     // Calculate FPS
