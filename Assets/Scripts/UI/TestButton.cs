@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-using Newtonsoft.Json;
-
 public class TestButton : MonoBehaviour
 {
     public Button testButton;
@@ -11,27 +9,15 @@ public class TestButton : MonoBehaviour
 
     private void Start() => testButton.onClick.AddListener(ButtonClicked);
 
-    class Enemy
-    {
-        public string Name { get; set; }
-        public int AttackDamage { get; set; }
-        public int MaxHealth { get; set; }
-    }
-
     private void ButtonClicked()
     {
         string invalidJson = "{";
-
-        string jsonString = "asdasdsd";
 
         string json = @"{
             'Name': 'Ninja',
             'AttackDamage': '40',
             'UndefinedProperty': 'This is some text',
             }";
-
-        var enemy = JsonConvert.DeserializeObject<Enemy>(json);
-        Logger.Log($"{enemy.Name} deals {enemy.AttackDamage} damage.");
 
         string altPointGeoJson = @"{
             'type': 'AltPoint', 
@@ -206,12 +192,15 @@ public class TestButton : MonoBehaviour
 
         try
         {
-            Logger.Log("Reached here!!");
             IGeoJsonObject geoJson = GeoJson.Parse(lineStringJson);
             Logger.Log("Type: " + geoJson.GetType());
             Logger.Log(geoJson);
         }
         catch (InvalidGeoJsonException e)
+        {
+            Logger.LogException(e);
+        }
+        catch (System.Exception e)
         {
             Logger.LogException(e);
         }
