@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Represents a Mesh layer
+/// </summary>
 public class MeshLayer : MonoBehaviour, ILayer
 {
     /* SUGGESTIONS

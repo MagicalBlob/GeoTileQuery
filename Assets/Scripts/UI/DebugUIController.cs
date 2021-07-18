@@ -3,6 +3,9 @@ using UnityEngine.UI;
 using UnityEngine.Profiling;
 using System.Text;
 
+/// <summary>
+/// Controls the Debug UI
+/// </summary>
 public class DebugUIController : MonoBehaviour
 {
     private float update = 0.0f;
@@ -10,12 +13,18 @@ public class DebugUIController : MonoBehaviour
     private int numFrames = 0;
     private float totalFps = 0f;
 
+    /// <summary>
+    /// Start is called on the frame when a script is enabled just before any of the Update methods are called the first time
+    /// </summary>
     private void Start()
     {
         // Listen for new log messages to display
-        Logger.OnNewMessage.AddListener(UpdateLog);
+        Logger.Subscribe(UpdateLog);
     }
 
+    /// <summary>
+    /// Update is called every frame, if the MonoBehaviour is enabled
+    /// </summary>
     private void Update()
     {
         // Only update debug text about once per second
@@ -27,13 +36,17 @@ public class DebugUIController : MonoBehaviour
         }
     }
 
-    // Update log to render new messages
+    /// <summary>
+    /// Updates log to render new messages
+    /// </summary>
     private void UpdateLog()
     {
         debugLogDisplay.text = Logger.Print();
     }
 
-    // Update debug text display
+    /// <summary>
+    /// Updates the debug text display
+    /// </summary>
     private void UpdateDebugTextDisplay()
     {
         StringBuilder debugText = new StringBuilder();
@@ -92,13 +105,20 @@ public class DebugUIController : MonoBehaviour
         debugTextDisplay.text = debugText.ToString();
     }
 
-    // Calculate FPS
+    /// <summary>
+    /// Calculates the instantaneous FPS
+    /// </summary>
+    /// <returns>Instantaneous FPS</returns>
     private float CalculateInstantFps()
     {
         return 1 / Time.unscaledDeltaTime;
     }
 
-    // Calculate average FPS
+    /// <summary>
+    /// Calculates the average FPS
+    /// </summary>
+    /// <param name="instantFps">Instantaneous FPS</param>
+    /// <returns>Average FPS</returns>
     private float CalculateAverageFps(float instantFps)
     {
         totalFps += instantFps;

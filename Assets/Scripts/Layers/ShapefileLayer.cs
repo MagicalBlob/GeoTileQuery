@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Represents a Shapefile layer
+/// </summary>
 public class ShapefileLayer : MonoBehaviour, ILayer
 {
     /* SUGGESTIONS

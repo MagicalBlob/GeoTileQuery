@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Represents a GeoJSON layer
+/// </summary>
 public class GeoJsonLayer : MonoBehaviour, ILayer
 {
     /* SUGGESTIONS

@@ -1,34 +1,25 @@
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
+/// <summary>
+/// The GeoJSON base class
+/// </summary>
 public class GeoJson
 {
-    public static IGeoJsonObject ParseGeoJson(string json)
+    /// <summary>
+    /// Reads a JSON text and turns it into a GeoJSON object
+    /// </summary>
+    /// <param name="json">JSON text input that is a valid GeoJSON text</param>
+    /// <returns>The GeoJSON Object represented in the JSON text input</returns>
+    public static IGeoJsonObject Parse(string json)
     {
         try
         {
-            JObject o = JObject.Parse(json);
-            if (o["type"] != null)
-            {
-                switch (o["type"].ToString())
-                {
-                    case "Point":
-                        return new Point(); //TODO this
-                    default:
-                        // Invalid GeoJSON: Unknown type, GeoJSON types are not extensible
-                        throw new InvalidGeoJsonException($"Unknown type ({o["type"]})");
-                }
-            }
-            else
-            {
-                // Invalid GeoJSON: Missing type
-                throw new InvalidGeoJsonException("Missing type");
-            }
+            JsonConverter[] converters = new JsonConverter[] { new GeoJsonObjectConverter(), new PositionConverter() };
+            return JsonConvert.DeserializeObject<IGeoJsonObject>(json, converters);
         }
-        catch (JsonReaderException e)
+        catch (JsonException e)
         {
-            // Invalid GeoJSON: Failed to parse JSON
-            throw new InvalidGeoJsonException("Failed to parse JSON", e);
+            throw new InvalidGeoJsonException("Failed to parse GeoJSON", e);
         }
     }
 }

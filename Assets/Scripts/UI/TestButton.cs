@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 public class TestButton : MonoBehaviour
 {
@@ -19,16 +18,12 @@ public class TestButton : MonoBehaviour
         public int MaxHealth { get; set; }
     }
 
-    class AltPoint
-    {
-        public double X { get; set; }
-        public double Y { get; set; }
-    }
-
     private void ButtonClicked()
     {
         string invalidJson = "{";
-        
+
+        string jsonString = "asdasdsd";
+
         string json = @"{
             'Name': 'Ninja',
             'AttackDamage': '40',
@@ -49,21 +44,27 @@ public class TestButton : MonoBehaviour
             'coordinates': [30.0, 10.0]
         }";
 
-        try
-        {
-            IGeoJsonObject geoJson = GeoJson.ParseGeoJson(pointGeoJson);
-            Logger.Log(geoJson.GetType());
-            Logger.Log(geoJson);
-        }
-        catch (InvalidGeoJsonException e)
-        {
-            Logger.LogException(e);
-        }
+        string point3DGeoJson = @"{
+            'type': 'Point', 
+            'coordinates': [30.0, 10.0, 5.0]
+        }";
 
-        /*foreach (double coordinate in point.Coordinates)
-        {
-            Logger.Log($"Point coord: {coordinate}");
-        }*/
+        string pointTooMuchDGeoJson = @"{
+            'type': 'Point', 
+            'coordinates': [30.0, 10.0, 5.0, 4.0]
+        }";
+
+        string pointEmptyCoordsGeoJson = @"{
+            'type': 'Point', 
+            'coordinates': []
+        }";
+
+        string multiPointJson = @"{
+            'type': 'MultiPoint', 
+            'coordinates': [
+                [10.0, 40.0], [40.0, 30.0], [20.0, 20.0], [30.0, 10.0]
+            ]
+        }";
 
         string lineStringJson = @"{
             'type': 'LineString', 
@@ -84,13 +85,6 @@ public class TestButton : MonoBehaviour
             'coordinates': [
                 [[35.0, 10.0], [45.0, 45.0], [15.0, 40.0], [10.0, 20.0], [35.0, 10.0]], 
                 [[20.0, 30.0], [35.0, 35.0], [30.0, 20.0], [20.0, 30.0]]
-            ]
-        }";
-
-        string multiPointJson = @"{
-            'type': 'MultiPoint', 
-            'coordinates': [
-                [10.0, 40.0], [40.0, 30.0], [20.0, 20.0], [30.0, 10.0]
             ]
         }";
 
@@ -209,5 +203,17 @@ public class TestButton : MonoBehaviour
                 ]
             }
         }";
+
+        try
+        {
+            Logger.Log("Reached here!!");
+            IGeoJsonObject geoJson = GeoJson.Parse(lineStringJson);
+            Logger.Log("Type: " + geoJson.GetType());
+            Logger.Log(geoJson);
+        }
+        catch (InvalidGeoJsonException e)
+        {
+            Logger.LogException(e);
+        }
     }
 }
