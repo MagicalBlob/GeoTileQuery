@@ -55,9 +55,9 @@ public class GeoJsonObjectConverter : JsonConverter
                     case "MultiPoint":
                         return jsonObject.ToObject<MultiPoint>(serializer);
                     case "Polygon":
-                        throw new NotImplementedException(); // TODO Polygon
+                        return jsonObject.ToObject<Polygon>(serializer);
                     case "MultiLineString":
-                        throw new NotImplementedException(); // TODO MultiLineString
+                        return jsonObject.ToObject<MultiLineString>(serializer);
                     case "MultiPolygon":
                         throw new NotImplementedException(); // TODO MultiPolygon
                     case "GeometryCollection":

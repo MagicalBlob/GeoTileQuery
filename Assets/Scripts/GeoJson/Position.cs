@@ -70,6 +70,23 @@ public struct Position
     }
 
     /// <summary>
+    /// Check if this Position is equal to the given object
+    /// </summary>
+    /// <param name="obj">The object to compare</param>
+    /// <returns>true if given object is also a Position with the same coordinates</returns>
+    public override bool Equals(object obj)
+    {
+        if (obj == null || obj.GetType() != typeof(Position))
+        {
+            return false;
+        }
+
+        Position other = (Position)obj;
+
+        return (this.x == other.x && this.y == other.y && this.z == other.z);
+    }
+
+    /// <summary>
     /// Returns a string representation of the position
     /// </summary>
     /// <returns>String representation of the position</returns>

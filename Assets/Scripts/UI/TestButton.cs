@@ -59,10 +59,25 @@ public class TestButton : MonoBehaviour
             ]
         }";
 
+        string multiLineStringJson = @"{
+            'type': 'MultiLineString', 
+            'coordinates': [
+                [[10.0, 10.0], [20.0, 20.0], [10.0, 40.0]], 
+                [[40.0, 40.0], [30.0, 30.0], [40.0, 20.0], [30.0, 10.0]]
+            ]
+        }";
+
         string polygonJson = @"{
             'type': 'Polygon', 
             'coordinates': [
                 [[30.0, 10.0], [40.0, 40.0], [20.0, 40.0], [10.0, 20.0], [30.0, 10.0]]
+            ]
+        }";
+
+        string polygonBrokenJson = @"{
+            'type': 'Polygon', 
+            'coordinates': [
+                [[30.0, 10.0], [40.0, 40.0], [20.0, 40.0], [10.0, 20.0], [40.0, 10.0]]
             ]
         }";
 
@@ -71,14 +86,6 @@ public class TestButton : MonoBehaviour
             'coordinates': [
                 [[35.0, 10.0], [45.0, 45.0], [15.0, 40.0], [10.0, 20.0], [35.0, 10.0]], 
                 [[20.0, 30.0], [35.0, 35.0], [30.0, 20.0], [20.0, 30.0]]
-            ]
-        }";
-
-        string multiLineStringJson = @"{
-            'type': 'MultiLineString', 
-            'coordinates': [
-                [[10.0, 10.0], [20.0, 20.0], [10.0, 40.0]], 
-                [[40.0, 40.0], [30.0, 30.0], [40.0, 20.0], [30.0, 10.0]]
             ]
         }";
 
@@ -192,7 +199,7 @@ public class TestButton : MonoBehaviour
 
         try
         {
-            IGeoJsonObject geoJson = GeoJson.Parse(lineStringJson);
+            IGeoJsonObject geoJson = GeoJson.Parse(polygonWithHoleJson);
             Logger.Log("Type: " + geoJson.GetType());
             Logger.Log(geoJson);
         }
