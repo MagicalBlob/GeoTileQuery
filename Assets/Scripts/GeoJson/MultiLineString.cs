@@ -4,7 +4,7 @@ using System.Text;
 /// <summary>
 /// Represents a GeoJSON MultiLineString
 /// </summary>
-public class MultiLineString : IGeoJsonObject
+public class MultiLineString : IGeometryObject, IGeoJsonObject
 {
     /// <summary>
     /// The coordinates for each point of each line
@@ -35,12 +35,13 @@ public class MultiLineString : IGeoJsonObject
     {
         StringBuilder builder = new StringBuilder();
 
-        builder.Append("MultiLineString:");
+        builder.Append("MultiLineString: ");
 
         foreach (Position[] line in coordinates)
         {
-            builder.Append("\n> ");
+            builder.Append("(");
             builder.Append(String.Join(", ", line));
+            builder.Append("), ");
         }
 
         return builder.ToString();

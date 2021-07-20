@@ -32,19 +32,39 @@ public class PositionConverter : JsonConverter
         if (token.Type == JTokenType.Array)
         {
             JArray array = (JArray)token;
-            if (array.Count == 2 && array[0].Type == JTokenType.Float && array[1].Type == JTokenType.Float)
+
+            // Check coordinate types
+            foreach (JToken item in array)
+            {
+                if (item.Type != JTokenType.Integer && item.Type != JTokenType.Float)
+                {
+                    //Invalid GeoJSON: All Position coordinates must be a number
+                    throw new InvalidGeoJsonException("All Position coordinates must be a number");
+                }
+            }
+
+            // Check number of coordinates
+            if (array.Count == 2)
             {
                 // Parsed a 2D position
                 return new Position(array[0].Value<double>(), array[1].Value<double>());
             }
-            else if (array.Count == 3 && array[0].Type == JTokenType.Float && array[1].Type == JTokenType.Float && array[2].Type == JTokenType.Float)
+            else if (array.Count == 3)
             {
                 // Parsed a 3D position
                 return new Position(array[0].Value<double>(), array[1].Value<double>(), array[2].Value<double>());
             }
+            else
+            {
+                //Invalid GeoJSON: Position must have 2 or 3 coordinates
+                throw new InvalidGeoJsonException($"Position must have 2 or 3 coordinates, but found {array.Count} instead");
+            }
         }
-
-        throw new JsonSerializationException("Failed to parse as Position");
+        else
+        {
+            // Invalid GeoJSON: Position must be an array of coordinates
+            throw new InvalidGeoJsonException("Position must be an array of coordinates");
+        }
     }
 
     /// <summary>

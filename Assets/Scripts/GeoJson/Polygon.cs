@@ -4,7 +4,7 @@ using System.Text;
 /// <summary>
 /// Represents a GeoJSON Polygon
 /// </summary>
-public class Polygon : IGeoJsonObject
+public class Polygon : IGeometryObject, IGeoJsonObject
 {
     /// <summary>
     /// The coordinates for each point of each linear ring
@@ -45,12 +45,13 @@ public class Polygon : IGeoJsonObject
     {
         StringBuilder builder = new StringBuilder();
 
-        builder.Append("Polygon:");
+        builder.Append("Polygon: ");
 
         foreach (Position[] ring in coordinates)
         {
-            builder.Append("\n> ");
+            builder.Append("(");
             builder.Append(String.Join(", ", ring));
+            builder.Append("), ");
         }
 
         return builder.ToString();

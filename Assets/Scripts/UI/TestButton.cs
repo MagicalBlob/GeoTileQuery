@@ -136,6 +136,44 @@ public class TestButton : MonoBehaviour
             ]
         }";
 
+        string featureJson = @"{
+            'type': 'Feature',
+            'geometry': {
+                'type': 'Polygon',
+                'coordinates': [
+                    [
+                        [
+                            -1,
+                            5
+                        ],
+                        [
+                            -2,
+                            3
+                        ],
+                        [
+                            -2,
+                            2.5
+                        ],
+                        [
+                            -1,
+                            5
+                        ]
+                    ]
+                ]
+            },
+            'properties': {
+                'name': 'This a feature name'
+            }
+        }";
+
+        string featureUnlocatedJson = @"{
+            'type': 'Feature',
+            'geometry': null,
+            'properties': {
+                'description': 'This an unlocated feature'
+            }
+        }";
+
         string exampleJson = @"{
             'type': 'FeatureCollection',
             'features': [
@@ -199,7 +237,7 @@ public class TestButton : MonoBehaviour
 
         try
         {
-            IGeoJsonObject geoJson = GeoJson.Parse(polygonWithHoleJson);
+            IGeoJsonObject geoJson = GeoJson.Parse(exampleJson);
             Logger.Log("Type: " + geoJson.GetType());
             Logger.Log(geoJson);
         }

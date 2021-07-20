@@ -3,7 +3,7 @@ using System;
 /// <summary>
 /// Represents a GeoJSON LineString
 /// </summary>
-public class LineString : IGeoJsonObject
+public class LineString : IGeometryObject, IGeoJsonObject
 {
     /// <summary>
     /// The coordinates for each point in the line
@@ -32,6 +32,6 @@ public class LineString : IGeoJsonObject
     /// <returns>String representation of the LineString</returns>
     public override string ToString()
     {
-        return $"LineString: {String.Join(", ", coordinates)}";
+        return $"LineString: ({String.Join(", ", coordinates)})";
     }
 }

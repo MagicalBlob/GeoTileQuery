@@ -3,7 +3,7 @@ using System;
 /// <summary>
 /// Represents a GeoJSON MultiPoint
 /// </summary>
-public class MultiPoint : IGeoJsonObject
+public class MultiPoint : IGeometryObject, IGeoJsonObject
 {
     /// <summary>
     /// The points coordinates
@@ -25,6 +25,6 @@ public class MultiPoint : IGeoJsonObject
     /// <returns>String representation of the multipoint</returns>
     public override string ToString()
     {
-        return $"MultiPoint: {String.Join(", ", coordinates)}";
+        return $"MultiPoint: ({String.Join(", ", coordinates)})";
     }
 }

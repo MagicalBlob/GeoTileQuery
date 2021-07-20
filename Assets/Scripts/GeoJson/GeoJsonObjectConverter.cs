@@ -14,7 +14,7 @@ public class GeoJsonObjectConverter : JsonConverter
     /// <returns>true if this instance can convert the specified object type; otherwise, false</returns>
     public override bool CanConvert(Type objectType)
     {
-        return objectType == typeof(IGeoJsonObject);
+        return objectType == typeof(IGeoJsonObject) || objectType == typeof(IGeometryObject);
     }
 
     /// <summary>
@@ -44,24 +44,24 @@ public class GeoJsonObjectConverter : JsonConverter
                 // The value of the member MUST be one of the GeoJSON types.
                 switch ((String)jsonObject["type"])
                 {
-                    case "FeatureCollection":
-                        throw new NotImplementedException(); // TODO FeatureCollection
-                    case "Feature":
-                        throw new NotImplementedException(); // TODO Feature
                     case "Point":
                         return jsonObject.ToObject<Point>(serializer);
-                    case "LineString":
-                        return jsonObject.ToObject<LineString>(serializer);
                     case "MultiPoint":
                         return jsonObject.ToObject<MultiPoint>(serializer);
-                    case "Polygon":
-                        return jsonObject.ToObject<Polygon>(serializer);
+                    case "LineString":
+                        return jsonObject.ToObject<LineString>(serializer);
                     case "MultiLineString":
                         return jsonObject.ToObject<MultiLineString>(serializer);
+                    case "Polygon":
+                        return jsonObject.ToObject<Polygon>(serializer);
                     case "MultiPolygon":
-                        throw new NotImplementedException(); // TODO MultiPolygon
+                        return jsonObject.ToObject<MultiPolygon>(serializer);
                     case "GeometryCollection":
-                        throw new NotImplementedException(); // TODO GeometryCollection
+                        return jsonObject.ToObject<GeometryCollection>(serializer);
+                    case "Feature":
+                        return jsonObject.ToObject<Feature>(serializer); //TODO: The value of the geometry member (...) in the case that the Feature is unlocated, a JSON null value
+                    case "FeatureCollection":
+                        return jsonObject.ToObject<FeatureCollection>(serializer);
                     default:
                         // Invalid GeoJSON: Unknown type, GeoJSON types are not extensible
                         throw new InvalidGeoJsonException($"Unknown type ({jsonObject["type"]}), GeoJSON types are not extensible");
@@ -84,6 +84,11 @@ public class GeoJsonObjectConverter : JsonConverter
     }
 
     /// <summary>
+    /// true if this JsonConverter can write JSON; otherwise, false
+    /// </summary>
+    public override bool CanWrite => false;
+
+    /// <summary>
     /// Writes the JSON representation of the object
     /// </summary>
     /// <param name="writer">The JsonWriter to write to</param>
@@ -91,6 +96,6 @@ public class GeoJsonObjectConverter : JsonConverter
     /// <param name="serializer">The calling serializer</param>
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
-        throw new NotImplementedException(); // TODO Implement this?
+        throw new NotImplementedException();
     }
 }

@@ -87,6 +87,15 @@ public struct Position
     }
 
     /// <summary>
+    /// Get the position hash code
+    /// </summary>
+    /// <returns>A hash code for the current position</returns>
+    public override int GetHashCode()
+    {
+        return (int)(x + y - z);
+    }
+
+    /// <summary>
     /// Returns a string representation of the position
     /// </summary>
     /// <returns>String representation of the position</returns>

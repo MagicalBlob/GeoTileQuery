@@ -1,7 +1,7 @@
 /// <summary>
 /// Represents a GeoJSON Point
 /// </summary>
-public class Point : IGeoJsonObject
+public class Point : IGeometryObject, IGeoJsonObject
 {
     /// <summary>
     /// The point coordinates
