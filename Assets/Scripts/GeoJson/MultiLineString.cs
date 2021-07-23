@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 using System.Text;
 
@@ -25,6 +26,18 @@ public class MultiLineString : IGeometryObject, IGeoJsonObject
             }
         }
         this.coordinates = coordinates;
+    }
+
+    /// <summary>
+    /// Renders the MultiLineString as the geometry associated with the given Feature
+    /// </summary>
+    /// <param name="feature">The parent feature</param>
+    public void Render(GameObject feature)
+    {
+        foreach (Position[] line in coordinates)
+        {
+            GeoJson.RenderEdge(feature, line);
+        }
     }
 
     /// <summary>

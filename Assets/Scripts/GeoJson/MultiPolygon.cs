@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 using System.Text;
 
@@ -38,6 +39,18 @@ public class MultiPolygon : IGeometryObject, IGeoJsonObject
             }
         }
         this.coordinates = coordinates;
+    }
+
+    /// <summary>
+    /// Renders the MultiPolygon as the geometry associated with the given Feature
+    /// </summary>
+    /// <param name="feature">The parent feature</param>
+    public void Render(GameObject feature)
+    {
+        foreach (Position[][] polygon in coordinates)
+        {
+            GeoJson.RenderArea(feature, polygon);
+        }
     }
 
     /// <summary>

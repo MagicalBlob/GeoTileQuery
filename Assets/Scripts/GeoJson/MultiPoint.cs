@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 
 /// <summary>
@@ -17,6 +18,18 @@ public class MultiPoint : IGeometryObject, IGeoJsonObject
     public MultiPoint(Position[] coordinates)
     {
         this.coordinates = coordinates;
+    }
+
+    /// <summary>
+    /// Renders the MultiPoint as the geometry associated with the given Feature
+    /// </summary>
+    /// <param name="feature">The parent feature</param>
+    public void Render(GameObject feature)
+    {
+        foreach (Position position in coordinates)
+        {
+            GeoJson.RenderNode(feature, position);
+        }
     }
 
     /// <summary>

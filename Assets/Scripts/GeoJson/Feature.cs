@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Text;
 using System.Collections.Generic;
 
@@ -9,17 +10,17 @@ public class Feature : IGeoJsonObject
     /// <summary>
     /// The geometry of the feature or NULL if feature is unlocated
     /// </summary>
-    public IGeometryObject geometry;
+    private IGeometryObject geometry;
 
     /// <summary>
     /// Properties associated with the feature
     /// </summary>
-    public Dictionary<string, object> properties;
+    private Dictionary<string, object> properties;
 
     /// <summary>
     /// Feature identifier
     /// </summary>
-    public string id;
+    private string id;
 
     /// <summary>
     /// Constructs a new Feature with given geometry, properties and id
@@ -33,11 +34,26 @@ public class Feature : IGeoJsonObject
         this.properties = properties;
         if (id == null || id.Length == 0)
         {
-            this.id = $"GeneratedGUID_{System.Guid.NewGuid()}";
+            this.id = $"Unknown_{System.Guid.NewGuid()}";
         }
         else
         {
             this.id = id;
+        }
+    }
+
+    /// <summary>
+    /// Renders the Feature as part of the given layer
+    /// </summary>
+    /// <param name="feature">The Feature's layer</param>
+    public void Render(GameObject layer)
+    {
+        GameObject feature = new GameObject(id);
+        feature.transform.parent = layer.transform;
+
+        if (geometry != null)
+        {
+            geometry.Render(feature);
         }
     }
 

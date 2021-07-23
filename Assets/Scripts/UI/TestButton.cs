@@ -5,6 +5,8 @@ public class TestButton : MonoBehaviour
 {
     public Button testButton;
 
+    public GameObject testLayer;
+
     public DebugUIController debugUI;
 
     private void Start() => testButton.onClick.AddListener(ButtonClicked);
@@ -219,6 +221,246 @@ public class TestButton : MonoBehaviour
             ]
         }";
 
+        string featuresJson = @"{
+        'type': 'FeatureCollection',
+        'features': [
+            {
+            'type': 'Feature',
+            'id': 'Point',
+            'properties': {},
+            'geometry': {
+                'type': 'Point',
+                'coordinates': [
+                1,
+                0.5
+                ]
+            }
+            },
+            {
+            'type': 'Feature',
+            'id': 'MultiPoint',
+            'properties': {},
+            'geometry': {
+                'type': 'MultiPoint',
+                'coordinates': [
+                [
+                    0.1,
+                    1.6
+                ],
+                [
+                    0.3,
+                    1.7
+                ]
+                ]
+            }
+            },
+            {
+            'type': 'Feature',
+            'id': 'LineString',
+            'properties': {},
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': [
+                [
+                    3,
+                    4
+                ],
+                [
+                    3.1,
+                    4.1
+                ],
+                [
+                    3.2,
+                    4.2
+                ],
+                [
+                    3.3,
+                    4.3
+                ],
+                [
+                    3.4,
+                    4.4
+                ]
+                ]
+            }
+            },
+            {
+            'type': 'Feature',
+            'id': 'MultiLineString',
+            'properties': {},
+            'geometry': {
+                'type': 'MultiLineString',
+                'coordinates': [
+                [
+                    [
+                    2.5,
+                    2.5
+                    ],
+                    [
+                    2.4,
+                    2.6
+                    ],
+                    [
+                    2.3,
+                    2.7
+                    ],
+                    [
+                    2.2,
+                    2.8
+                    ],
+                    [
+                    2.1,
+                    2.9
+                    ],
+                    [
+                    2,
+                    3
+                    ]
+                ],
+                [
+                    [
+                    2.2,
+                    2.8
+                    ],
+                    [
+                    2.3,
+                    2.8
+                    ],
+                    [
+                    2.4,
+                    2.8
+                    ]
+                ]
+                ]
+            }
+            },
+            {
+            'type': 'Feature',
+            'id': 'Polygon',
+            'properties': {},
+            'geometry': {
+                'type': 'Polygon',
+                'coordinates': [
+                [
+                    [
+                    -1.4,
+                    -1
+                    ],
+                    [
+                    0.7,
+                    -1
+                    ],
+                    [
+                    0.7,
+                    0.2
+                    ],
+                    [
+                    -1,
+                    0
+                    ],
+                    [
+                    -1.4,
+                    -1
+                    ]
+                ]
+                ]
+            }
+            },
+            {
+            'type': 'Feature',
+            'id': 'MultiPolygon',
+            'properties': {},
+            'geometry': {
+                'type': 'MultiPolygon',
+                'coordinates': [
+                [
+                    [
+                    [
+                        1.7,
+                        1.7
+                    ],
+                    [
+                        1.9,
+                        1.7
+                    ],
+                    [
+                        1.9,
+                        1.9
+                    ],
+                    [
+                        1.7,
+                        1.9
+                    ],
+                    [
+                        1.7,
+                        1.7
+                    ]
+                    ]
+                ],
+                [
+                    [
+                    [
+                        1,
+                        1
+                    ],
+                    [
+                        1.5,
+                        1
+                    ],
+                    [
+                        1.5,
+                        1.5
+                    ],
+                    [
+                        1,
+                        1.5
+                    ],
+                    [
+                        1,
+                        1
+                    ]
+                    ]
+                ]
+                ]
+            }
+            },
+            {
+            'type': 'Feature',
+            'id': 'GeometryCollection',
+            'properties': {},
+            'geometry': {
+                'type': 'GeometryCollection',
+                'geometries': [
+                {
+                    'type': 'Point',
+                    'coordinates': [
+                    0,
+                    4.2
+                    ]
+                },
+                {
+                    'type': 'LineString',
+                    'coordinates': [
+                    [
+                        0,
+                        3
+                    ],
+                    [
+                        0,
+                        3.5
+                    ],
+                    [
+                        0,
+                        4
+                    ]
+                    ]
+                }
+                ]
+            }
+            }
+        ]
+        }";
+
         string boundingBoxJson = @"{
             'type': 'Feature',
             'bbox': [-10.0, -10.0, 10.0, 10.0],
@@ -237,9 +479,21 @@ public class TestButton : MonoBehaviour
 
         try
         {
-            IGeoJsonObject geoJson = GeoJson.Parse(exampleJson);
-            Logger.Log("Type: " + geoJson.GetType());
+            IGeoJsonObject geoJson = GeoJson.Parse(featuresJson);
+
             Logger.Log(geoJson);
+
+            if (geoJson.GetType() == typeof(FeatureCollection))
+            {
+                FeatureCollection collection = (FeatureCollection)geoJson;
+
+                collection.Render(testLayer);
+            }
+            else
+            {
+                // Can't render as a layer. Root isn't a FeatureCollection
+                throw new System.Exception("Can't render as a layer. Root isn't a FeatureCollection");
+            }
         }
         catch (InvalidGeoJsonException e)
         {

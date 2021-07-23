@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Text;
 
 /// <summary>
@@ -8,7 +9,7 @@ public class FeatureCollection : IGeoJsonObject
     /// <summary>
     /// The features in the collection
     /// </summary>
-    Feature[] features;
+    private Feature[] features;
 
     /// <summary>
     /// Constructs a new FeatureCollection with the given features
@@ -17,6 +18,18 @@ public class FeatureCollection : IGeoJsonObject
     public FeatureCollection(Feature[] features)
     {
         this.features = features;
+    }
+
+    /// <summary>
+    /// Renders the FeatureCollection as the given layer
+    /// </summary>
+    /// <param name="feature">The FeatureCollection's layer</param>
+    public void Render(GameObject layer)
+    {
+        foreach (Feature feature in features)
+        {
+            feature.Render(layer);
+        }
     }
 
     /// <summary>

@@ -59,7 +59,7 @@ public class GeoJsonObjectConverter : JsonConverter
                     case "GeometryCollection":
                         return jsonObject.ToObject<GeometryCollection>(serializer);
                     case "Feature":
-                        return jsonObject.ToObject<Feature>(serializer); //TODO: The value of the geometry member (...) in the case that the Feature is unlocated, a JSON null value
+                        return jsonObject.ToObject<Feature>(serializer);
                     case "FeatureCollection":
                         return jsonObject.ToObject<FeatureCollection>(serializer);
                     default:
@@ -72,6 +72,11 @@ public class GeoJsonObjectConverter : JsonConverter
                 // Invalid GeoJSON: Missing type
                 throw new InvalidGeoJsonException("Missing type");
             }
+        }
+        else if (token.Type == JTokenType.Null)
+        {
+            // Features have a `geometry` member which might be a Geometry object or a JSON null value
+            return null;
         }
         else
         {

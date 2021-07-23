@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Text;
 
 /// <summary>
@@ -17,6 +18,18 @@ public class GeometryCollection : IGeometryObject, IGeoJsonObject
     public GeometryCollection(IGeometryObject[] geometries)
     {
         this.geometries = geometries;
+    }
+
+    /// <summary>
+    /// Renders the GeometryCollection as the geometry associated with the given Feature
+    /// </summary>
+    /// <param name="feature">The parent feature</param>
+    public void Render(GameObject feature)
+    {
+        foreach (IGeometryObject geometry in geometries)
+        {
+            geometry.Render(feature);
+        }
     }
 
     /// <summary>

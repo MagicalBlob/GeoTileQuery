@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 
 /// <summary>
@@ -24,6 +25,15 @@ public class LineString : IGeometryObject, IGeoJsonObject
         {
             throw new InvalidGeoJsonException("Line coordinates must have two or more positions");
         }
+    }
+
+    /// <summary>
+    /// Renders the LineString as the geometry associated with the given Feature
+    /// </summary>
+    /// <param name="feature">The parent feature</param>
+    public void Render(GameObject feature)
+    {
+        GeoJson.RenderEdge(feature, coordinates);
     }
 
     /// <summary>
