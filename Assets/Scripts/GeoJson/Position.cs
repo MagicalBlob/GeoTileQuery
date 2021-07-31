@@ -17,6 +17,11 @@ public struct Position
     public double z;
 
     /// <summary>
+    /// Number of dimensions used by the position
+    /// </summary>
+    public int Dimensions { get { return 3; } }
+
+    /// <summary>
     /// Constructs a new position with given x, y, z coordinate
     /// </summary>
     /// <param name="x">x coordinate</param>

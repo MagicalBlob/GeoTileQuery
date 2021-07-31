@@ -1,6 +1,7 @@
 using UnityEngine;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// The GeoJSON base class
@@ -47,7 +48,7 @@ public class GeoJson
         double x = coordinates.x;
         double y = coordinates.z; // GeoJSON uses z for height, while Unity uses y
         double z = coordinates.y; // GeoJSON uses z for height, while Unity uses y
-        Vector3[] vertices = new Vector3[5]
+        Vector3[] vertices = new Vector3[5] // TODO we're being greedy with vertices here and that means the normals will be messed up since we're sharing vertices between differently oriented faces
         {
             new Vector3((float)x, (float)y, (float)z),
             new Vector3((float)(x + radius), (float)(y + height), (float)(z + radius)),
@@ -155,8 +156,37 @@ public class GeoJson
         GameObject area = new GameObject("Area"); // Create Area gameobject
         area.transform.parent = feature.transform; // Set it as a child of the Feature gameobject
 
-        // Render the geometry
-        //TODO
-        area.transform.position = new Vector3((float)coordinates[0][0].x, (float)coordinates[0][0].z, (float)coordinates[0][0].y); // Set origin to first coordinate
+        // Triangulate the polygon coordinates using Earcut
+        EarcutLib.Data data = EarcutLib.Flatten(coordinates);
+        List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
+        double deviation = EarcutLib.Deviation(data.Vertices, data.Holes, data.Dimensions, triangles);
+        Logger.Log(deviation == 0 ? "The triangulation is fully correct" : $"Triangulation deviation: {Math.Round(deviation, 6)}");
+
+        // Setup the mesh components
+        MeshRenderer meshRenderer = area.AddComponent<MeshRenderer>();
+        MeshFilter meshFilter = area.AddComponent<MeshFilter>();
+        Mesh mesh = new Mesh();
+
+        // Setup vertices
+        Vector3[] vertices = new Vector3[data.Vertices.Count / data.Dimensions];
+        for (int i = 0; i < data.Vertices.Count / data.Dimensions; i++)
+        {
+            double x = data.Vertices[i * data.Dimensions];
+            double y = data.Vertices[(i * data.Dimensions) + 2];   // GeoJSON uses z for height, while Unity uses y
+            double z = data.Vertices[(i * data.Dimensions) + 1];   // GeoJSON uses z for height, while Unity uses y
+            vertices[i] = new Vector3((float)x, (float)y, (float)z);
+        }
+        mesh.vertices = vertices;
+
+        // Setup triangles
+        triangles.Reverse();
+        mesh.triangles = triangles.ToArray();
+
+        // Assign mesh
+        mesh.RecalculateNormals();
+        meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
+        meshFilter.mesh = mesh;
+        // TODO we're getting an extra vertex because GeoJSON polygon's line rings loop around, should we cut it?
+        Logger.Log($"Mesh>Vertices:{meshFilter.mesh.vertexCount},Triangles:{meshFilter.mesh.triangles.Length / 3},Normals:{meshFilter.mesh.normals.Length}");
     }
 }
