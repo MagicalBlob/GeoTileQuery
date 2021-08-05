@@ -516,6 +516,9 @@ public class TestButton : MonoBehaviour
                 // Can't render as a layer. Root isn't a FeatureCollection
                 throw new System.Exception("Can't render as a layer. Root isn't a FeatureCollection");
             }
+
+            Logger.Log(GlobalMercator.MetersToLatLon(-1017065.574593, 4679862.580530));
+            Logger.Log(GlobalMercator.LatLonToMeters(GlobalMercator.MetersToLatLon(-1017065.574593, 4679862.580530).Item1, GlobalMercator.MetersToLatLon(-1017065.574593, 4679862.580530).Item2));
         }
         catch (InvalidGeoJsonException e)
         {
