@@ -44,7 +44,7 @@ public class Polygon : IGeometryObject, IGeoJsonObject
     /// <param name="feature">The parent feature</param>
     public void Render(GameObject feature)
     {
-        GeoJson.RenderArea(feature, coordinates);
+        GeoJsonRenderer.RenderArea(feature, coordinates);
     }
 
     /// <summary>

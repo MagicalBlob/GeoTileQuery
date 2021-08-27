@@ -25,7 +25,7 @@ public class Point : IGeometryObject, IGeoJsonObject
     /// <param name="feature">The parent feature</param>
     public void Render(GameObject feature)
     {
-        GeoJson.RenderNode(feature, coordinates);
+        GeoJsonRenderer.RenderNode(feature, coordinates);
     }
 
     /// <summary>

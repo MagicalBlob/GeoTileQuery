@@ -869,9 +869,9 @@ public class EarcutLib
         {
             for (int position = 0; position < coordinates[ring].Length; position++)
             {
-                vertices.Add(coordinates[ring][position].x);
-                vertices.Add(coordinates[ring][position].y);
-                vertices.Add(coordinates[ring][position].z);
+                vertices.Add(coordinates[ring][position].metersX);
+                vertices.Add(coordinates[ring][position].metersY);
+                vertices.Add(coordinates[ring][position].metersZ);
             }
 
         }

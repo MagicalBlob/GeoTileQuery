@@ -49,7 +49,7 @@ public class MultiPolygon : IGeometryObject, IGeoJsonObject
     {
         foreach (Position[][] polygon in coordinates)
         {
-            GeoJson.RenderArea(feature, polygon);
+            GeoJsonRenderer.RenderArea(feature, polygon);
         }
     }
 

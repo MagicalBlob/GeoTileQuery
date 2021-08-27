@@ -28,7 +28,7 @@ public class MultiPoint : IGeometryObject, IGeoJsonObject
     {
         foreach (Position position in coordinates)
         {
-            GeoJson.RenderNode(feature, position);
+            GeoJsonRenderer.RenderNode(feature, position);
         }
     }
 

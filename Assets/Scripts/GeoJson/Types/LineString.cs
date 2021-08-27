@@ -33,7 +33,7 @@ public class LineString : IGeometryObject, IGeoJsonObject
     /// <param name="feature">The parent feature</param>
     public void Render(GameObject feature)
     {
-        GeoJson.RenderEdge(feature, coordinates);
+        GeoJsonRenderer.RenderEdge(feature, coordinates);
     }
 
     /// <summary>
