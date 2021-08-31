@@ -24,11 +24,12 @@ public class FeatureCollection : IGeoJsonObject
     /// Renders the FeatureCollection as the given layer
     /// </summary>
     /// <param name="feature">The FeatureCollection's layer</param>
-    public void Render(GameObject layer)
+    /// <param name="properties">The layer rendering properties</param>
+    public void Render(GameObject layer, RenderingProperties properties)
     {
         foreach (Feature feature in features)
         {
-            feature.Render(layer);
+            feature.Render(layer, properties);
         }
     }
 

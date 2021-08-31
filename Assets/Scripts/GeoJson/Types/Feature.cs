@@ -34,7 +34,7 @@ public class Feature : IGeoJsonObject
         this.properties = properties;
         if (id == null || id.Length == 0)
         {
-            this.id = $"Unknown_{System.Guid.NewGuid()}";
+            this.id = $"UnknownID_{System.Guid.NewGuid()}";
         }
         else
         {
@@ -46,14 +46,15 @@ public class Feature : IGeoJsonObject
     /// Renders the Feature as part of the given layer
     /// </summary>
     /// <param name="feature">The Feature's layer</param>
-    public void Render(GameObject layer)
+    /// <param name="properties">The layer rendering properties</param>
+    public void Render(GameObject layer, RenderingProperties properties)
     {
         GameObject feature = new GameObject(id);
         feature.transform.parent = layer.transform;
 
         if (geometry != null)
         {
-            geometry.Render(feature);
+            geometry.Render(feature, properties);
         }
     }
 

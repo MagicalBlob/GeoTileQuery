@@ -24,11 +24,12 @@ public class MultiPoint : IGeometryObject, IGeoJsonObject
     /// Renders the MultiPoint as the geometry associated with the given Feature
     /// </summary>
     /// <param name="feature">The parent feature</param>
-    public void Render(GameObject feature)
+    /// <param name="properties">The layer rendering properties</param>
+    public void Render(GameObject feature, RenderingProperties properties)
     {
         foreach (Position position in coordinates)
         {
-            GeoJsonRenderer.RenderNode(feature, position);
+            GeoJsonRenderer.RenderNode(feature, position, properties);
         }
     }
 

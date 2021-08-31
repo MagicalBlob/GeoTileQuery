@@ -844,8 +844,9 @@ public class EarcutLib
     /// Turn a polygon in a multi-dimensional array form (e.g. as in GeoJSON) into a form Earcut accepts
     /// </summary>
     /// <param name="coordinates">The coordinates for each point of each linear ring of the GeoJSON Polygon</param>
+    /// <param name="properties">The layer rendering properties</param>
     /// <returns>A wrapper object containing the polygon vertices, holes and dimensions to use with Earcut</returns>
-    public static Data Flatten(Position[][] coordinates)
+    public static Data Flatten(Position[][] coordinates, RenderingProperties properties)
     {
         int dimensions = coordinates[0][0].Dimensions;
 
@@ -869,9 +870,9 @@ public class EarcutLib
         {
             for (int position = 0; position < coordinates[ring].Length; position++)
             {
-                vertices.Add(coordinates[ring][position].metersX);
-                vertices.Add(coordinates[ring][position].metersY);
-                vertices.Add(coordinates[ring][position].metersZ);
+                vertices.Add(coordinates[ring][position].GetWorldX(properties));
+                vertices.Add(coordinates[ring][position].GetWorldY(properties));
+                vertices.Add(coordinates[ring][position].GetWorldZ(properties));
             }
 
         }

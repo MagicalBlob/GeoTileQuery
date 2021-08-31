@@ -21,17 +21,17 @@ public struct Position
     /// <summary>
     /// x coordinate of the position (Meters)
     /// </summary>
-    public double metersX;
+    private double metersX;
 
     /// <summary>
     /// y coordinate of the position (Meters)
     /// </summary>
-    public double metersY;
+    private double metersY;
 
     /// <summary>
     /// z coordinate of the position (Meters)
     /// </summary>
-    public double metersZ;
+    private double metersZ;
 
     /// <summary>
     /// Number of dimensions used by the position
@@ -58,43 +58,33 @@ public struct Position
     }
 
     /// <summary>
-    /// Access the x, y or z component using [0], [1] or [2] respectively.
+    /// Get the X coordinate in the Unity scene (in Meters relative to scene center)
     /// </summary>
-    /// <param name="index">The component index</param>
+    /// <param name="properties">The layer rendering properties</param>
     /// <returns></returns>
-    public double this[int index]
+    public double GetWorldX(RenderingProperties properties)
     {
-        get
-        {
-            switch (index)
-            {
-                case 0:
-                    return this.x;
-                case 1:
-                    return this.y;
-                case 2:
-                    return this.z;
-                default:
-                    throw new System.IndexOutOfRangeException("Index was outside the bounds of the array.");
-            }
-        }
-        set
-        {
-            switch (index)
-            {
-                case 0:
-                    this.x = value;
-                    break;
-                case 1:
-                    this.y = value;
-                    break;
-                case 2:
-                    this.z = value;
-                    break;
-                default:
-                    throw new System.IndexOutOfRangeException("Index was outside the bounds of the array.");
-            }
-        }
+        return metersX - properties.centerX;
+    }
+
+    /// <summary>
+    /// Get the Y coordinate in the Unity scene (in Meters relative to scene center)
+    /// </summary>
+    /// <param name="properties">The layer rendering properties</param>
+    /// <returns></returns>
+    public double GetWorldY(RenderingProperties properties)
+    {
+        return metersY - properties.centerY;
+    }
+
+    /// <summary>
+    /// Get the Z coordinate in the Unity scene (in Meters relative to scene center)
+    /// </summary>
+    /// <param name="properties">The layer rendering properties</param>
+    /// <returns></returns>
+    public double GetWorldZ(RenderingProperties properties)
+    {
+        return metersZ - properties.centerZ;
     }
 
     /// <summary>

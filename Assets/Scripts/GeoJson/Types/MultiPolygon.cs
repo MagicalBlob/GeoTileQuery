@@ -45,11 +45,12 @@ public class MultiPolygon : IGeometryObject, IGeoJsonObject
     /// Renders the MultiPolygon as the geometry associated with the given Feature
     /// </summary>
     /// <param name="feature">The parent feature</param>
-    public void Render(GameObject feature)
+    /// <param name="properties">The layer rendering properties</param>
+    public void Render(GameObject feature, RenderingProperties properties)
     {
         foreach (Position[][] polygon in coordinates)
         {
-            GeoJsonRenderer.RenderArea(feature, polygon);
+            GeoJsonRenderer.RenderArea(feature, polygon, properties);
         }
     }
 
