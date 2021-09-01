@@ -56,6 +56,10 @@ public class Feature : IGeoJsonObject
         {
             geometry.Render(feature, properties);
         }
+        else
+        {
+            Logger.LogWarning($"Unable to render the feature {id} as it has no geometry assigned (Unlocated feature)");
+        }
     }
 
     /// <summary>

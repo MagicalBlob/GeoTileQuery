@@ -46,6 +46,18 @@ public static class Logger
     }
 
     /// <summary>
+    /// Adds a warning to the log
+    /// </summary>
+    /// <param name="message">String or object to be converted to string representation for display</param>
+    public static void LogWarning(object message)
+    {
+        Debug.LogWarning(message); //TODO: remove?
+        log.Append(DateTime.Now.ToString("[HH:mm:ss] "));
+        log.AppendLine(message.ToString());
+        onNewMessage.Invoke();
+    }
+
+    /// <summary>
     /// Adds an error to the log
     /// </summary>
     /// <param name="message">String or object to be converted to string representation for display</param>

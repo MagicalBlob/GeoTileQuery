@@ -21,12 +21,12 @@ public class RenderingProperties
     /// <summary>
     /// Node height
     /// </summary>
-    public double nodeHeight = 1;
+    public double nodeHeight = 5;
 
     /// <summary>
     /// Node radius
     /// </summary>
-    public double nodeRadius = 0.25;
+    public double nodeRadius = 1;
 
     /// <summary>
     /// Edge width
