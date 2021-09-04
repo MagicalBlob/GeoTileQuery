@@ -140,8 +140,8 @@ public class GeoJsonRenderer
         // Triangulate the polygon coordinates using Earcut
         EarcutLib.Data data = EarcutLib.Flatten(coordinates, properties);
         List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
-        double deviation = EarcutLib.Deviation(data.Vertices, data.Holes, data.Dimensions, triangles);
-        Logger.Log(deviation == 0 ? "The triangulation is fully correct" : $"Triangulation deviation: {Math.Round(deviation, 6)}");
+        /*double deviation = EarcutLib.Deviation(data.Vertices, data.Holes, data.Dimensions, triangles);
+        Logger.Log(deviation == 0 ? "The triangulation is fully correct" : $"Triangulation deviation: {Math.Round(deviation, 6)}"); TODO clear this */
 
         // Setup the mesh components
         MeshRenderer meshRenderer = area.AddComponent<MeshRenderer>();
@@ -167,7 +167,8 @@ public class GeoJsonRenderer
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
         meshFilter.mesh = mesh;
+
         // TODO we're getting an extra vertex because GeoJSON polygon's line rings loop around, should we cut it?
-        Logger.Log($"Mesh>Vertices:{meshFilter.mesh.vertexCount},Triangles:{meshFilter.mesh.triangles.Length / 3},Normals:{meshFilter.mesh.normals.Length}");
+        // Logger.Log($"Mesh>Vertices:{meshFilter.mesh.vertexCount},Triangles:{meshFilter.mesh.triangles.Length / 3},Normals:{meshFilter.mesh.normals.Length}");
     }
 }

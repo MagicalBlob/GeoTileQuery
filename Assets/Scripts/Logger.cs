@@ -39,8 +39,8 @@ public static class Logger
     /// <param name="message">String or object to be converted to string representation for display</param>
     public static void Log(object message)
     {
-        Debug.Log(message); //TODO: remove?
         log.Append(DateTime.Now.ToString("[HH:mm:ss] "));
+        log.Append("[INFO] ");
         log.AppendLine(message.ToString());
         onNewMessage.Invoke();
     }
@@ -51,8 +51,8 @@ public static class Logger
     /// <param name="message">String or object to be converted to string representation for display</param>
     public static void LogWarning(object message)
     {
-        Debug.LogWarning(message); //TODO: remove?
         log.Append(DateTime.Now.ToString("[HH:mm:ss] "));
+        log.Append("[WARNING] ");
         log.AppendLine(message.ToString());
         onNewMessage.Invoke();
     }
@@ -63,8 +63,8 @@ public static class Logger
     /// <param name="message">String or object to be converted to string representation for display</param>
     public static void LogError(object message)
     {
-        Debug.LogError(message); //TODO: remove?
         log.Append(DateTime.Now.ToString("[HH:mm:ss] "));
+        log.Append("[ERROR] ");
         log.AppendLine(message.ToString());
         onNewMessage.Invoke();
     }
@@ -75,8 +75,8 @@ public static class Logger
     /// <param name="exception">Runtime Exception</param>
     public static void LogException(Exception exception)
     {
-        Debug.LogException(exception); //TODO: remove?
         log.Append(DateTime.Now.ToString("[HH:mm:ss] "));
+        log.Append("[EXCEPTION] ");
         log.AppendLine(exception.ToString());
         onNewMessage.Invoke();
     }
