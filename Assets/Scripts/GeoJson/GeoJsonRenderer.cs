@@ -137,6 +137,13 @@ public class GeoJsonRenderer
         GameObject area = new GameObject("Area"); // Create Area gameobject
         area.transform.parent = feature.transform; // Set it as a child of the Feature gameobject
 
+        // Check for empty coordinates array
+        if (coordinates.Length == 0)
+        {
+            Logger.LogWarning($"{feature.name}: Tried to render an Area with no coordinates");
+            return;
+        }
+
         // Triangulate the polygon coordinates using Earcut
         EarcutLib.Data data = EarcutLib.Flatten(coordinates, properties);
         List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
