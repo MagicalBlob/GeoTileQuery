@@ -14,7 +14,7 @@ A copy of this license is available at: [`COPYING`](COPYING)
 
 |  Name  |  Version  | License | Repository |
 |--------|-----------|---------|------------|
-| Json.NET | `12.0.2` | [`LICENSES/Newtonsoft.Json/LICENSE.md`](LICENSES/Newtonsoft.Json/LICENSE.md) | [https://github.com/JamesNK/Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) |
+| Newtonsoft.Json for Unity | `13.0.102` | [`LICENSES/Newtonsoft.Json-for-Unity/LICENSE.md`](LICENSES/Newtonsoft.Json-for-Unity/LICENSE.md) | [https://github.com/jilleJr/Newtonsoft.Json-for-Unity](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) |
 | Google ARCore Extensions for AR Foundation | `1.25.0` | [`LICENSES/arcore-unity-extensions/LICENSE.md`](LICENSES/arcore-unity-extensions/LICENSE.md) | [https://github.com/google-ar/arcore-unity-extensions](https://github.com/google-ar/arcore-unity-extensions) |
 
 ### Ported Code
