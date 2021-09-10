@@ -21,9 +21,4 @@ public class MapController : MonoBehaviour
     /// Scale of the map
     /// </summary>
     public float Scale { get => scale; set => scale = value; }
-
-    /// <summary>
-    /// Current time // TODO: do we really need this?
-    /// </summary>
-    public int Time { get => time; set => time = value; }
 }
