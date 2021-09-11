@@ -12,8 +12,8 @@ public class GeoJsonRenderer
     /// </summary>
     /// <param name="feature">The parent feature</param>
     /// <param name="coordinates">The node coordinates</param>
-    /// <param name="properties">The layer rendering properties</param>
-    public static void RenderNode(GameObject feature, Position coordinates, RenderingProperties properties)
+    /// <param name="renderingProperties">The layer rendering properties</param>
+    public static void RenderNode(GameObject feature, Position coordinates, RenderingProperties renderingProperties)
     {
         // Setup the gameobject
         GameObject node = new GameObject("Node"); // Create Node gameobject
@@ -25,16 +25,16 @@ public class GeoJsonRenderer
         Mesh mesh = new Mesh();
 
         // Setup vertices
-        double x = coordinates.GetWorldX(properties);
-        double y = coordinates.GetWorldZ(properties); // GeoJSON uses z for height, while Unity uses y
-        double z = coordinates.GetWorldY(properties); // GeoJSON uses z for height, while Unity uses y
+        double x = coordinates.GetWorldX(renderingProperties);
+        double y = coordinates.GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+        double z = coordinates.GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
         Vector3[] vertices = new Vector3[5] // TODO we're being greedy with vertices here and that means the normals will be messed up since we're sharing vertices between differently oriented faces
         {
             new Vector3((float)x, (float)y, (float)z),
-            new Vector3((float)(x + properties.nodeRadius), (float)(y + properties.nodeHeight), (float)(z + properties.nodeRadius)),
-            new Vector3((float)(x - properties.nodeRadius), (float)(y + properties.nodeHeight), (float)(z + properties.nodeRadius)),
-            new Vector3((float)(x - properties.nodeRadius), (float)(y + properties.nodeHeight), (float)(z - properties.nodeRadius)),
-            new Vector3((float)(x + properties.nodeRadius), (float)(y + properties.nodeHeight), (float)(z - properties.nodeRadius))
+            new Vector3((float)(x + renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z + renderingProperties.NodeRadius)),
+            new Vector3((float)(x - renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z + renderingProperties.NodeRadius)),
+            new Vector3((float)(x - renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z - renderingProperties.NodeRadius)),
+            new Vector3((float)(x + renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z - renderingProperties.NodeRadius))
         };
         mesh.vertices = vertices;
 
@@ -61,8 +61,8 @@ public class GeoJsonRenderer
     /// </summary>
     /// <param name="feature">The parent feature</param>
     /// <param name="coordinates">The edge coordinates</param>
-    /// <param name="properties">The layer rendering properties</param>
-    public static void RenderEdge(GameObject feature, Position[] coordinates, RenderingProperties properties)
+    /// <param name="renderingProperties">The layer rendering properties</param>
+    public static void RenderEdge(GameObject feature, Position[] coordinates, RenderingProperties renderingProperties)
     {
         // Setup the gameobject
         GameObject edge = new GameObject("Edge"); // Create Edge gameobject
@@ -79,14 +79,14 @@ public class GeoJsonRenderer
         for (int segment = 0; segment < numSegments; segment++)
         {
             // Start point of segment AB
-            double ax = coordinates[segment].GetWorldX(properties);
-            double ay = coordinates[segment].GetWorldZ(properties); // GeoJSON uses z for height, while Unity uses y
-            double az = coordinates[segment].GetWorldY(properties); // GeoJSON uses z for height, while Unity uses y
+            double ax = coordinates[segment].GetWorldX(renderingProperties);
+            double ay = coordinates[segment].GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            double az = coordinates[segment].GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
-            double bx = coordinates[segment + 1].GetWorldX(properties);
-            double by = coordinates[segment + 1].GetWorldZ(properties); // GeoJSON uses z for height, while Unity uses y
-            double bz = coordinates[segment + 1].GetWorldY(properties); // GeoJSON uses z for height, while Unity uses y
+            double bx = coordinates[segment + 1].GetWorldX(renderingProperties);
+            double by = coordinates[segment + 1].GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            double bz = coordinates[segment + 1].GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB
             double abX = bx - ax;
@@ -94,8 +94,8 @@ public class GeoJsonRenderer
             double abMagnitude = Math.Sqrt(Math.Pow(abX, 2) + Math.Pow(abZ, 2));
 
             // AB⟂ with given width
-            double abPerpX = (properties.edgeWidth * -abZ) / abMagnitude;
-            double abPerpZ = (properties.edgeWidth * abX) / abMagnitude;
+            double abPerpX = (renderingProperties.EdgeWidth * -abZ) / abMagnitude;
+            double abPerpZ = (renderingProperties.EdgeWidth * abX) / abMagnitude;
 
             // Add vertices
             vertices[(segment * 4) + 0] = new Vector3((float)(ax - abPerpX), (float)ay, (float)(az - abPerpZ));
@@ -130,8 +130,8 @@ public class GeoJsonRenderer
     /// </summary>
     /// <param name="feature">The parent feature</param>
     /// <param name="coordinates">The area coordinates</param>
-    /// <param name="properties">The layer rendering properties</param>
-    public static void RenderArea(GameObject feature, Position[][] coordinates, RenderingProperties properties)
+    /// <param name="renderingProperties">The layer rendering properties</param>
+    public static void RenderArea(GameObject feature, Position[][] coordinates, RenderingProperties renderingProperties)
     {
         // Setup the gameobject
         GameObject area = new GameObject("Area"); // Create Area gameobject
@@ -145,7 +145,7 @@ public class GeoJsonRenderer
         }
 
         // Triangulate the polygon coordinates using Earcut
-        EarcutLib.Data data = EarcutLib.Flatten(coordinates, properties);
+        EarcutLib.Data data = EarcutLib.Flatten(coordinates, renderingProperties);
         List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
         /*double deviation = EarcutLib.Deviation(data.Vertices, data.Holes, data.Dimensions, triangles);
         Logger.Log(deviation == 0 ? "The triangulation is fully correct" : $"Triangulation deviation: {Math.Round(deviation, 6)}"); TODO clear this */

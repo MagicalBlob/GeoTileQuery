@@ -64,7 +64,7 @@ public struct Position
     /// <returns></returns>
     public double GetWorldX(RenderingProperties properties)
     {
-        return metersX - properties.centerX;
+        return metersX - properties.CenterX;
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ public struct Position
     /// <returns></returns>
     public double GetWorldY(RenderingProperties properties)
     {
-        return metersY - properties.centerY;
+        return metersY - properties.CenterY;
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public struct Position
     /// <returns></returns>
     public double GetWorldZ(RenderingProperties properties)
     {
-        return metersZ - properties.centerZ;
+        return metersZ - properties.CenterZ;
     }
 
     /// <summary>

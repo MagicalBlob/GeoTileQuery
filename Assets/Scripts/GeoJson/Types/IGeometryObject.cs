@@ -9,6 +9,6 @@ public interface IGeometryObject : IGeoJsonObject
     /// Renders the Geometry Object as the geometry associated with the given Feature
     /// </summary>
     /// <param name="feature">The parent feature</param>
-    /// <param name="properties">The layer rendering properties</param>
-    void Render(GameObject feature, RenderingProperties properties);
+    /// <param name="renderingProperties">The layer rendering properties</param>
+    void Render(GameObject feature, RenderingProperties renderingProperties);
 }

@@ -24,12 +24,12 @@ public class GeometryCollection : IGeometryObject, IGeoJsonObject
     /// Renders the GeometryCollection as the geometry associated with the given Feature
     /// </summary>
     /// <param name="feature">The parent feature</param>
-    /// <param name="properties">The layer rendering properties</param>
-    public void Render(GameObject feature, RenderingProperties properties)
+    /// <param name="renderingProperties">The layer rendering properties</param>
+    public void Render(GameObject feature, RenderingProperties renderingProperties)
     {
         foreach (IGeometryObject geometry in geometries)
         {
-            geometry.Render(feature, properties);
+            geometry.Render(feature, renderingProperties);
         }
     }
 

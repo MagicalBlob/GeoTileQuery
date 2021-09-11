@@ -32,29 +32,45 @@ public class Feature : IGeoJsonObject
     {
         this.geometry = geometry;
         this.properties = properties;
-        if (id == null || id.Length == 0)
+        /*if (id == null || id.Length == 0)
         {
             this.id = $"UnknownID_{System.Guid.NewGuid()}";
         }
         else
         {
             this.id = id;
-        }
+        }*/
+        this.id = id;
     }
 
     /// <summary>
     /// Renders the Feature as part of the given layer
     /// </summary>
     /// <param name="feature">The Feature's layer</param>
-    /// <param name="properties">The layer rendering properties</param>
-    public void Render(GameObject layer, RenderingProperties properties)
+    /// <param name="renderingProperties">The layer rendering properties</param>
+    public void Render(GameObject layer, RenderingProperties renderingProperties)
     {
+        if (id == null || id.Length == 0)
+        {
+            // There wasn't an ID set on the feature
+            object value;
+            if (renderingProperties.IdPropertyName != null && renderingProperties.IdPropertyName.Length > 0 && properties != null && properties.TryGetValue(renderingProperties.IdPropertyName, out value))
+            {
+                // A property name was given to try to use as an alternative to the Id and there is a value that matches that property name for this feature
+                id = value.ToString();
+            }
+            else
+            {
+                id = $"UnknownID_{System.Guid.NewGuid()}";
+            }
+        };
+
         GameObject feature = new GameObject(id);
         feature.transform.parent = layer.transform;
 
         if (geometry != null)
         {
-            geometry.Render(feature, properties);
+            geometry.Render(feature, renderingProperties);
         }
         else
         {

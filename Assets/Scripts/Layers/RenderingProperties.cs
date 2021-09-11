@@ -6,42 +6,47 @@ public class RenderingProperties
     /// <summary>
     /// Zoom level for the tiles
     /// </summary>
-    public int zoom;
+    public int Zoom { get; }
 
     /// <summary>
     /// The X coordinate of the center of the scene (Meters)
     /// </summary>
-    public double centerX;
+    public double CenterX { get; }
 
     /// <summary>
     /// The Y coordinate of the center of the scene (Meters)
     /// </summary>
-    public double centerY;
+    public double CenterY { get; }
 
     /// <summary>
     /// The Z coordinate of the center of the scene (Meters)
     /// </summary>
-    public double centerZ;
+    public double CenterZ { get; }
 
     /// <summary>
     /// Radius of tiles to be loaded (eg: if 3, it will load tiles from origin - 3 to origin + 3)
     /// </summary>
-    public int tileRadius;
+    public int TileRadius { get; }
+
+    /// <summary>
+    /// Name of the Feature's property that may be used as an id as an alternative to the actual Feature id if it doesn't exist
+    /// </summary>
+    public string IdPropertyName { get; }
 
     /// <summary>
     /// Node height
     /// </summary>
-    public double nodeHeight = 5;
+    public double NodeHeight { get { return 5; } }
 
     /// <summary>
     /// Node radius
     /// </summary>
-    public double nodeRadius = 1;
+    public double NodeRadius { get { return 1; } }
 
     /// <summary>
     /// Edge width
     /// </summary>
-    public double edgeWidth = 1;//0.025; //TODO check the rendering code but I think this might actually be rendering as half the width
+    public double EdgeWidth { get { return 1; } } //0.025; //TODO check the rendering code but I think this might actually be rendering as half the width
 
     /// <summary>
     /// Create a new rendering properties object
@@ -51,12 +56,14 @@ public class RenderingProperties
     /// <param name="centerY">The Y coordinate of the center of the scene (Meters)</param>
     /// <param name="centerZ">The Z coordinate of the center of the scene (Meters)</param>
     /// <param name="tileRadius">Radius of tiles to be loaded</param>
-    public RenderingProperties(int zoom, double centerX, double centerY, double centerZ, int tileRadius)
+    /// <param name="idPropertyName">Name of the Feature's property that may be used as an Id as an alternative to the actual Feature Id if it doesn't exist</param>
+    public RenderingProperties(int zoom, double centerX, double centerY, double centerZ, int tileRadius, string idPropertyName)
     {
-        this.zoom = zoom;
-        this.centerX = centerX;
-        this.centerY = centerY;
-        this.centerZ = centerZ;
-        this.tileRadius = tileRadius;
+        this.Zoom = zoom;
+        this.CenterX = centerX;
+        this.CenterY = centerY;
+        this.CenterZ = centerZ;
+        this.TileRadius = tileRadius;
+        this.IdPropertyName = idPropertyName;
     }
 }

@@ -23,10 +23,10 @@ public class Point : IGeometryObject, IGeoJsonObject
     /// Renders the Point as the geometry associated with the given Feature
     /// </summary>
     /// <param name="feature">The parent feature</param>
-    /// <param name="properties">The layer rendering properties</param>
-    public void Render(GameObject feature, RenderingProperties properties)
+    /// <param name="renderingProperties">The layer rendering properties</param>
+    public void Render(GameObject feature, RenderingProperties renderingProperties)
     {
-        GeoJsonRenderer.RenderNode(feature, coordinates, properties);
+        GeoJsonRenderer.RenderNode(feature, coordinates, renderingProperties);
     }
 
     /// <summary>
