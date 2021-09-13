@@ -34,6 +34,11 @@ public class RenderingProperties
     public string IdPropertyName { get; }
 
     /// <summary>
+    /// Whether to replace the default node rendering with a custom model
+    /// </summary>
+    public bool RenderModel { get; }
+
+    /// <summary>
     /// Node height
     /// </summary>
     public double NodeHeight { get { return 5; } }
@@ -57,7 +62,8 @@ public class RenderingProperties
     /// <param name="centerZ">The Z coordinate of the center of the scene (Meters)</param>
     /// <param name="tileRadius">Radius of tiles to be loaded</param>
     /// <param name="idPropertyName">Name of the Feature's property that may be used as an Id as an alternative to the actual Feature Id if it doesn't exist</param>
-    public RenderingProperties(int zoom, double centerX, double centerY, double centerZ, int tileRadius, string idPropertyName)
+    /// <param name="renderModel">Whether to replace the default node rendering with a custom model</param>
+    public RenderingProperties(int zoom, double centerX, double centerY, double centerZ, int tileRadius, string idPropertyName, bool renderModel)
     {
         this.Zoom = zoom;
         this.CenterX = centerX;
@@ -65,5 +71,6 @@ public class RenderingProperties
         this.CenterZ = centerZ;
         this.TileRadius = tileRadius;
         this.IdPropertyName = idPropertyName;
+        this.RenderModel = renderModel;
     }
 }

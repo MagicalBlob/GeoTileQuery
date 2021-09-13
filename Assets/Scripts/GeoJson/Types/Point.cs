@@ -19,12 +19,7 @@ public class Point : IGeometryObject, IGeoJsonObject
         this.coordinates = coordinates;
     }
 
-    /// <summary>
-    /// Renders the Point as the geometry associated with the given Feature
-    /// </summary>
-    /// <param name="feature">The parent feature</param>
-    /// <param name="renderingProperties">The layer rendering properties</param>
-    public void Render(GameObject feature, RenderingProperties renderingProperties)
+    public void Render(Feature feature, RenderingProperties renderingProperties)
     {
         GeoJsonRenderer.RenderNode(feature, coordinates, renderingProperties);
     }

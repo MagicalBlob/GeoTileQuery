@@ -34,11 +34,11 @@ public class GeoJsonLayer : ILayer
     public void Load()
     {
         //TODO
-        Tuple<int, int> tileCoords = GlobalMercator.MetersToTile(Properties.CenterX, Properties.CenterY, Properties.Zoom);
-        Tuple<int, int> googleTileCoords = GlobalMercator.GoogleTile(tileCoords.Item1, tileCoords.Item2, Properties.Zoom);
-        for (int x = googleTileCoords.Item1 - Properties.TileRadius; x <= googleTileCoords.Item1 + Properties.TileRadius; x++)
+        Vector2Int tileCoords = GlobalMercator.MetersToTile(Properties.CenterX, Properties.CenterY, Properties.Zoom);
+        Vector2Int googleTileCoords = GlobalMercator.GoogleTile(tileCoords.x, tileCoords.y, Properties.Zoom);
+        for (int x = googleTileCoords.x - Properties.TileRadius; x <= googleTileCoords.x + Properties.TileRadius; x++)
         {
-            for (int y = googleTileCoords.Item2 - Properties.TileRadius; y <= googleTileCoords.Item2 + Properties.TileRadius; y++)
+            for (int y = googleTileCoords.y - Properties.TileRadius; y <= googleTileCoords.y + Properties.TileRadius; y++)
             {
                 LoadTile(Properties.Zoom, x, y);
             }

@@ -15,17 +15,17 @@ public class MainController : MonoBehaviour
         Logger.Log("Button pressed!");
         try
         {
-            Tuple<double, double> centerXY = GlobalMercator.LatLonToMeters(38.706808, -9.136164); // TODO: we really need a Vector2D, this Tuple<double, double> everywhere is ridiculous
+            Vector2D center = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
 
-            RenderingProperties geojsonProperties = new RenderingProperties(16, centerXY.Item1, centerXY.Item2, 0, 1, null);
+            RenderingProperties geojsonProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, null, false);
             ILayer geoJsonLayer = new GeoJsonLayer(map, "pracaComercioGeoJson", geojsonProperties);
             geoJsonLayer.Load();
 
-            RenderingProperties shapefileProperties = new RenderingProperties(16, centerXY.Item1, centerXY.Item2, 0, 1, "OBJECTID");
+            RenderingProperties shapefileProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, "OBJECTID", false);
             ILayer shapefileLayer = new GeoJsonLayer(map, "arvoredo2", shapefileProperties);
             shapefileLayer.Load();
 
-            RenderingProperties meshProperties = new RenderingProperties(16, centerXY.Item1, centerXY.Item2, 0, 1, "model");
+            RenderingProperties meshProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, "model", true);
             ILayer meshLayer = new GeoJsonLayer(map, "Lisboa_data", meshProperties);
             meshLayer.Load();
 

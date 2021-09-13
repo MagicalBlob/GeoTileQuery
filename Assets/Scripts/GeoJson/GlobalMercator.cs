@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using UnityEngine;
 
 /*
 ###############################################################################
@@ -178,29 +179,29 @@ public class GlobalMercator
     /// </summary>
     /// <param name="latitude">Input latitude</param>
     /// <param name="longitude">Input longitude</param>
-    /// <returns>Converted XY (meters) tuple</returns>
-    public static Tuple<double, double> LatLonToMeters(double latitude, double longitude)
+    /// <returns>Converted XY (meters) vector</returns>
+    public static Vector2D LatLonToMeters(double latitude, double longitude)
     {
         double metersX = longitude * OriginShift / 180.0;
         double metersY = Math.Log(Math.Tan((90 + latitude) * Math.PI / 360.0)) / (Math.PI / 180.0);
 
         metersY = metersY * OriginShift / 180.0;
-        return new Tuple<double, double>(metersX, metersY);
+        return new Vector2D(metersX, metersY);
     }
 
     /// <summary>
-    /// Converts XY point from Spherical Mercator EPSG:900913 to lat/lon in WGS84 Datum
+    /// Converts XY point from Spherical Mercator EPSG:900913 to lon/lat in WGS84 Datum
     /// </summary>
     /// <param name="metersX">Input X (meters)</param>
     /// <param name="metersY">Input Y (meters)</param>
-    /// <returns>Converted latitude/longitude tuple</returns>
-    public static Tuple<double, double> MetersToLatLon(double metersX, double metersY)
+    /// <returns>Converted longitude/latitude vector</returns>
+    public static Vector2D MetersToLonLat(double metersX, double metersY)
     {
         double longitude = (metersX / OriginShift) * 180.0;
         double latitude = (metersY / OriginShift) * 180.0;
 
         latitude = 180 / Math.PI * (2 * Math.Atan(Math.Exp(latitude * Math.PI / 180.0)) - Math.PI / 2.0);
-        return new Tuple<double, double>(latitude, longitude);
+        return new Vector2D(longitude, latitude);
     }
 
     /// <summary>
@@ -209,13 +210,13 @@ public class GlobalMercator
     /// <param name="pixelsX">Input X (pixels)</param>
     /// <param name="pixelsY">Input Y (pixels)</param>
     /// <param name="zoom">Zoom level</param>
-    /// <returns>Converted XY (meters) tuple</returns>
-    public static Tuple<double, double> PixelsToMeters(double pixelsX, double pixelsY, int zoom)
+    /// <returns>Converted XY (meters) vector</returns>
+    public static Vector2D PixelsToMeters(double pixelsX, double pixelsY, int zoom)
     {
         double resolution = Resolution(zoom);
         double metersX = pixelsX * resolution - OriginShift;
         double metersY = pixelsY * resolution - OriginShift;
-        return new Tuple<double, double>(metersX, metersY);
+        return new Vector2D(metersX, metersY);
     }
 
     /// <summary>
@@ -224,13 +225,13 @@ public class GlobalMercator
     /// <param name="metersX">Input X (meters)</param>
     /// <param name="metersY">Input Y (meters)</param>
     /// <param name="zoom">Zoom level</param>
-    /// <returns>Converted XY (pixels) tuple</returns>
-    public static Tuple<double, double> MetersToPixels(double metersX, double metersY, int zoom)
+    /// <returns>Converted XY (pixels) vector</returns>
+    public static Vector2D MetersToPixels(double metersX, double metersY, int zoom)
     {
         double resolution = Resolution(zoom);
         double pixelsX = (metersX + OriginShift) / resolution;
         double pixelsY = (metersY + OriginShift) / resolution;
-        return new Tuple<double, double>(pixelsX, pixelsY);
+        return new Vector2D(pixelsX, pixelsY);
     }
 
     /// <summary>
@@ -238,12 +239,12 @@ public class GlobalMercator
     /// </summary>
     /// <param name="pixelsX">Input X (pixels)</param>
     /// <param name="pixelsY">Input Y (pixels)</param>
-    /// <returns>Converted XY (tile) tuple</returns>
-    public static Tuple<int, int> PixelsToTile(double pixelsX, double pixelsY)
+    /// <returns>Converted XY (tile) vector</returns>
+    public static Vector2Int PixelsToTile(double pixelsX, double pixelsY)
     {
         int tileX = (int)(Math.Ceiling(pixelsX / TileSize) - 1);
         int tileY = (int)(Math.Ceiling(pixelsY / TileSize) - 1);
-        return new Tuple<int, int>(tileX, tileY);
+        return new Vector2Int(tileX, tileY);
     }
 
     /// <summary>
@@ -252,11 +253,11 @@ public class GlobalMercator
     /// <param name="pixelsX">Input X (pixels)</param>
     /// <param name="pixelsY">Input Y (pixels)</param>
     /// <param name="zoom">Zoom level</param>
-    /// <returns>Moved pixel coordinates tuple</returns>
-    public static Tuple<double, double> PixelsToRaster(double pixelsX, double pixelsY, int zoom)
+    /// <returns>Moved pixel coordinates vector</returns>
+    public static Vector2D PixelsToRaster(double pixelsX, double pixelsY, int zoom)
     {
         int mapSize = TileSize << zoom;
-        return new Tuple<double, double>(pixelsX, mapSize - pixelsY);
+        return new Vector2D(pixelsX, mapSize - pixelsY);
     }
 
     /// <summary>
@@ -265,11 +266,11 @@ public class GlobalMercator
     /// <param name="metersX">Input X (meters)</param>
     /// <param name="metersY">Input Y (meters)</param>
     /// <param name="zoom">Zoom level</param>
-    /// <returns>Converted XY (tile) tuple</returns>
-    public static Tuple<int, int> MetersToTile(double metersX, double metersY, int zoom)
+    /// <returns>Converted XY (tile) vector</returns>
+    public static Vector2Int MetersToTile(double metersX, double metersY, int zoom)
     {
-        Tuple<double, double> pixelsXPixelsY = MetersToPixels(metersX, metersY, zoom);
-        return PixelsToTile(pixelsXPixelsY.Item1, pixelsXPixelsY.Item2);
+        Vector2D pixelsXPixelsY = MetersToPixels(metersX, metersY, zoom);
+        return PixelsToTile(pixelsXPixelsY.X, pixelsXPixelsY.Y);
     }
 
     /// <summary>
@@ -281,9 +282,7 @@ public class GlobalMercator
     /// <returns>Bounds of the given tile in EPSG:900913 coordinates</returns>
     public static Bounds TileBounds(int tileX, int tileY, int zoom)
     {
-        Tuple<double, double> minXMinY = PixelsToMeters(tileX * TileSize, tileY * TileSize, zoom);
-        Tuple<double, double> maxXMaxY = PixelsToMeters((tileX + 1) * TileSize, (tileY + 1) * TileSize, zoom);
-        return new Bounds(minXMinY.Item1, minXMinY.Item2, maxXMaxY.Item1, maxXMaxY.Item2);
+        return new Bounds(PixelsToMeters(tileX * TileSize, tileY * TileSize, zoom), PixelsToMeters((tileX + 1) * TileSize, (tileY + 1) * TileSize, zoom));
     }
 
     /// <summary>
@@ -292,13 +291,11 @@ public class GlobalMercator
     /// <param name="tileX">Input X (tile)</param>
     /// <param name="tileY">Input Y (tile)</param>
     /// <param name="zoom">Zoom level</param>
-    /// <returns>Bounds of the given tile in latutude/longitude using WGS84 datum</returns>
+    /// <returns>Bounds of the given tile in latitude/longitude using WGS84 datum</returns>
     public static Bounds TileLatLonBounds(int tileX, int tileY, int zoom)
     {
         Bounds bounds = TileBounds(tileX, tileY, zoom);
-        Tuple<double, double> minLatMinLon = MetersToLatLon(bounds[0], bounds[1]);
-        Tuple<double, double> maxLatMaxLon = MetersToLatLon(bounds[2], bounds[3]);
-        return new Bounds(minLatMinLon.Item1, minLatMinLon.Item2, maxLatMaxLon.Item1, maxLatMaxLon.Item2);
+        return new Bounds(MetersToLonLat(bounds.Min.X, bounds.Min.Y), MetersToLonLat(bounds.Max.X, bounds.Max.Y));
     }
 
     /// <summary>
@@ -336,9 +333,9 @@ public class GlobalMercator
     /// <param name="tileY">Input Y (tile)</param>
     /// <param name="zoom">Zoom level</param>
     /// <returns>Converted Google Tile coordinates</returns>
-    public static Tuple<int, int> GoogleTile(int tileX, int tileY, int zoom)
+    public static Vector2Int GoogleTile(int tileX, int tileY, int zoom)
     {
-        return new Tuple<int, int>(tileX, (int)(Math.Pow(2, zoom) - 1) - tileY); // coordinate origin is moved from bottom-left to top-left corner of the extent
+        return new Vector2Int(tileX, (int)(Math.Pow(2, zoom) - 1) - tileY); // coordinate origin is moved from bottom-left to top-left corner of the extent
     }
 
     /// <summary>
@@ -372,57 +369,13 @@ public class GlobalMercator
 
     public struct Bounds
     {
-        private double minX;
-        private double minY;
-        private double maxX;
-        private double maxY;
+        public Vector2D Min { get; }
+        public Vector2D Max { get; }
 
-        public Bounds(double minX, double minY, double maxX, double maxY)
+        public Bounds(Vector2D min, Vector2D max)
         {
-            this.minX = minX;
-            this.minY = minY;
-            this.maxX = maxX;
-            this.maxY = maxY;
-        }
-
-        public double this[int index]
-        {
-            get
-            {
-                switch (index)
-                {
-                    case 0:
-                        return this.minX;
-                    case 1:
-                        return this.minY;
-                    case 2:
-                        return this.maxX;
-                    case 3:
-                        return this.maxY;
-                    default:
-                        throw new System.IndexOutOfRangeException("Index out of range of Bounds.");
-                }
-            }
-            set
-            {
-                switch (index)
-                {
-                    case 0:
-                        this.minX = value;
-                        break;
-                    case 1:
-                        this.minY = value;
-                        break;
-                    case 2:
-                        this.maxX = value;
-                        break;
-                    case 3:
-                        this.maxY = value;
-                        break;
-                    default:
-                        throw new System.IndexOutOfRangeException("Index out of range of Bounds.");
-                }
-            }
+            this.Min = min;
+            this.Max = max;
         }
     }
 }

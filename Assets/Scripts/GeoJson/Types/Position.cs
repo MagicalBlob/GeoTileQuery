@@ -51,9 +51,9 @@ public struct Position
         this.z = z;
 
         // Convert from WGS84 to Meters
-        Tuple<double, double> metersXY = GlobalMercator.LatLonToMeters(y, x);
-        this.metersX = metersXY.Item1;
-        this.metersY = metersXY.Item2;
+        Vector2D meters = GlobalMercator.LatLonToMeters(y, x);
+        this.metersX = meters.X;
+        this.metersY = meters.Y;
         this.metersZ = z;
     }
 

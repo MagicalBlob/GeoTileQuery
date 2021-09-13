@@ -13,47 +13,69 @@ public class GeoJsonRenderer
     /// <param name="feature">The parent feature</param>
     /// <param name="coordinates">The node coordinates</param>
     /// <param name="renderingProperties">The layer rendering properties</param>
-    public static void RenderNode(GameObject feature, Position coordinates, RenderingProperties renderingProperties)
+    public static void RenderNode(Feature feature, Position coordinates, RenderingProperties renderingProperties)
     {
         // Setup the gameobject
         GameObject node = new GameObject("Node"); // Create Node gameobject
-        node.transform.parent = feature.transform; // Set it as a child of the Feature gameobject
+        node.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
 
-        // Setup the mesh components
-        MeshRenderer meshRenderer = node.AddComponent<MeshRenderer>();
-        MeshFilter meshFilter = node.AddComponent<MeshFilter>();
-        Mesh mesh = new Mesh();
-
-        // Setup vertices
-        double x = coordinates.GetWorldX(renderingProperties);
-        double y = coordinates.GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
-        double z = coordinates.GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
-        Vector3[] vertices = new Vector3[5] // TODO we're being greedy with vertices here and that means the normals will be messed up since we're sharing vertices between differently oriented faces
+        if (renderingProperties.RenderModel)
         {
+            // Render Node with an existing model instead
+            double x = coordinates.GetWorldX(renderingProperties);
+            double y = coordinates.GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            double z = coordinates.GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            string model = feature.GameObject.name; // TODO this should be coming from the properties but we don't have access to it here, we should pass the Feature object instead of the gameObject and that one should keep the reference to the gameObject
+
+            GameObject prefab = Resources.Load<GameObject>($"Models/{model}");
+            if (prefab != null)
+            {
+                GameObject gameObject = GameObject.Instantiate(prefab);
+                gameObject.name = model;
+                gameObject.transform.parent = node.transform; // Set it as a child of the Node gameobject
+                gameObject.transform.position = new Vector3((float)x, (float)y, (float)z);
+            }
+        }
+        else
+        {
+            // Default Node Rendering
+
+            // Setup the mesh components
+            MeshRenderer meshRenderer = node.AddComponent<MeshRenderer>();
+            MeshFilter meshFilter = node.AddComponent<MeshFilter>();
+            Mesh mesh = new Mesh();
+
+            // Setup vertices
+            double x = coordinates.GetWorldX(renderingProperties);
+            double y = coordinates.GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            double z = coordinates.GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            Vector3[] vertices = new Vector3[5] // TODO we're being greedy with vertices here and that means the normals will be messed up since we're sharing vertices between differently oriented faces
+            {
             new Vector3((float)x, (float)y, (float)z),
             new Vector3((float)(x + renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z + renderingProperties.NodeRadius)),
             new Vector3((float)(x - renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z + renderingProperties.NodeRadius)),
             new Vector3((float)(x - renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z - renderingProperties.NodeRadius)),
             new Vector3((float)(x + renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z - renderingProperties.NodeRadius))
-        };
-        mesh.vertices = vertices;
+            };
+            mesh.vertices = vertices;
 
-        // Setup triangles
-        int[] triangles = new int[18] // 6 * 3
-        {
+            // Setup triangles
+            int[] triangles = new int[18] // 6 * 3
+            {
             0,1,2,
             0,2,3,
             0,3,4,
             0,4,1,
             1,4,3,
             1,3,2
-        };
-        mesh.triangles = triangles;
+            };
+            mesh.triangles = triangles;
 
-        // Assign mesh
-        mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
-        meshFilter.mesh = mesh;
+            // Assign mesh
+            mesh.RecalculateNormals();
+            meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
+            meshFilter.mesh = mesh;
+        }
     }
 
     /// <summary>
@@ -62,11 +84,11 @@ public class GeoJsonRenderer
     /// <param name="feature">The parent feature</param>
     /// <param name="coordinates">The edge coordinates</param>
     /// <param name="renderingProperties">The layer rendering properties</param>
-    public static void RenderEdge(GameObject feature, Position[] coordinates, RenderingProperties renderingProperties)
+    public static void RenderEdge(Feature feature, Position[] coordinates, RenderingProperties renderingProperties)
     {
         // Setup the gameobject
         GameObject edge = new GameObject("Edge"); // Create Edge gameobject
-        edge.transform.parent = feature.transform; // Set it as a child of the Feature gameobject
+        edge.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
 
         // Setup the mesh components
         MeshRenderer meshRenderer = edge.AddComponent<MeshRenderer>();
@@ -131,16 +153,16 @@ public class GeoJsonRenderer
     /// <param name="feature">The parent feature</param>
     /// <param name="coordinates">The area coordinates</param>
     /// <param name="renderingProperties">The layer rendering properties</param>
-    public static void RenderArea(GameObject feature, Position[][] coordinates, RenderingProperties renderingProperties)
+    public static void RenderArea(Feature feature, Position[][] coordinates, RenderingProperties renderingProperties)
     {
         // Setup the gameobject
         GameObject area = new GameObject("Area"); // Create Area gameobject
-        area.transform.parent = feature.transform; // Set it as a child of the Feature gameobject
+        area.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
 
         // Check for empty coordinates array
         if (coordinates.Length == 0)
         {
-            Logger.LogWarning($"{feature.name}: Tried to render an Area with no coordinates");
+            Logger.LogWarning($"{feature.GameObject.name}: Tried to render an Area with no coordinates");
             return;
         }
 

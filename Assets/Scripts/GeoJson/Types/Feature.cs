@@ -23,6 +23,12 @@ public class Feature : IGeoJsonObject
     private string id;
 
     /// <summary>
+    /// Reference to the GameObject representation of this feature
+    /// </summary>
+    public GameObject GameObject { get => gameObject; }
+    private GameObject gameObject;
+
+    /// <summary>
     /// Constructs a new Feature with given geometry, properties and id
     /// </summary>
     /// <param name="geometry">The Feature's geometry</param>
@@ -32,14 +38,6 @@ public class Feature : IGeoJsonObject
     {
         this.geometry = geometry;
         this.properties = properties;
-        /*if (id == null || id.Length == 0)
-        {
-            this.id = $"UnknownID_{System.Guid.NewGuid()}";
-        }
-        else
-        {
-            this.id = id;
-        }*/
         this.id = id;
     }
 
@@ -65,12 +63,12 @@ public class Feature : IGeoJsonObject
             }
         };
 
-        GameObject feature = new GameObject(id);
-        feature.transform.parent = layer.transform;
+        gameObject = new GameObject(id);
+        gameObject.transform.parent = layer.transform;
 
         if (geometry != null)
         {
-            geometry.Render(feature, renderingProperties);
+            geometry.Render(this, renderingProperties);
         }
         else
         {
