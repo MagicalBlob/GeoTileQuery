@@ -1,18 +1,27 @@
+using UnityEngine;
+
 /// <summary>
 /// Represents a map layer
 /// </summary>
 public interface ILayer
 {
     /// <summary>
-    /// The layer name
+    /// The layer's id
     /// </summary>
-    public string Name { get; }
+    string Id { get; }
 
     /// <summary>
-    /// The layer rendering properties
+    /// The layer's rendering properties
     /// </summary>
-    public RenderingProperties Properties { get; }
+    RenderingProperties Properties { get; }
 
-    //TODO description
-    public void Load();
+    /// <summary>
+    /// The layer's GameObject representation
+    /// </summary>
+    GameObject GameObject { get; }
+
+    /// <summary>
+    /// Render the layer
+    /// </summary>
+    void Render();
 }

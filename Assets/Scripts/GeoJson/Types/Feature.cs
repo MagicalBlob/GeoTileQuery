@@ -42,11 +42,11 @@ public class Feature : IGeoJsonObject
     }
 
     /// <summary>
-    /// Renders the Feature as part of the given layer
+    /// Render the Feature
     /// </summary>
-    /// <param name="feature">The Feature's layer</param>
+    /// <param name="tile">The Feature's tile</param>
     /// <param name="renderingProperties">The layer rendering properties</param>
-    public void Render(GameObject layer, RenderingProperties renderingProperties)
+    public void Render(GameObject tile, RenderingProperties renderingProperties)
     {
         if (id == null || id.Length == 0)
         {
@@ -63,8 +63,9 @@ public class Feature : IGeoJsonObject
             }
         };
 
+        // Setup the gameobject
         gameObject = new GameObject(id);
-        gameObject.transform.parent = layer.transform;
+        gameObject.transform.parent = tile.transform;
 
         if (geometry != null)
         {

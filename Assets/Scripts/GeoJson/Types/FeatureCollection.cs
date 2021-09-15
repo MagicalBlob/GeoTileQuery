@@ -21,15 +21,15 @@ public class FeatureCollection : IGeoJsonObject
     }
 
     /// <summary>
-    /// Renders the FeatureCollection as the given layer
+    /// Render the FeatureCollection
     /// </summary>
-    /// <param name="feature">The FeatureCollection's layer</param>
+    /// <param name="tile">The FeatureCollection's tile</param>
     /// <param name="renderingProperties">The layer rendering properties</param>
-    public void Render(GameObject layer, RenderingProperties renderingProperties)
+    public void Render(GameObject tile, RenderingProperties renderingProperties)
     {
         foreach (Feature feature in features)
         {
-            feature.Render(layer, renderingProperties);
+            feature.Render(tile, renderingProperties);
         }
     }
 

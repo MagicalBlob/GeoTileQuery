@@ -286,7 +286,7 @@ public class GlobalMercator
     }
 
     /// <summary>
-    /// Returns bounds of the given tile in latutude/longitude using WGS84 datum
+    /// Returns bounds of the given tile in latitude/longitude using WGS84 datum
     /// </summary>
     /// <param name="tileX">Input X (tile)</param>
     /// <param name="tileY">Input Y (tile)</param>

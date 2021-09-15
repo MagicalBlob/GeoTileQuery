@@ -26,7 +26,7 @@ public class RenderingProperties
     /// <summary>
     /// Radius of tiles to be loaded (eg: if 3, it will load tiles from origin - 3 to origin + 3)
     /// </summary>
-    public int TileRadius { get; }
+    public int TileViewDistance { get; }
 
     /// <summary>
     /// Name of the Feature's property that may be used as an id as an alternative to the actual Feature id if it doesn't exist
@@ -69,7 +69,7 @@ public class RenderingProperties
         this.CenterX = centerX;
         this.CenterY = centerY;
         this.CenterZ = centerZ;
-        this.TileRadius = tileRadius;
+        this.TileViewDistance = tileRadius;
         this.IdPropertyName = idPropertyName;
         this.RenderModel = renderModel;
     }
