@@ -33,7 +33,7 @@ public class MainController : MonoBehaviour
             ILayer terrainLayer = new TerrainLayer(map, "mapbox.terrain-rgb", terrainProperties);
             terrainLayer.Render();
 
-            RenderingProperties geojsonProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, null, false);
+            /*RenderingProperties geojsonProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, null, false);
             ILayer geoJsonLayer = new GeoJsonLayer(map, "pracaComercioGeoJson", geojsonProperties);
             geoJsonLayer.Render();
 
@@ -43,7 +43,7 @@ public class MainController : MonoBehaviour
 
             RenderingProperties meshProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, "model", true);
             ILayer meshLayer = new GeoJsonLayer(map, "Lisboa_data", meshProperties);
-            meshLayer.Render();
+            meshLayer.Render();*/
         }
         catch (Exception e)
         {
