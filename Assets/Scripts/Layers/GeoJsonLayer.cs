@@ -37,7 +37,7 @@ public class GeoJsonLayer : ILayer
 
     public void Render()
     {
-        Vector2Int tileCoords = GlobalMercator.MetersToGoogleTile(Properties.CenterX, Properties.CenterY, Properties.Zoom);
+        Vector2Int tileCoords = GlobalMercator.MetersToGoogleTile(Properties.Origin, Properties.Zoom);
         for (int y = tileCoords.y - Properties.TileViewDistance; y <= tileCoords.y + Properties.TileViewDistance; y++)
         {
             for (int x = tileCoords.x - Properties.TileViewDistance; x <= tileCoords.x + Properties.TileViewDistance; x++)

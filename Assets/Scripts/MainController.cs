@@ -27,22 +27,22 @@ public class MainController : MonoBehaviour
         Logger.Log("Button pressed!");
         try
         {
-            Vector2D center = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
+            Vector2D origin = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
 
-            // TODO the center in the properties should already be a Vector3D | ALSO I THINK WE SWITCHED THE Y AND Z AXIS BECAUSE WE'RE FEEDING THE TILE Y TO Y BUT IT SHOULD BE TO Z!!!
-            RenderingProperties terrainProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, null, false);
-            ILayer terrainLayer = new TerrainLayer(map, "mapbox.terrain-rgb", terrainProperties);
+            RenderingProperties terrainProperties = new RenderingProperties(origin, 16, 1, null, false);
+            ILayer terrainLayer = new TerrainLayer(map, "mapbox.satellite", terrainProperties);
+            //danielflamino.b11llx44
             terrainLayer.Render();
 
-            /*RenderingProperties geojsonProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, null, false);
+            /*RenderingProperties geojsonProperties = new RenderingProperties(origin, 16, 1, null, false);
             ILayer geoJsonLayer = new GeoJsonLayer(map, "pracaComercioGeoJson", geojsonProperties);
             geoJsonLayer.Render();
 
-            RenderingProperties shapefileProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, "OBJECTID", false);
+            RenderingProperties shapefileProperties = new RenderingProperties(origin, 16, 1, "OBJECTID", false);
             ILayer shapefileLayer = new GeoJsonLayer(map, "arvoredo2", shapefileProperties);
             shapefileLayer.Render();
 
-            RenderingProperties meshProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, "model", true);
+            RenderingProperties meshProperties = new RenderingProperties(origin, 16, 1, "model", true);
             ILayer meshLayer = new GeoJsonLayer(map, "Lisboa_data", meshProperties);
             meshLayer.Render();*/
         }

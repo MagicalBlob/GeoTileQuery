@@ -58,33 +58,32 @@ public struct Position
     }
 
     /// <summary>
-    /// Get the X coordinate in the Unity scene (in Meters relative to scene center)
+    /// Get the X coordinate in the Unity scene (in Meters relative to the layer origin)
     /// </summary>
-    /// <param name="properties">The layer rendering properties</param>
-    /// <returns></returns>
-    public double GetWorldX(RenderingProperties properties)
+    /// <param name="originX">The layer's origin X coordinate</param>
+    /// <returns>X coordinate in the Unity scene</returns>
+    public double GetRelativeX(double originX)
     {
-        return metersX - properties.CenterX;
+        return metersX - originX;
     }
 
     /// <summary>
-    /// Get the Y coordinate in the Unity scene (in Meters relative to scene center)
+    /// Get the Y coordinate in the Unity scene (in Meters relative to the layer origin)
     /// </summary>
-    /// <param name="properties">The layer rendering properties</param>
-    /// <returns></returns>
-    public double GetWorldY(RenderingProperties properties)
+    /// <param name="originY">The layer's origin Y coordinate</param>
+    /// <returns>Y coordinate in the Unity scene</returns>
+    public double GetRelativeY(double originY)
     {
-        return metersY - properties.CenterY;
+        return metersY - originY;
     }
 
     /// <summary>
-    /// Get the Z coordinate in the Unity scene (in Meters relative to scene center)
+    /// Get the Z coordinate in the Unity scene (in Meters relative to the layer origin)
     /// </summary>
-    /// <param name="properties">The layer rendering properties</param>
-    /// <returns></returns>
-    public double GetWorldZ(RenderingProperties properties)
+    /// <returns>Z coordinate in the Unity scene</returns>
+    public double GetRelativeZ()
     {
-        return metersZ - properties.CenterZ;
+        return metersZ;
     }
 
     /// <summary>

@@ -222,28 +222,26 @@ public class GlobalMercator
     /// <summary>
     /// Converts EPSG:900913 to pyramid pixel coordinates in given zoom level
     /// </summary>
-    /// <param name="metersX">Input X (meters)</param>
-    /// <param name="metersY">Input Y (meters)</param>
+    /// <param name="meters">Input XY vector (meters)</param>
     /// <param name="zoom">Zoom level</param>
     /// <returns>Converted XY (pixels) vector</returns>
-    public static Vector2D MetersToPixels(double metersX, double metersY, int zoom)
+    public static Vector2D MetersToPixels(Vector2D meters, int zoom)
     {
         double resolution = Resolution(zoom);
-        double pixelsX = (metersX + OriginShift) / resolution;
-        double pixelsY = (metersY + OriginShift) / resolution;
+        double pixelsX = (meters.X + OriginShift) / resolution;
+        double pixelsY = (meters.Y + OriginShift) / resolution;
         return new Vector2D(pixelsX, pixelsY);
     }
 
     /// <summary>
     /// Returns a tile covering region in given pixel coordinates
     /// </summary>
-    /// <param name="pixelsX">Input X (pixels)</param>
-    /// <param name="pixelsY">Input Y (pixels)</param>
-    /// <returns>Converted XY (tile) vector</returns>
-    public static Vector2Int PixelsToTile(double pixelsX, double pixelsY)
+    /// <param name="pixels">Input XY vector (pixels)</param>
+    /// <returns>Converted XY (TMS tile) vector</returns>
+    public static Vector2Int PixelsToTile(Vector2D pixels)
     {
-        int tileX = (int)(Math.Ceiling(pixelsX / TileSize) - 1);
-        int tileY = (int)(Math.Ceiling(pixelsY / TileSize) - 1);
+        int tileX = (int)(Math.Ceiling(pixels.X / TileSize) - 1);
+        int tileY = (int)(Math.Ceiling(pixels.Y / TileSize) - 1);
         return new Vector2Int(tileX, tileY);
     }
 
@@ -263,14 +261,12 @@ public class GlobalMercator
     /// <summary>
     /// Returns TMS tile for given mercator coordinates
     /// </summary>
-    /// <param name="metersX">Input X (meters)</param>
-    /// <param name="metersY">Input Y (meters)</param>
+    /// <param name="meters">Input XY vector (meters)</param>
     /// <param name="zoom">Zoom level</param>
     /// <returns>Converted XY (TMS tile) vector</returns>
-    public static Vector2Int MetersToTMSTile(double metersX, double metersY, int zoom)
+    public static Vector2Int MetersToTMSTile(Vector2D meters, int zoom)
     {
-        Vector2D pixelsXPixelsY = MetersToPixels(metersX, metersY, zoom);
-        return PixelsToTile(pixelsXPixelsY.X, pixelsXPixelsY.Y);
+        return PixelsToTile(MetersToPixels(meters, zoom));
     }
 
     /// <summary>
@@ -379,13 +375,12 @@ public class GlobalMercator
     /// <summary>
     /// Returns tile for given mercator coordinates
     /// </summary>
-    /// <param name="metersX">Input X (meters)</param>
-    /// <param name="metersY">Input Y (meters)</param>
+    /// <param name="meters">Input XY vector (meters)</param>
     /// <param name="zoom">Zoom level</param>
     /// <returns>Converted XY (Google tile) vector</returns>
-    public static Vector2Int MetersToGoogleTile(double metersX, double metersY, int zoom)//(int tileX, int tileY, int zoom)
+    public static Vector2Int MetersToGoogleTile(Vector2D meters, int zoom)//(int tileX, int tileY, int zoom)
     {
-        Vector2Int tileCoords = GlobalMercator.MetersToTMSTile(metersX, metersY, zoom);
+        Vector2Int tileCoords = GlobalMercator.MetersToTMSTile(meters, zoom);
         tileCoords.y = (int)(Math.Pow(2, zoom) - 1) - tileCoords.y; // coordinate origin is moved from bottom-left to top-left corner of the extent
         return tileCoords;
     }

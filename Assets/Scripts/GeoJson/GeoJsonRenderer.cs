@@ -22,9 +22,9 @@ public class GeoJsonRenderer
         if (renderingProperties.RenderModel)
         {
             // Render Node with an existing model instead
-            double x = coordinates.GetWorldX(renderingProperties);
-            double y = coordinates.GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
-            double z = coordinates.GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            double x = coordinates.GetRelativeX(renderingProperties.Origin.X);
+            double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+            double z = coordinates.GetRelativeY(renderingProperties.Origin.Y); // GeoJSON uses z for height, while Unity uses y
             string model = feature.GameObject.name; // TODO this should be coming from the properties but we don't have access to it here, we should pass the Feature object instead of the gameObject and that one should keep the reference to the gameObject
 
             GameObject prefab = Resources.Load<GameObject>($"Models/{model}");
@@ -46,9 +46,9 @@ public class GeoJsonRenderer
             Mesh mesh = new Mesh();
 
             // Setup vertices
-            double x = coordinates.GetWorldX(renderingProperties);
-            double y = coordinates.GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
-            double z = coordinates.GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            double x = coordinates.GetRelativeX(renderingProperties.Origin.X);
+            double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+            double z = coordinates.GetRelativeY(renderingProperties.Origin.Y); // GeoJSON uses z for height, while Unity uses y
             Vector3[] vertices = new Vector3[5] // TODO we're being greedy with vertices here and that means the normals will be messed up since we're sharing vertices between differently oriented faces
             {
             new Vector3((float)x, (float)y, (float)z),
@@ -101,14 +101,14 @@ public class GeoJsonRenderer
         for (int segment = 0; segment < numSegments; segment++)
         {
             // Start point of segment AB
-            double ax = coordinates[segment].GetWorldX(renderingProperties);
-            double ay = coordinates[segment].GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
-            double az = coordinates[segment].GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            double ax = coordinates[segment].GetRelativeX(renderingProperties.Origin.X);
+            double ay = coordinates[segment].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+            double az = coordinates[segment].GetRelativeY(renderingProperties.Origin.Y); // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
-            double bx = coordinates[segment + 1].GetWorldX(renderingProperties);
-            double by = coordinates[segment + 1].GetWorldZ(renderingProperties); // GeoJSON uses z for height, while Unity uses y
-            double bz = coordinates[segment + 1].GetWorldY(renderingProperties); // GeoJSON uses z for height, while Unity uses y
+            double bx = coordinates[segment + 1].GetRelativeX(renderingProperties.Origin.X);
+            double by = coordinates[segment + 1].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+            double bz = coordinates[segment + 1].GetRelativeY(renderingProperties.Origin.Y); // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB
             double abX = bx - ax;

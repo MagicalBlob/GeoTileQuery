@@ -19,7 +19,7 @@ public class GeoJsonTile : ITile
 
     public Bounds Bounds { get; }
 
-    public Vector2D Center { get; }
+    public Vector2D Center { get { return Bounds.Center; } }
 
     public GameObject GameObject { get; }
 
@@ -35,8 +35,7 @@ public class GeoJsonTile : ITile
         this.X = x;
         this.Y = y;
         // Calculate tile bounds and center
-        this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom);
-        this.Center = Bounds.Center();
+        this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom).Relative(Layer.Properties.Origin);
 
         // Setup the gameobject
         GameObject = new GameObject($"{Id}");

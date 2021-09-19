@@ -870,9 +870,9 @@ public class EarcutLib
         {
             for (int position = 0; position < coordinates[ring].Length; position++)
             {
-                vertices.Add(coordinates[ring][position].GetWorldX(properties));
-                vertices.Add(coordinates[ring][position].GetWorldY(properties));
-                vertices.Add(coordinates[ring][position].GetWorldZ(properties));
+                vertices.Add(coordinates[ring][position].GetRelativeX(properties.Origin.X));
+                vertices.Add(coordinates[ring][position].GetRelativeY(properties.Origin.Y));
+                vertices.Add(coordinates[ring][position].GetRelativeZ());
             }
 
         }

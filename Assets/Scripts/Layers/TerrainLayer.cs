@@ -40,7 +40,7 @@ public class TerrainLayer : ILayer
         int tmpY = Properties.TileViewDistance;
         int tmpX;
 
-        Vector2Int tileCoords = GlobalMercator.MetersToGoogleTile(Properties.CenterX, Properties.CenterY, Properties.Zoom);
+        Vector2Int tileCoords = GlobalMercator.MetersToGoogleTile(Properties.Origin, Properties.Zoom);
         for (int y = tileCoords.y - Properties.TileViewDistance; y <= tileCoords.y + Properties.TileViewDistance; y++)
         {
             tmpX = -Properties.TileViewDistance;
