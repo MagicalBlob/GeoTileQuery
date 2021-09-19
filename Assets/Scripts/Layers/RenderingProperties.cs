@@ -11,20 +11,20 @@ public class RenderingProperties
     /// <summary>
     /// The X coordinate of the center of the scene (Meters)
     /// </summary>
-    public double CenterX { get; }
+    public double CenterX { get; } // TODO: These should all be components of a Vector3D (called Origin)
 
     /// <summary>
     /// The Y coordinate of the center of the scene (Meters)
     /// </summary>
-    public double CenterY { get; }
+    public double CenterY { get; } // TODO: These should all be components of a Vector3D (called Origin)
 
     /// <summary>
     /// The Z coordinate of the center of the scene (Meters)
     /// </summary>
-    public double CenterZ { get; }
+    public double CenterZ { get; } // TODO: These should all be components of a Vector3D (called Origin)
 
     /// <summary>
-    /// Radius of tiles to be loaded (eg: if 3, it will load tiles from origin - 3 to origin + 3)
+    /// Radius of tiles to be loaded (eg: if 3, it will load tiles from origin - 3 to origin + 3 in both axis)
     /// </summary>
     public int TileViewDistance { get; }
 
@@ -52,6 +52,16 @@ public class RenderingProperties
     /// Edge width
     /// </summary>
     public double EdgeWidth { get { return 1; } } //0.025; //TODO check the rendering code but I think this might actually be rendering as half the width
+
+    /// <summary>
+    /// Number of divisions that each terrain tile will be split (eg: if 4, each terrain tile will be split into 4 x 4 subdivisions)
+    /// </summary>
+    public int TerrainTileDivisions { get { return 4; } }
+
+    /// <summary>
+    /// Render terrain mesh using elevation data
+    /// </summary>
+    public bool ElevatedTerrain { get { return true; } }
 
     /// <summary>
     /// Create a new rendering properties object

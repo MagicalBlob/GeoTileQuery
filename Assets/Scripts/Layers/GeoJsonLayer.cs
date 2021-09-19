@@ -6,7 +6,10 @@ using UnityEngine;
 /// </summary>
 public class GeoJsonLayer : ILayer
 {
-    private List<Tile> tiles; // TODO
+    /// <summary>
+    /// The loaded tiles in the layer
+    /// </summary>
+    private Dictionary<string, GeoJsonTile> tiles;
 
     public string Id { get; }
 
@@ -29,19 +32,18 @@ public class GeoJsonLayer : ILayer
         GameObject = new GameObject(Id);
         GameObject.transform.parent = map.transform; // Set it as a child of the map gameobject
 
-        tiles = new List<Tile>(); // TODO
+        tiles = new Dictionary<string, GeoJsonTile>();
     }
 
     public void Render()
     {
-        //TODO
-        Vector2Int tileCoords = GlobalMercator.MetersToTile(Properties.CenterX, Properties.CenterY, Properties.Zoom);
-        Vector2Int googleTileCoords = GlobalMercator.GoogleTile(tileCoords.x, tileCoords.y, Properties.Zoom);
-        for (int x = googleTileCoords.x - Properties.TileViewDistance; x <= googleTileCoords.x + Properties.TileViewDistance; x++)
+        Vector2Int tileCoords = GlobalMercator.MetersToGoogleTile(Properties.CenterX, Properties.CenterY, Properties.Zoom);
+        for (int y = tileCoords.y - Properties.TileViewDistance; y <= tileCoords.y + Properties.TileViewDistance; y++)
         {
-            for (int y = googleTileCoords.y - Properties.TileViewDistance; y <= googleTileCoords.y + Properties.TileViewDistance; y++)
+            for (int x = tileCoords.x - Properties.TileViewDistance; x <= tileCoords.x + Properties.TileViewDistance; x++)
             {
-                tiles.Add(new Tile(this, x, y)); // Add to the list of tiles
+                GeoJsonTile tile = new GeoJsonTile(this, x, y);
+                tiles.Add(tile.Id, tile);
             }
         }
     }

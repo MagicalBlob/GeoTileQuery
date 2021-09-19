@@ -29,6 +29,7 @@ public class MainController : MonoBehaviour
         {
             Vector2D center = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
 
+            // TODO the center in the properties should already be a Vector3D | ALSO I THINK WE SWITCHED THE Y AND Z AXIS BECAUSE WE'RE FEEDING THE TILE Y TO Y BUT IT SHOULD BE TO Z!!!
             RenderingProperties terrainProperties = new RenderingProperties(16, center.X, center.Y, 0, 1, null, false);
             ILayer terrainLayer = new TerrainLayer(map, "mapbox.terrain-rgb", terrainProperties);
             terrainLayer.Render();

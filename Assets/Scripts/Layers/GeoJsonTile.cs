@@ -3,51 +3,40 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
-/// Represents a map tile
+/// Represents a GeoJson layer's tile
 /// </summary>
-public class Tile
+public class GeoJsonTile : ITile
 {
-    /// <summary>
-    /// The tile's layer
-    /// </summary>
     public ILayer Layer { get; }
 
-    /// <summary>
-    /// The tile's zoom level
-    /// </summary>
     public int Zoom { get { return Layer.Properties.Zoom; } }
 
-    /// <summary>
-    /// The tile's X coordinate
-    /// </summary>
     public int X { get; }
 
-    /// <summary>
-    /// The tile's Y coordinate
-    /// </summary>
     public int Y { get; }
 
-    /// <summary>
-    /// The tile ID
-    /// </summary>
     public string Id { get { return $"{Zoom}/{X}/{Y}"; } }
 
-    /// <summary>
-    /// The tile's GameObject representation
-    /// </summary>
+    public Bounds Bounds { get; }
+
+    public Vector2D Center { get; }
+
     public GameObject GameObject { get; }
 
     /// <summary>
-    /// Constructs a new map tile
+    /// Constructs a new GeoJson tile
     /// </summary>
     /// <param name="layer">The layer where the tile belongs</param>
     /// <param name="x">Tile's X coordinate</param>
     /// <param name="y">Tile's Y coordinate</param>
-    public Tile(ILayer layer, int x, int y)
+    public GeoJsonTile(ILayer layer, int x, int y)
     {
         this.Layer = layer;
         this.X = x;
         this.Y = y;
+        // Calculate tile bounds and center
+        this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom);
+        this.Center = Bounds.Center();
 
         // Setup the gameobject
         GameObject = new GameObject($"{Id}");

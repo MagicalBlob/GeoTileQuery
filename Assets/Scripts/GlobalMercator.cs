@@ -169,7 +169,7 @@ public class GlobalMercator
     */
 
     //Initialize the TMS Global Mercator pyramid
-    private const int TileSize = 256;
+    public const int TileSize = 256;
     private const int EarthRadius = 6378137;
     private const double InitialResolution = 2 * Math.PI * EarthRadius / TileSize; // 156543.03392804062 for tileSize 256 pixels
     private const double OriginShift = 2 * Math.PI * EarthRadius / 2.0; // 20037508.342789244
@@ -261,40 +261,66 @@ public class GlobalMercator
     }
 
     /// <summary>
-    /// Returns tile for given mercator coordinates
+    /// Returns TMS tile for given mercator coordinates
     /// </summary>
     /// <param name="metersX">Input X (meters)</param>
     /// <param name="metersY">Input Y (meters)</param>
     /// <param name="zoom">Zoom level</param>
-    /// <returns>Converted XY (tile) vector</returns>
-    public static Vector2Int MetersToTile(double metersX, double metersY, int zoom)
+    /// <returns>Converted XY (TMS tile) vector</returns>
+    public static Vector2Int MetersToTMSTile(double metersX, double metersY, int zoom)
     {
         Vector2D pixelsXPixelsY = MetersToPixels(metersX, metersY, zoom);
         return PixelsToTile(pixelsXPixelsY.X, pixelsXPixelsY.Y);
     }
 
     /// <summary>
-    /// Returns bounds of the given tile in EPSG:900913 coordinates
+    /// Returns bounds of the given TMS tile in EPSG:900913 coordinates
     /// </summary>
-    /// <param name="tileX">Input X (tile)</param>
-    /// <param name="tileY">Input Y (tile)</param>
+    /// <param name="tileX">Input X (TMS tile)</param>
+    /// <param name="tileY">Input Y (TMS tile)</param>
     /// <param name="zoom">Zoom level</param>
-    /// <returns>Bounds of the given tile in EPSG:900913 coordinates</returns>
-    public static Bounds TileBounds(int tileX, int tileY, int zoom)
+    /// <returns>Bounds of the given TMS tile in EPSG:900913 coordinates</returns>
+    public static Bounds TMSTileBounds(int tileX, int tileY, int zoom)
     {
         return new Bounds(PixelsToMeters(tileX * TileSize, tileY * TileSize, zoom), PixelsToMeters((tileX + 1) * TileSize, (tileY + 1) * TileSize, zoom));
     }
 
     /// <summary>
-    /// Returns bounds of the given tile in latitude/longitude using WGS84 datum
+    /// Returns bounds of the given Google tile in EPSG:900913 coordinates
     /// </summary>
-    /// <param name="tileX">Input X (tile)</param>
-    /// <param name="tileY">Input Y (tile)</param>
+    /// <param name="tileX">Input X (Google tile)</param>
+    /// <param name="tileY">Input Y (Googletile)</param>
     /// <param name="zoom">Zoom level</param>
-    /// <returns>Bounds of the given tile in latitude/longitude using WGS84 datum</returns>
-    public static Bounds TileLatLonBounds(int tileX, int tileY, int zoom)
+    /// <returns>Bounds of the given Google tile in EPSG:900913 coordinates</returns>
+    public static Bounds GoogleTileBounds(int tileX, int tileY, int zoom)
     {
-        Bounds bounds = TileBounds(tileX, tileY, zoom);
+        Vector2Int tmsCoords = GoogleTileToTMS(tileX, tileY, zoom);
+        return TMSTileBounds(tmsCoords.x, tmsCoords.y, zoom);
+    }
+
+    /// <summary>
+    /// Returns bounds of the given TMS tile in latitude/longitude using WGS84 datum
+    /// </summary>
+    /// <param name="tileX">Input X (TMS tile)</param>
+    /// <param name="tileY">Input Y (TMS tile)</param>
+    /// <param name="zoom">Zoom level</param>
+    /// <returns>Bounds of the given TMS tile in latitude/longitude using WGS84 datum</returns>
+    public static Bounds TMSTileLatLonBounds(int tileX, int tileY, int zoom)
+    {
+        Bounds bounds = TMSTileBounds(tileX, tileY, zoom);
+        return new Bounds(MetersToLonLat(bounds.Min.X, bounds.Min.Y), MetersToLonLat(bounds.Max.X, bounds.Max.Y));
+    }
+
+    /// <summary>
+    /// Returns bounds of the given Google tile in latitude/longitude using WGS84 datum
+    /// </summary>
+    /// <param name="tileX">Input X (Google tile)</param>
+    /// <param name="tileY">Input Y (Google tile)</param>
+    /// <param name="zoom">Zoom level</param>
+    /// <returns>Bounds of the given Google tile in latitude/longitude using WGS84 datum</returns>
+    public static Bounds GoogleTileLatLonBounds(int tileX, int tileY, int zoom)
+    {
+        Bounds bounds = GoogleTileBounds(tileX, tileY, zoom);
         return new Bounds(MetersToLonLat(bounds.Min.X, bounds.Min.Y), MetersToLonLat(bounds.Max.X, bounds.Max.Y));
     }
 
@@ -329,8 +355,8 @@ public class GlobalMercator
     /// <summary>
     /// Converts TMS tile coordinates to Google Tile coordinates
     /// </summary>
-    /// <param name="tileX">Input X (tile)</param>
-    /// <param name="tileY">Input Y (tile)</param>
+    /// <param name="tileX">Input X (TMS tile)</param>
+    /// <param name="tileY">Input Y (TMS tile)</param>
     /// <param name="zoom">Zoom level</param>
     /// <returns>Converted Google Tile coordinates</returns>
     public static Vector2Int GoogleTile(int tileX, int tileY, int zoom)
@@ -339,10 +365,36 @@ public class GlobalMercator
     }
 
     /// <summary>
+    /// Converts Google Tile coordinates to TMS tile coordinates
+    /// </summary>
+    /// <param name="tileX">Input X (Google tile)</param>
+    /// <param name="tileY">Input Y (Google tile)</param>
+    /// <param name="zoom">Zoom level</param>
+    /// <returns>Converted TMS tile coordinates</returns>
+    public static Vector2Int GoogleTileToTMS(int tileX, int tileY, int zoom)
+    {
+        return new Vector2Int(tileX, (int)(Math.Pow(2, zoom) - 1) - tileY); // coordinate origin is moved from top-left to bottom-left corner of the extent
+    }
+
+    /// <summary>
+    /// Returns tile for given mercator coordinates
+    /// </summary>
+    /// <param name="metersX">Input X (meters)</param>
+    /// <param name="metersY">Input Y (meters)</param>
+    /// <param name="zoom">Zoom level</param>
+    /// <returns>Converted XY (Google tile) vector</returns>
+    public static Vector2Int MetersToGoogleTile(double metersX, double metersY, int zoom)//(int tileX, int tileY, int zoom)
+    {
+        Vector2Int tileCoords = GlobalMercator.MetersToTMSTile(metersX, metersY, zoom);
+        tileCoords.y = (int)(Math.Pow(2, zoom) - 1) - tileCoords.y; // coordinate origin is moved from bottom-left to top-left corner of the extent
+        return tileCoords;
+    }
+
+    /// <summary>
     /// Converts TMS tile coordinates to Microsoft QuadTree
     /// </summary>
-    /// <param name="tileX">Input X (tile)</param>
-    /// <param name="tileY">Input Y (tile)</param>
+    /// <param name="tileX">Input X (TMS tile)</param>
+    /// <param name="tileY">Input Y (TMS tile)</param>
     /// <param name="zoom">Zoom level</param>
     /// <returns>Converted Microsoft QuadTree key</returns>
     public static string QuadTree(int tileX, int tileY, int zoom)
@@ -365,17 +417,5 @@ public class GlobalMercator
         }
 
         return quadKey.ToString();
-    }
-
-    public struct Bounds
-    {
-        public Vector2D Min { get; }
-        public Vector2D Max { get; }
-
-        public Bounds(Vector2D min, Vector2D max)
-        {
-            this.Min = min;
-            this.Max = max;
-        }
     }
 }
