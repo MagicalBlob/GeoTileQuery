@@ -37,20 +37,14 @@ public class TerrainLayer : ILayer
 
     public void Render()
     {
-        int tmpY = Properties.TileViewDistance;
-        int tmpX;
-
         Vector2Int tileCoords = GlobalMercator.MetersToGoogleTile(Properties.Origin, Properties.Zoom);
         for (int y = tileCoords.y - Properties.TileViewDistance; y <= tileCoords.y + Properties.TileViewDistance; y++)
         {
-            tmpX = -Properties.TileViewDistance;
             for (int x = tileCoords.x - Properties.TileViewDistance; x <= tileCoords.x + Properties.TileViewDistance; x++)
             {
-                TerrainTile tile = new TerrainTile(this, x, y, tmpY, tmpX);
+                TerrainTile tile = new TerrainTile(this, x, y);
                 tiles.Add(tile.Id, tile);
-                tmpX++;
             }
-            tmpY--;
         }
     }
 }

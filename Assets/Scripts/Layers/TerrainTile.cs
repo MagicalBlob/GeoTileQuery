@@ -1,4 +1,3 @@
-using System.Net.Http;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -24,7 +23,7 @@ public class TerrainTile : ITile
 
     public GameObject GameObject { get; }
 
-    private int tmpX, tmpY;
+    private Texture2D tmpHeighmapThing; // TODO probably a better idea to only store the converted data
 
     /// <summary>
     /// Constructs a new Terrain tile
@@ -32,16 +31,13 @@ public class TerrainTile : ITile
     /// <param name="layer">The layer where the tile belongs</param>
     /// <param name="x">Tile's X coordinate</param>
     /// <param name="y">Tile's Y coordinate</param>
-    public TerrainTile(ILayer layer, int x, int y, int tmpY, int tmpX)
+    public TerrainTile(ILayer layer, int x, int y)
     {
         this.Layer = layer;
         this.X = x;
         this.Y = y;
         // Calculate tile bounds
         this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom).Relative(Layer.Properties.Origin);
-
-        this.tmpY = tmpY;
-        this.tmpX = tmpX;
 
         // Setup the gameobject
         GameObject = new GameObject($"{Id}");
@@ -51,67 +47,64 @@ public class TerrainTile : ITile
         Load();
     }
 
-    //TODO description
+    /// <summary>
+    /// Load the tile
+    /// </summary>
     async void Load()
     {
-        string heightUrl = $"https://api.mapbox.com/v4/mapbox.terrain-rgb/{Zoom}/{X}/{Y}.pngraw?access_token={MainController.MapboxAccessToken}";
-        Load(heightUrl);
-        //string rasterUrl = $"https://api.mapbox.com/v4/{Layer.Id}/{Zoom}/{X}/{Y}.jpg70?access_token={MainController.MapboxAccessToken}";
-        //Load(rasterUrl);
-        /*
-        GetTexture("terrain");
-        GetTexture("satellite");
-        BuildMesh(terrain);
-        object material = satellite
-        */
-    }
+        // Request heightmap
+        string heightmapUrl = $"https://api.mapbox.com/v4/mapbox.terrain-rgb/{Zoom}/{X}/{Y}.pngraw?access_token={MainController.MapboxAccessToken}";
+        using UnityWebRequest heightmapReq = UnityWebRequestTexture.GetTexture(heightmapUrl);
+        UnityWebRequestAsyncOperation heightmapOp = heightmapReq.SendWebRequest();
 
-    //TODO description
-    async void Load(string url)
-    {
-        using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(url))
+        // Request raster texture
+        string rasterUrl = $"https://api.mapbox.com/v4/{Layer.Id}/{Zoom}/{X}/{Y}.jpg?access_token={MainController.MapboxAccessToken}";
+        using UnityWebRequest rasterReq = UnityWebRequestTexture.GetTexture(rasterUrl);
+        UnityWebRequestAsyncOperation rasterOp = rasterReq.SendWebRequest();
+
+        // Wait for the requests     
+        while (!heightmapOp.isDone || !rasterOp.isDone)
         {
-            UnityWebRequestAsyncOperation operation = request.SendWebRequest();
-            while (!operation.isDone)
-            {
-                await Task.Yield();
-            }
+            await Task.Yield();
+        }
 
-            if (request.result == UnityWebRequest.Result.Success)
+        // Check for errors
+        if (heightmapReq.result != UnityWebRequest.Result.Success)
+        {
+            Logger.LogError(heightmapReq.error);
+        }
+        if (rasterReq.result != UnityWebRequest.Result.Success)
+        {
+            Logger.LogError(rasterReq.error);
+        }
+
+        // Render the tile if requests were successful
+        if (heightmapReq.result == UnityWebRequest.Result.Success && (rasterReq.result == UnityWebRequest.Result.Success))
+        {
+            tmpHeighmapThing = DownloadHandlerTexture.GetContent(heightmapReq);
+            tmpHeighmapThing.wrapMode = TextureWrapMode.Clamp; // TODO actually take care of the edges
+
+            Texture2D rasterTexture = DownloadHandlerTexture.GetContent(rasterReq);
+            rasterTexture.wrapMode = TextureWrapMode.Clamp;
+
+            // Render the tile
+            if (Layer.Properties.ElevatedTerrain)
             {
-                Texture2D texture = DownloadHandlerTexture.GetContent(request);
-                // Render the tile
-                Render(texture);
+                RenderElevatedTerrain(rasterTexture);
             }
             else
             {
-                Logger.LogError(request.error);
+                RenderFlatTerrain(rasterTexture);
             }
         }
     }
 
-    //TODO description
-    private void Render(Texture2D texture)
-    {
-        RenderPlane(texture);
-        //RenderFlatTerrain(texture);
-        RenderElevatedTerrain(texture);
-    }
-
-    private void RenderPlane(Texture2D texture)
-    {
-        GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        gameObject.name = $"{tmpX}/{tmpY}";
-        int step = Layer.Properties.TileViewDistance * 2 + 1;
-        gameObject.transform.position = new Vector3(10 * tmpX, 10, 10 * tmpY);
-        gameObject.transform.eulerAngles = new Vector3(0, -180, 0);
-        gameObject.GetComponent<Renderer>().material.mainTexture = texture;
-    }
-
-    //TODO description
+    /// <summary>
+    /// Render the terrain as a flat plane
+    /// </summary>
+    /// <param name="texture">The raster texture</param>
     private void RenderFlatTerrain(Texture2D texture)
     {
-        Logger.Log($"Google Coords: ({X},{Y}) | Google Bounds: {Bounds} | Center: {Center}");
         GameObject.transform.position = new Vector3((float)Bounds.Min.X, 0, (float)Bounds.Min.Y);
 
         double tileWidth = Bounds.Width;
@@ -166,20 +159,16 @@ public class TerrainTile : ITile
         // Assign mesh
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
-        meshFilter.mesh = mesh;
-
         GameObject.GetComponent<Renderer>().material.mainTexture = texture;
-        double terrainHeight = MapboxHeightFromColor(texture.GetPixel(0, 0));
-        Logger.Log(terrainHeight);
-        Logger.Log($"Texture is {texture.width} x {texture.height}");
+        meshFilter.mesh = mesh;
     }
 
-    //TODO description
+    /// <summary>
+    /// Render the terrain with elevation using the heightmap data
+    /// </summary>
+    /// <param name="texture">The raster texture</param>
     private void RenderElevatedTerrain(Texture2D texture)
     {
-        tmpHeighmapThing = texture;
-        tmpHeighmapThing.wrapMode = TextureWrapMode.Mirror;
-        Logger.Log($"Google Coords: ({X},{Y}) | Google Bounds: {Bounds} | Center: {Center}");
         GameObject.transform.position = new Vector3((float)Bounds.Min.X, 0, (float)Bounds.Min.Y);
 
         double tileWidth = Bounds.Width;
@@ -249,21 +238,28 @@ public class TerrainTile : ITile
                 // Assign mesh
                 mesh.RecalculateNormals();
                 meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
-                meshFilter.mesh = mesh;
-
                 divisionGameObject.GetComponent<Renderer>().material.mainTexture = texture;
+                meshFilter.mesh = mesh;
             }
         }
-        Logger.Log($"Texture is {texture.width} x {texture.height}");
     }
 
-    private Texture2D tmpHeighmapThing;
-
+    /// <summary>
+    /// Get height at given pixel location
+    /// </summary>
+    /// <param name="pixelX">The pixel X coordinate</param>
+    /// <param name="pixelY">The pixel Y coordinate</param>
+    /// <returns>Height at given location (meters)</returns>
     private double GetHeight(int pixelX, int pixelY)
     {
         return MapboxHeightFromColor(tmpHeighmapThing.GetPixel(pixelX, pixelY));
     }
 
+    /// <summary>
+    /// Decode pixel values to height values. The height will be returned in meters
+    /// </summary>
+    /// <param name="color">The queried location's pixel</param>
+    /// <returns>Height at location (meters)</returns>
     private double MapboxHeightFromColor(Color color)
     {
         // Convert from 0..1 to 0..255

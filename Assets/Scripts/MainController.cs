@@ -31,7 +31,7 @@ public class MainController : MonoBehaviour
 
             RenderingProperties terrainProperties = new RenderingProperties(origin, 16, 1, null, false);
             ILayer terrainLayer = new TerrainLayer(map, "mapbox.satellite", terrainProperties);
-            //danielflamino.b11llx44
+            //mapbox.satellite|danielflamino.b11llx44
             terrainLayer.Render();
 
             /*RenderingProperties geojsonProperties = new RenderingProperties(origin, 16, 1, null, false);
