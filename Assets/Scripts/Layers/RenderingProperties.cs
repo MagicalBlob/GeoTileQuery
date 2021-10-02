@@ -51,7 +51,7 @@ public class RenderingProperties
     /// <summary>
     /// Render terrain mesh using elevation data
     /// </summary>
-    public bool ElevatedTerrain { get { return true; } }
+    public bool ElevatedTerrain { get { return false; } }
 
     /// <summary>
     /// Create a new rendering properties object

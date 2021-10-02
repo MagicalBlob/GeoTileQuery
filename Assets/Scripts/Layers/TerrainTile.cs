@@ -17,11 +17,15 @@ public class TerrainTile : ITile
 
     public string Id { get { return $"{Zoom}/{X}/{Y}"; } }
 
+    public string FullId { get { return $"{Layer.Id}/{Id}"; } }
+
     public Bounds Bounds { get; }
 
     public Vector2D Center { get { return Bounds.Center; } }
 
     public GameObject GameObject { get; }
+
+    public TileState State { get; }
 
     private Texture2D tmpHeighmapThing; // TODO probably a better idea to only store the converted data
 
@@ -50,7 +54,7 @@ public class TerrainTile : ITile
     /// <summary>
     /// Load the tile
     /// </summary>
-    async void Load()
+    private async void Load()
     {
         // Request heightmap
         string heightmapUrl = $"https://api.mapbox.com/v4/mapbox.terrain-rgb/{Zoom}/{X}/{Y}.pngraw?access_token={MainController.MapboxAccessToken}";
@@ -122,6 +126,7 @@ public class TerrainTile : ITile
         int[] triangles = new int[divisions * divisions * 6]; // 2 * 3
         Vector2[] uvs = new Vector2[divisions * divisions * 4];
 
+        float tmpOffset = 0.01f; // TODO remove this
         for (int divisionY = 0; divisionY < divisions; divisionY++)
         {
             for (int divisionX = 0; divisionX < divisions; divisionX++)
@@ -131,10 +136,10 @@ public class TerrainTile : ITile
                 double divisionYOrigin = divisionY * divisionHeight;
 
                 // Setup vertices
-                vertices[(currentDivision * 4) + 0] = new Vector3((float)(divisionXOrigin), 0, (float)(divisionYOrigin));
-                vertices[(currentDivision * 4) + 1] = new Vector3((float)(divisionXOrigin + divisionWidth), 0, (float)(divisionYOrigin));
-                vertices[(currentDivision * 4) + 2] = new Vector3((float)(divisionXOrigin + divisionWidth), 0, (float)(divisionYOrigin + divisionHeight));
-                vertices[(currentDivision * 4) + 3] = new Vector3((float)(divisionXOrigin), 0, (float)(divisionYOrigin + divisionHeight));
+                vertices[(currentDivision * 4) + 0] = new Vector3((float)(divisionXOrigin), 0 - tmpOffset, (float)(divisionYOrigin));
+                vertices[(currentDivision * 4) + 1] = new Vector3((float)(divisionXOrigin + divisionWidth), 0 - tmpOffset, (float)(divisionYOrigin));
+                vertices[(currentDivision * 4) + 2] = new Vector3((float)(divisionXOrigin + divisionWidth), 0 - tmpOffset, (float)(divisionYOrigin + divisionHeight));
+                vertices[(currentDivision * 4) + 3] = new Vector3((float)(divisionXOrigin), 0 - tmpOffset, (float)(divisionYOrigin + divisionHeight));
 
                 // Setup triangles
                 triangles[(currentDivision * 6) + 0] = (currentDivision * 4) + 0;

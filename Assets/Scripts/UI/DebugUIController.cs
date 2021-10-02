@@ -9,7 +9,9 @@ using System.Text;
 public class DebugUIController : MonoBehaviour
 {
     private float update = 0.0f;
-    public Text debugTextDisplay, debugLogDisplay;
+    public Text debugTextDisplay;
+    public GameObject log;
+
     private int numFrames = 0;
     private float totalFps = 0f;
 
@@ -41,7 +43,7 @@ public class DebugUIController : MonoBehaviour
     /// </summary>
     private void UpdateLog()
     {
-        debugLogDisplay.text = Logger.Print();
+        Logger.Render(log);
     }
 
     /// <summary>

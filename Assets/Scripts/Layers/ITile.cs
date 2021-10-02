@@ -31,6 +31,11 @@ public interface ITile
     string Id { get; }
 
     /// <summary>
+    /// The tile ID (including layer ID)
+    /// </summary>
+    string FullId { get; }
+
+    /// <summary>
     /// The bounds of the tile in meters (relative to the layer origin)
     /// </summary>
     Bounds Bounds { get; }
@@ -44,4 +49,9 @@ public interface ITile
     /// The tile's GameObject representation
     /// </summary>
     GameObject GameObject { get; }
+
+    /// <summary>
+    /// The tile state
+    /// </summary>
+    TileState State { get; }
 }

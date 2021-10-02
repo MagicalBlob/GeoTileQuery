@@ -1,19 +1,32 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System;
-using System.Text;
+using System.Collections.Generic;
 
 /// <summary>
 /// The application log
 /// </summary>
 public static class Logger
 {
-    private static StringBuilder log = new StringBuilder();
+    /// <summary>
+    /// All the messages in the log
+    /// </summary>
+    private static List<ILogMessage> messages = new List<ILogMessage>();
+
+    /// <summary>
+    /// Messages that are still to be printed
+    /// </summary>
+    private static List<ILogMessage> toPrint = new List<ILogMessage>();
 
     /// <summary>
     /// An event that is triggered every time a new message is added to the log
     /// </summary>
     public static UnityEvent onNewMessage = new UnityEvent();
+
+    /// <summary>
+    /// Message width
+    /// </summary>
+    public static int messageWidth = 978;
 
     /// <summary>
     /// Subscribes to the new log message event
@@ -25,12 +38,16 @@ public static class Logger
     }
 
     /// <summary>
-    /// Gets the log contents
+    /// Render the messages that are still to be printed
     /// </summary>
-    /// <returns>The log contents</returns>
-    public static string Print()
+    /// <param name="parent">The parent GameObject</param>
+    public static void Render(GameObject parent)
     {
-        return log.ToString();
+        foreach (ILogMessage message in toPrint)
+        {
+            message.Render(parent);
+        }
+        toPrint.Clear();
     }
 
     /// <summary>
@@ -39,9 +56,9 @@ public static class Logger
     /// <param name="message">String or object to be converted to string representation for display</param>
     public static void Log(object message)
     {
-        log.Append(DateTime.Now.ToString("[HH:mm:ss] "));
-        log.Append("[INFO] ");
-        log.AppendLine(message.ToString());
+        ILogMessage logMessage = new InfoMessage(message);
+        messages.Add(logMessage);
+        toPrint.Add(logMessage);
         onNewMessage.Invoke();
     }
 
@@ -51,9 +68,9 @@ public static class Logger
     /// <param name="message">String or object to be converted to string representation for display</param>
     public static void LogWarning(object message)
     {
-        log.Append(DateTime.Now.ToString("[HH:mm:ss] "));
-        log.Append("[WARNING] ");
-        log.AppendLine(message.ToString());
+        ILogMessage logMessage = new WarningMessage(message);
+        messages.Add(logMessage);
+        toPrint.Add(logMessage);
         onNewMessage.Invoke();
     }
 
@@ -63,9 +80,9 @@ public static class Logger
     /// <param name="message">String or object to be converted to string representation for display</param>
     public static void LogError(object message)
     {
-        log.Append(DateTime.Now.ToString("[HH:mm:ss] "));
-        log.Append("[ERROR] ");
-        log.AppendLine(message.ToString());
+        ILogMessage logMessage = new ErrorMessage(message);
+        messages.Add(logMessage);
+        toPrint.Add(logMessage);
         onNewMessage.Invoke();
     }
 
@@ -75,9 +92,9 @@ public static class Logger
     /// <param name="exception">Runtime Exception</param>
     public static void LogException(Exception exception)
     {
-        log.Append(DateTime.Now.ToString("[HH:mm:ss] "));
-        log.Append("[EXCEPTION] ");
-        log.AppendLine(exception.ToString());
+        ILogMessage logMessage = new ExceptionMessage(exception);
+        messages.Add(logMessage);
+        toPrint.Add(logMessage);
         onNewMessage.Invoke();
     }
 }

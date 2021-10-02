@@ -27,7 +27,7 @@ public class GeoJsonRenderer
             double z = coordinates.GetRelativeY(renderingProperties.Origin.Y); // GeoJSON uses z for height, while Unity uses y
             string model = feature.GameObject.name; // TODO this should be coming from the properties but we don't have access to it here, we should pass the Feature object instead of the gameObject and that one should keep the reference to the gameObject
 
-            GameObject prefab = Resources.Load<GameObject>($"Models/{model}");
+            GameObject prefab = Resources.Load<GameObject>($"Prefabs/{model}");
             if (prefab != null)
             {
                 GameObject gameObject = GameObject.Instantiate(prefab);
