@@ -39,14 +39,4 @@ public struct Bounds
     {
         return $"[{Min}, {Max}]";
     }
-
-    /// <summary>
-    /// Get a new Bounds relative to the origin
-    /// </summary>
-    /// <param name="origin">The origin vector XY (meters)</param>
-    /// <returns>Bounds relative to the origin</returns>
-    public Bounds Relative(Vector2D origin)
-    {
-        return new Bounds(Min - origin, Max - origin);
-    }
 }

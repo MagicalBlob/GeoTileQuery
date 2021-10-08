@@ -36,12 +36,12 @@ public interface ITile
     string FullId { get; }
 
     /// <summary>
-    /// The bounds of the tile in meters (relative to the layer origin)
+    /// The bounds of the tile (meters)
     /// </summary>
     Bounds Bounds { get; }
 
     /// <summary>
-    /// The center of the tile in meters (relative to the layer origin)
+    /// The center of the tile (meters)
     /// </summary>
     Vector2D Center { get; }
 

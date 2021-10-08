@@ -19,9 +19,9 @@ public class Point : IGeometryObject, IGeoJsonObject
         this.coordinates = coordinates;
     }
 
-    public void Render(Feature feature, RenderingProperties renderingProperties)
+    public void Render(GeoJsonTile tile, Feature feature)
     {
-        GeoJsonRenderer.RenderNode(feature, coordinates, renderingProperties);
+        GeoJsonRenderer.RenderNode(tile, feature, coordinates);
     }
 
     /// <summary>

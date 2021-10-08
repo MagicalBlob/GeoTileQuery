@@ -41,11 +41,13 @@ public class TerrainTile : ITile
         this.X = x;
         this.Y = y;
         // Calculate tile bounds
-        this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom).Relative(Layer.Properties.Origin);
+        this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom);
 
         // Setup the gameobject
         GameObject = new GameObject($"{Id}");
         GameObject.transform.parent = Layer.GameObject.transform; // Set it as a child of the layer gameobject
+        Vector2D relativeOrigin = Bounds.Min - Layer.Properties.Origin;
+        GameObject.transform.localPosition = new Vector3((float)relativeOrigin.X, 0, (float)relativeOrigin.Y); // Set tile origin
 
         // Load and render the tile
         Load();
@@ -109,8 +111,6 @@ public class TerrainTile : ITile
     /// <param name="texture">The raster texture</param>
     private void RenderFlatTerrain(Texture2D texture)
     {
-        GameObject.transform.position = new Vector3((float)Bounds.Min.X, 0, (float)Bounds.Min.Y);
-
         double tileWidth = Bounds.Width;
         double tileHeight = Bounds.Height;
         int divisions = Layer.Properties.TerrainTileDivisions;
@@ -174,8 +174,6 @@ public class TerrainTile : ITile
     /// <param name="texture">The raster texture</param>
     private void RenderElevatedTerrain(Texture2D texture)
     {
-        GameObject.transform.position = new Vector3((float)Bounds.Min.X, 0, (float)Bounds.Min.Y);
-
         double tileWidth = Bounds.Width;
         double tileHeight = Bounds.Height;
         int divisions = Layer.Properties.TerrainTileDivisions;

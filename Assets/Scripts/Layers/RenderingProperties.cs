@@ -29,6 +29,11 @@ public class RenderingProperties
     public bool RenderModel { get; }
 
     /// <summary>
+    /// Name of the model to render if renderModel is true. If null, it tries to find the value in the GeoJSON
+    /// </summary>
+    public string ModelName { get; }
+
+    /// <summary>
     /// Node height
     /// </summary>
     public double NodeHeight { get { return 5; } }
@@ -61,12 +66,14 @@ public class RenderingProperties
     /// <param name="tileRadius">Radius of tiles to be loaded</param>
     /// <param name="idPropertyName">Name of the Feature's property that may be used as an Id as an alternative to the actual Feature Id if it doesn't exist</param>
     /// <param name="renderModel">Whether to replace the default node rendering with a custom model</param>
-    public RenderingProperties(Vector2D origin, int zoom, int tileRadius, string idPropertyName, bool renderModel)
+    /// <param name="modelName">Name of the model to render if renderModel is true. If null, it tries to find the value in the GeoJSON</param>
+    public RenderingProperties(Vector2D origin, int zoom, int tileRadius, string idPropertyName, bool renderModel, string modelName)
     {
         this.Origin = origin;
         this.Zoom = zoom;
         this.TileViewDistance = tileRadius;
         this.IdPropertyName = idPropertyName;
         this.RenderModel = renderModel;
+        this.ModelName = modelName;
     }
 }

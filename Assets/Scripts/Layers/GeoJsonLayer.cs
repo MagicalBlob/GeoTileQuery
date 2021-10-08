@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
@@ -32,6 +31,7 @@ public class GeoJsonLayer : ILayer
         // Setup the gameobject
         GameObject = new GameObject(Id);
         GameObject.transform.parent = map.transform; // Set it as a child of the map gameobject
+        GameObject.transform.localPosition = Vector3.zero;
 
         tiles = new Dictionary<string, GeoJsonTile>();
     }
@@ -43,8 +43,12 @@ public class GeoJsonLayer : ILayer
         {
             for (int x = tileCoords.x - Properties.TileViewDistance; x <= tileCoords.x + Properties.TileViewDistance; x++)
             {
-                GeoJsonTile tile = new GeoJsonTile(this, x, y);
-                tiles.Add(tile.Id, tile);
+                if (!tiles.ContainsKey($"{Properties.Zoom}/{x}/{y}"))
+                {
+                    // Only render tiles that haven't been rendered already
+                    GeoJsonTile tile = new GeoJsonTile(this, x, y);
+                    tiles.Add(tile.Id, tile);
+                }
             }
         }
     }

@@ -8,7 +8,7 @@ public interface IGeometryObject : IGeoJsonObject
     /// <summary>
     /// Renders the Geometry Object as the geometry associated with the given Feature
     /// </summary>
+    /// <param name="tile">The feature's tile</param>
     /// <param name="feature">The feature to which the geometry object belongs</param>
-    /// <param name="renderingProperties">The layer rendering properties</param>
-    void Render(Feature feature, RenderingProperties renderingProperties);
+    void Render(GeoJsonTile tile, Feature feature);
 }

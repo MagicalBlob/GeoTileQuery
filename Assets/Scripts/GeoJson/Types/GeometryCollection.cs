@@ -20,11 +20,11 @@ public class GeometryCollection : IGeometryObject, IGeoJsonObject
         this.geometries = geometries;
     }
 
-    public void Render(Feature feature, RenderingProperties renderingProperties)
+    public void Render(GeoJsonTile tile, Feature feature)
     {
         foreach (IGeometryObject geometry in geometries)
         {
-            geometry.Render(feature, renderingProperties);
+            geometry.Render(tile, feature);
         }
     }
 

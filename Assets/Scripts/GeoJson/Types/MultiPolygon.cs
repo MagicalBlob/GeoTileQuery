@@ -41,11 +41,11 @@ public class MultiPolygon : IGeometryObject, IGeoJsonObject
         this.coordinates = coordinates;
     }
 
-    public void Render(Feature feature, RenderingProperties renderingProperties)
+    public void Render(GeoJsonTile tile, Feature feature)
     {
         foreach (Position[][] polygon in coordinates)
         {
-            GeoJsonRenderer.RenderArea(feature, polygon, renderingProperties);
+            GeoJsonRenderer.RenderArea(tile, feature, polygon);
         }
     }
 

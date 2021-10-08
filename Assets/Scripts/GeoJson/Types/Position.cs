@@ -58,9 +58,9 @@ public struct Position
     }
 
     /// <summary>
-    /// Get the X coordinate in the Unity scene (in Meters relative to the layer origin)
+    /// Get the X coordinate in the Unity scene (in Meters relative to the given coordinate)
     /// </summary>
-    /// <param name="originX">The layer's origin X coordinate</param>
+    /// <param name="originX">The origin X coordinate</param>
     /// <returns>X coordinate in the Unity scene</returns>
     public double GetRelativeX(double originX)
     {
@@ -68,9 +68,9 @@ public struct Position
     }
 
     /// <summary>
-    /// Get the Y coordinate in the Unity scene (in Meters relative to the layer origin)
+    /// Get the Y coordinate in the Unity scene (in Meters relative to the given coordinate)
     /// </summary>
-    /// <param name="originY">The layer's origin Y coordinate</param>
+    /// <param name="originY">The origin Y coordinate</param>
     /// <returns>Y coordinate in the Unity scene</returns>
     public double GetRelativeY(double originY)
     {
@@ -78,7 +78,7 @@ public struct Position
     }
 
     /// <summary>
-    /// Get the Z coordinate in the Unity scene (in Meters relative to the layer origin)
+    /// Get the Z coordinate in the Unity scene (in Meters relative to the given coordinate)
     /// </summary>
     /// <returns>Z coordinate in the Unity scene</returns>
     public double GetRelativeZ()

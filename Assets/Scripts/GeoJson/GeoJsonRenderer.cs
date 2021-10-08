@@ -10,35 +10,50 @@ public class GeoJsonRenderer
     /// <summary>
     /// Render a node with given coordinates as a child of given feature object
     /// </summary>
+    /// <param name="tile">The feature's tile</param>
     /// <param name="feature">The parent feature</param>
     /// <param name="coordinates">The node coordinates</param>
-    /// <param name="renderingProperties">The layer rendering properties</param>
-    public static void RenderNode(Feature feature, Position coordinates, RenderingProperties renderingProperties)
+    public static void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
     {
-        // Setup the gameobject
-        GameObject node = new GameObject("Node"); // Create Node gameobject
-        node.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
-
-        if (renderingProperties.RenderModel)
+        if (tile.Layer.Properties.RenderModel)
         {
             // Render Node with an existing model instead
-            double x = coordinates.GetRelativeX(renderingProperties.Origin.X);
+            double x = coordinates.GetRelativeX(tile.Bounds.Min.X);
             double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-            double z = coordinates.GetRelativeY(renderingProperties.Origin.Y); // GeoJSON uses z for height, while Unity uses y
-            string model = feature.GameObject.name; // TODO this should be coming from the properties but we don't have access to it here, we should pass the Feature object instead of the gameObject and that one should keep the reference to the gameObject
+            double z = coordinates.GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
-            GameObject prefab = Resources.Load<GameObject>($"Prefabs/{model}");
+            // Get model name
+            string model;
+            if (tile.Layer.Properties.ModelName != null)
+            {
+                model = tile.Layer.Properties.ModelName;
+            }
+            else
+            {
+                model = feature.GetPropertyAsString("model");
+            }
+
+            GameObject prefab = Resources.Load<GameObject>($"Prefabs/{model}"); // TODO Actual prefabs probably shouldn't be loaded with Resources.Load
             if (prefab != null)
             {
-                GameObject gameObject = GameObject.Instantiate(prefab);
-                gameObject.name = model;
-                gameObject.transform.parent = node.transform; // Set it as a child of the Node gameobject
-                gameObject.transform.position = new Vector3((float)x, (float)y, (float)z);
+                GameObject node = GameObject.Instantiate(prefab);
+                node.name = $"Node - {model}";
+                node.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
+                node.transform.localPosition = new Vector3((float)x, (float)y, (float)z);
+            }
+            else
+            {
+                Logger.LogWarning($"Unable to find resource 'Prefabs/{model}'");
             }
         }
         else
         {
             // Default Node Rendering
+
+            // Setup the gameobject
+            GameObject node = new GameObject("Node"); // Create Node gameobject
+            node.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
+            node.transform.localPosition = Vector3.zero; // Set origin
 
             // Setup the mesh components
             MeshRenderer meshRenderer = node.AddComponent<MeshRenderer>();
@@ -46,16 +61,16 @@ public class GeoJsonRenderer
             Mesh mesh = new Mesh();
 
             // Setup vertices
-            double x = coordinates.GetRelativeX(renderingProperties.Origin.X);
+            double x = coordinates.GetRelativeX(tile.Bounds.Min.X);
             double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-            double z = coordinates.GetRelativeY(renderingProperties.Origin.Y); // GeoJSON uses z for height, while Unity uses y
+            double z = coordinates.GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
             Vector3[] vertices = new Vector3[5] // TODO we're being greedy with vertices here and that means the normals will be messed up since we're sharing vertices between differently oriented faces
             {
             new Vector3((float)x, (float)y, (float)z),
-            new Vector3((float)(x + renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z + renderingProperties.NodeRadius)),
-            new Vector3((float)(x - renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z + renderingProperties.NodeRadius)),
-            new Vector3((float)(x - renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z - renderingProperties.NodeRadius)),
-            new Vector3((float)(x + renderingProperties.NodeRadius), (float)(y + renderingProperties.NodeHeight), (float)(z - renderingProperties.NodeRadius))
+            new Vector3((float)(x + tile.Layer.Properties.NodeRadius), (float)(y + tile.Layer.Properties.NodeHeight), (float)(z + tile.Layer.Properties.NodeRadius)),
+            new Vector3((float)(x - tile.Layer.Properties.NodeRadius), (float)(y + tile.Layer.Properties.NodeHeight), (float)(z + tile.Layer.Properties.NodeRadius)),
+            new Vector3((float)(x - tile.Layer.Properties.NodeRadius), (float)(y + tile.Layer.Properties.NodeHeight), (float)(z - tile.Layer.Properties.NodeRadius)),
+            new Vector3((float)(x + tile.Layer.Properties.NodeRadius), (float)(y + tile.Layer.Properties.NodeHeight), (float)(z - tile.Layer.Properties.NodeRadius))
             };
             mesh.vertices = vertices;
 
@@ -81,14 +96,15 @@ public class GeoJsonRenderer
     /// <summary>
     /// Render an edge with given coordinates as a child of given feature object
     /// </summary>
+    /// <param name="tile">The feature's tile</param>
     /// <param name="feature">The parent feature</param>
     /// <param name="coordinates">The edge coordinates</param>
-    /// <param name="renderingProperties">The layer rendering properties</param>
-    public static void RenderEdge(Feature feature, Position[] coordinates, RenderingProperties renderingProperties)
+    public static void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
     {
         // Setup the gameobject
         GameObject edge = new GameObject("Edge"); // Create Edge gameobject
         edge.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
+        edge.transform.localPosition = Vector3.zero; // Set origin
 
         // Setup the mesh components
         MeshRenderer meshRenderer = edge.AddComponent<MeshRenderer>();
@@ -101,14 +117,14 @@ public class GeoJsonRenderer
         for (int segment = 0; segment < numSegments; segment++)
         {
             // Start point of segment AB
-            double ax = coordinates[segment].GetRelativeX(renderingProperties.Origin.X);
+            double ax = coordinates[segment].GetRelativeX(tile.Bounds.Min.X);
             double ay = coordinates[segment].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-            double az = coordinates[segment].GetRelativeY(renderingProperties.Origin.Y); // GeoJSON uses z for height, while Unity uses y
+            double az = coordinates[segment].GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
-            double bx = coordinates[segment + 1].GetRelativeX(renderingProperties.Origin.X);
+            double bx = coordinates[segment + 1].GetRelativeX(tile.Bounds.Min.X);
             double by = coordinates[segment + 1].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-            double bz = coordinates[segment + 1].GetRelativeY(renderingProperties.Origin.Y); // GeoJSON uses z for height, while Unity uses y
+            double bz = coordinates[segment + 1].GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB
             double abX = bx - ax;
@@ -116,8 +132,8 @@ public class GeoJsonRenderer
             double abMagnitude = Math.Sqrt(Math.Pow(abX, 2) + Math.Pow(abZ, 2));
 
             // AB⟂ with given width
-            double abPerpX = (renderingProperties.EdgeWidth * -abZ) / abMagnitude;
-            double abPerpZ = (renderingProperties.EdgeWidth * abX) / abMagnitude;
+            double abPerpX = (tile.Layer.Properties.EdgeWidth * -abZ) / abMagnitude;
+            double abPerpZ = (tile.Layer.Properties.EdgeWidth * abX) / abMagnitude;
 
             // Add vertices
             vertices[(segment * 4) + 0] = new Vector3((float)(ax - abPerpX), (float)ay, (float)(az - abPerpZ));
@@ -150,14 +166,15 @@ public class GeoJsonRenderer
     /// <summary>
     /// Render an area with given coordinates as a child of given feature object
     /// </summary>
+    /// <param name="tile">The feature's tile</param>
     /// <param name="feature">The parent feature</param>
     /// <param name="coordinates">The area coordinates</param>
-    /// <param name="renderingProperties">The layer rendering properties</param>
-    public static void RenderArea(Feature feature, Position[][] coordinates, RenderingProperties renderingProperties)
+    public static void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
     {
         // Setup the gameobject
         GameObject area = new GameObject("Area"); // Create Area gameobject
         area.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
+        area.transform.localPosition = Vector3.zero; // Set origin
 
         // Check for empty coordinates array
         if (coordinates.Length == 0)
@@ -167,7 +184,7 @@ public class GeoJsonRenderer
         }
 
         // Triangulate the polygon coordinates using Earcut
-        EarcutLib.Data data = EarcutLib.Flatten(coordinates, renderingProperties);
+        EarcutLib.Data data = EarcutLib.Flatten(coordinates, tile);
         List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
         /*double deviation = EarcutLib.Deviation(data.Vertices, data.Holes, data.Dimensions, triangles);
         Logger.Log(deviation == 0 ? "The triangulation is fully correct" : $"Triangulation deviation: {Math.Round(deviation, 6)}"); TODO clear this */

@@ -20,11 +20,11 @@ public class MultiPoint : IGeometryObject, IGeoJsonObject
         this.coordinates = coordinates;
     }
 
-    public void Render(Feature feature, RenderingProperties renderingProperties)
+    public void Render(GeoJsonTile tile, Feature feature)
     {
         foreach (Position position in coordinates)
         {
-            GeoJsonRenderer.RenderNode(feature, position, renderingProperties);
+            GeoJsonRenderer.RenderNode(tile, feature, position);
         }
     }
 

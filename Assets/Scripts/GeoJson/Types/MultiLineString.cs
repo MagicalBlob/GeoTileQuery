@@ -28,11 +28,11 @@ public class MultiLineString : IGeometryObject, IGeoJsonObject
         this.coordinates = coordinates;
     }
 
-    public void Render(Feature feature, RenderingProperties renderingProperties)
+    public void Render(GeoJsonTile tile, Feature feature)
     {
         foreach (Position[] line in coordinates)
         {
-            GeoJsonRenderer.RenderEdge(feature, line, renderingProperties);
+            GeoJsonRenderer.RenderEdge(tile, feature, line);
         }
     }
 

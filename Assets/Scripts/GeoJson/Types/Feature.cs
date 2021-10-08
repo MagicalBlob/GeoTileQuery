@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Text;
 using System.Collections.Generic;
+using System;
 
 /// <summary>
 /// Represents a GeoJSON Feature
@@ -42,20 +43,131 @@ public class Feature : IGeoJsonObject
     }
 
     /// <summary>
+    /// Get the value for the Feature's property with given key
+    /// </summary>
+    /// <typeparam name="ValueType">Type of the value</typeparam>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists, default value otherwise</returns>
+    public ValueType GetProperty<ValueType>(string key)
+    {
+        ValueType value = default(ValueType);
+
+        object obj;
+        // Check if we have properties and if there's an entry with given key
+        if (properties != null && properties.TryGetValue(key, out obj))
+        {
+            // Check if value isn't null
+            if (obj != null)
+            {
+                // Check if value is of the requested type
+                if (obj.GetType() == typeof(ValueType))
+                {
+                    value = (ValueType)obj;
+                }
+                else
+                {
+                    Logger.Log($"Property value for {key} is of type {obj.GetType()} and not {typeof(ValueType)}");
+                }
+            }
+            else
+            {
+                Logger.LogWarning($"Property value for {key} is null");
+            }
+        }
+        else
+        {
+            Logger.LogWarning($"Unable to get property value for {key}");
+        }
+
+        return value;
+    }
+
+    /// <summary>
+    /// Get the value for the Feature's property with given key as a string
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as a string, empty string otherwise</returns>
+    public string GetPropertyAsString(string key)
+    {
+        string value = string.Empty;
+
+        object obj;
+        // Check if we have properties and if there's an entry with given key
+        if (properties != null && properties.TryGetValue(key, out obj))
+        {
+            // Check if value isn't null
+            if (obj != null)
+            {
+                value = obj.ToString();
+            }
+            else
+            {
+                Logger.LogWarning($"Property value for {key} is null");
+            }
+        }
+        else
+        {
+            Logger.LogWarning($"Unable to get property value for {key}");
+        }
+
+        return value;
+    }
+
+    /// <summary>
+    /// Get the value for the Feature's property with given key as a double
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as a double, 0 otherwise</returns>
+    public double GetPropertyAsDouble(string key)
+    {
+        double value = 0;
+
+        object obj;
+        // Check if we have properties and if there's an entry with given key
+        if (properties != null && properties.TryGetValue(key, out obj))
+        {
+            // Check if value isn't null
+            if (obj != null)
+            {
+                try
+                {
+                    value = Convert.ToDouble(obj);
+                }
+                catch (FormatException)
+                {
+                    Logger.LogWarning($"The {obj.GetType().Name} value {obj} is not recognized as a valid Double value.");
+                }
+                catch (InvalidCastException)
+                {
+                    Console.WriteLine($"Conversion of the {obj.GetType().Name} value {obj} to a Double is not supported.");
+                }
+            }
+            else
+            {
+                Logger.LogWarning($"Property value for {key} is null");
+            }
+        }
+        else
+        {
+            Logger.LogWarning($"Unable to get property value for {key}");
+        }
+
+        return value;
+    }
+
+    /// <summary>
     /// Render the Feature
     /// </summary>
     /// <param name="tile">The Feature's tile</param>
-    /// <param name="renderingProperties">The layer rendering properties</param>
-    public void Render(GameObject tile, RenderingProperties renderingProperties)
+    public void Render(GeoJsonTile tile)
     {
         if (id == null || id.Length == 0)
         {
             // There wasn't an ID set on the feature
-            object value;
-            if (renderingProperties.IdPropertyName != null && renderingProperties.IdPropertyName.Length > 0 && properties != null && properties.TryGetValue(renderingProperties.IdPropertyName, out value))
+            if (tile.Layer.Properties.IdPropertyName != null)
             {
                 // A property name was given to try to use as an alternative to the Id and there is a value that matches that property name for this feature
-                id = value.ToString();
+                id = GetPropertyAsString(tile.Layer.Properties.IdPropertyName);
             }
             else
             {
@@ -65,11 +177,12 @@ public class Feature : IGeoJsonObject
 
         // Setup the gameobject
         gameObject = new GameObject(id);
-        gameObject.transform.parent = tile.transform;
+        gameObject.transform.parent = tile.GameObject.transform;
+        gameObject.transform.localPosition = Vector3.zero;
 
         if (geometry != null)
         {
-            geometry.Render(this, renderingProperties);
+            geometry.Render(tile, this);
         }
         else
         {

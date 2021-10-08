@@ -24,12 +24,11 @@ public class FeatureCollection : IGeoJsonObject
     /// Render the FeatureCollection
     /// </summary>
     /// <param name="tile">The FeatureCollection's tile</param>
-    /// <param name="renderingProperties">The layer rendering properties</param>
-    public void Render(GameObject tile, RenderingProperties renderingProperties)
+    public void Render(GeoJsonTile tile)
     {
         foreach (Feature feature in features)
         {
-            feature.Render(tile, renderingProperties);
+            feature.Render(tile);
         }
     }
 

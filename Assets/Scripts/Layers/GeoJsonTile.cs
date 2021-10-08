@@ -46,11 +46,13 @@ public class GeoJsonTile : ITile
         this.X = x;
         this.Y = y;
         // Calculate tile bounds and center
-        this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom).Relative(Layer.Properties.Origin);
+        this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom);
 
         // Setup the gameobject
         GameObject = new GameObject($"{Id}");
         GameObject.transform.parent = Layer.GameObject.transform; // Set it as a child of the layer gameobject
+        Vector2D relativeOrigin = Bounds.Min - Layer.Properties.Origin;
+        GameObject.transform.localPosition = new Vector3((float)relativeOrigin.X, 0, (float)relativeOrigin.Y); // Set tile origin
 
         // Load the tile data
         Load();
@@ -67,8 +69,7 @@ public class GeoJsonTile : ITile
         try
         {
             DateTime afterSemaphore = DateTime.Now;
-            string geoJsonText = await MainController.client.GetStringAsync($"https://flamino.eu/TestingRemoteData/{Layer.Id}/{Zoom}/{X}/{Y}.geojson");
-            //string geoJsonText = await MainController.client.GetStringAsync($"https://tese.flamino.eu/api/tiles?layer={Layer.Id}&z={Zoom}&x={X}&y={Y}");
+            string geoJsonText = await MainController.client.GetStringAsync($"https://tese.flamino.eu/api/tiles/{Layer.Id}/{Zoom}/{X}/{Y}.geojson");
             MainController.networkSemaphore.Release(); // Release the semaphore
             DateTime afterRequest = DateTime.Now;
             try
@@ -103,15 +104,16 @@ public class GeoJsonTile : ITile
     /// Render the tile
     /// </summary>
     /// <exception cref="InvalidGeoJsonException">Can't render as a tile, if root object isn't a FeatureCollection</exception>
-    public void Render()
+    private void Render()
     {
+        // Check if data has been loaded
         if (State == TileState.Loaded)
         {
             // Check if it's a FeatureCollection
             if (geoJson.GetType() == typeof(FeatureCollection))
             {
                 // Render the GeoJSON
-                ((FeatureCollection)geoJson).Render(GameObject, Layer.Properties);
+                ((FeatureCollection)geoJson).Render(this);
                 State = TileState.Rendered;
             }
             else
