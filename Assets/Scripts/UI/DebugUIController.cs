@@ -13,7 +13,7 @@ public class DebugUIController : MonoBehaviour
     public GameObject log;
 
     private int numFrames = 0;
-    private float totalFps = 0f;
+    private float totalFps = 0;
 
     /// <summary>
     /// Start is called on the frame when a script is enabled just before any of the Update methods are called the first time
@@ -29,6 +29,8 @@ public class DebugUIController : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        UpdateAverageFps();
+
         // Only update debug text about once per second
         update += Time.unscaledDeltaTime;
         if (update > 1.0f)
@@ -56,11 +58,11 @@ public class DebugUIController : MonoBehaviour
         debugText.Append("Version: ");
         debugText.Append(Application.version);
 
-        debugText.Append("\n\nFPS: ");
-        float instantFps = CalculateInstantFps();
+        debugText.Append("\n\nInstant FPS: ");
+        float instantFps = GetInstantFps();
         debugText.Append((int)instantFps);
         debugText.Append("\nAverage FPS: ");
-        float averageFps = CalculateAverageFps(instantFps);
+        float averageFps = GetAverageFps();
         debugText.Append((int)averageFps);
 
         debugText.Append("\n\nSystem Memory: ");
@@ -111,21 +113,30 @@ public class DebugUIController : MonoBehaviour
     /// Calculates the instantaneous FPS
     /// </summary>
     /// <returns>Instantaneous FPS</returns>
-    private float CalculateInstantFps()
+    private float GetInstantFps()
     {
         return 1 / Time.unscaledDeltaTime;
     }
 
     /// <summary>
-    /// Calculates the average FPS
+    /// Updates the counters for the average FPS
     /// </summary>
-    /// <param name="instantFps">Instantaneous FPS</param>
-    /// <returns>Average FPS</returns>
-    private float CalculateAverageFps(float instantFps)
+    private void UpdateAverageFps()
     {
-        totalFps += instantFps;
+        totalFps += GetInstantFps();
         numFrames++;
-        return totalFps / numFrames;
+    }
+
+    /// <summary>
+    /// Gets the average FPS since the last call to GetAverageFps()
+    /// </summary>
+    /// <returns>Average FPS</returns>
+    private float GetAverageFps()
+    {
+        float averageFps = totalFps / numFrames;
+        totalFps = 0;
+        numFrames = 0;
+        return averageFps;
     }
 
 }
