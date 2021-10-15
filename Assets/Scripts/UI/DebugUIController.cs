@@ -15,18 +15,12 @@ public class DebugUIController : MonoBehaviour
     private int numFrames = 0;
     private float totalFps = 0;
 
-    /// <summary>
-    /// Start is called on the frame when a script is enabled just before any of the Update methods are called the first time
-    /// </summary>
-    private void Start()
+    private void Awake()
     {
         // Listen for new log messages to display
         Logger.Subscribe(UpdateLog);
     }
 
-    /// <summary>
-    /// Update is called every frame, if the MonoBehaviour is enabled
-    /// </summary>
     private void Update()
     {
         UpdateAverageFps();
