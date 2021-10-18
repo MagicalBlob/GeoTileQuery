@@ -39,10 +39,13 @@ public class Map
 
         DefaultGeoJsonRenderer defaultGeoJsonRenderer = new DefaultGeoJsonRenderer();
 
-        layers.Add("mapbox.satellite", new TerrainLayer(GameObject, "mapbox.satellite", origin, zoom, tileRadius, new FlatTerrainRenderer()));
-        //mapbox.satellite|danielflamino.b11llx44
+        layers.Add("StamenWatercolor", new TerrainLayer(GameObject, "StamenWatercolor", origin, zoom, tileRadius, new FlatTerrainRenderer(), "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{0}.jpg"));
+        //layers.Add("StamenToner", new TerrainLayer(GameObject, "StamenToner", origin, zoom, tileRadius, new FlatTerrainRenderer(), "https://stamen-tiles-b.a.ssl.fastly.net/toner-background/{0}.png"));
+        //layers.Add("StamenTerrain", new TerrainLayer(GameObject, "StamenTerrain", origin, zoom, tileRadius, new FlatTerrainRenderer(), "http://stamen-tiles-c.a.ssl.fastly.net/terrain-background/{0}.png"));
+        //layers.Add("OSMStandard", new TerrainLayer(GameObject, "OSMStandard", origin, zoom, tileRadius, new FlatTerrainRenderer(), "https://tile.openstreetmap.org/{0}.png"));
+        //layers.Add("MapboxSatellite", new TerrainLayer(GameObject, "MapboxSatellite", origin, zoom, tileRadius, new FlatTerrainRenderer(), $"https://api.mapbox.com/v4/mapbox.satellite/{{0}}.jpg?access_token={MainController.MapboxAccessToken}"));
         layers.Add("Bikepaths", new GeoJsonLayer(GameObject, "Bikepaths", origin, zoom, tileRadius, "OBJECTID", defaultGeoJsonRenderer));
-        layers.Add("Buildings", new GeoJsonLayer(GameObject, "Buildings", origin, zoom, tileRadius, "name", defaultGeoJsonRenderer));
+        layers.Add("Buildings", new GeoJsonLayer(GameObject, "Buildings", origin, zoom, tileRadius, "name", new BuildingRenderer()));
         layers.Add("BuildingsLOD3", new GeoJsonLayer(GameObject, "BuildingsLOD3", origin, zoom, tileRadius, "id", new PrefabRenderer(null)));
         layers.Add("Closures", new GeoJsonLayer(GameObject, "Closures", origin, zoom, tileRadius, "id", defaultGeoJsonRenderer));
         layers.Add("Electrical_IP_especial", new GeoJsonLayer(GameObject, "Electrical_IP_especial", origin, zoom, tileRadius, null, defaultGeoJsonRenderer));

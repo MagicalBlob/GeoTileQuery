@@ -35,7 +35,8 @@ public class TerrainTile : ITile
     /// <param name="layer">The layer where the tile belongs</param>
     /// <param name="x">Tile's X coordinate</param>
     /// <param name="y">Tile's Y coordinate</param>
-    public TerrainTile(ILayer layer, int x, int y)
+    /// <param name="tileRasterUrl">Url to fetch raster tiles</param>
+    public TerrainTile(ILayer layer, int x, int y, string tileRasterUrl)
     {
         this.Layer = layer;
         this.X = x;
@@ -51,13 +52,13 @@ public class TerrainTile : ITile
         GameObject.transform.rotation = Layer.GameObject.transform.rotation; // Match tile rotation with the layer
 
         // Load and render the tile
-        Load();
+        Load(tileRasterUrl);
     }
 
     /// <summary>
     /// Load the tile
     /// </summary>
-    private async void Load()
+    private async void Load(string tileRasterUrl)
     {
         // Request heightmap
         string heightmapUrl = $"https://api.mapbox.com/v4/mapbox.terrain-rgb/{Zoom}/{X}/{Y}.pngraw?access_token={MainController.MapboxAccessToken}";
@@ -65,7 +66,7 @@ public class TerrainTile : ITile
         UnityWebRequestAsyncOperation heightmapOp = heightmapReq.SendWebRequest();
 
         // Request raster texture
-        string rasterUrl = $"https://api.mapbox.com/v4/{Layer.Id}/{Zoom}/{X}/{Y}.jpg?access_token={MainController.MapboxAccessToken}";
+        string rasterUrl = string.Format(tileRasterUrl, Id);
         using UnityWebRequest rasterReq = UnityWebRequestTexture.GetTexture(rasterUrl);
         UnityWebRequestAsyncOperation rasterOp = rasterReq.SendWebRequest();
 

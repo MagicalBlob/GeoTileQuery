@@ -23,6 +23,8 @@ public class TerrainLayer : ILayer
 
     public GameObject GameObject { get; }
 
+    private string tileRasterUrl;
+
     /// <summary>
     /// Construct a new TerrainLayer
     /// </summary>
@@ -31,14 +33,16 @@ public class TerrainLayer : ILayer
     /// <param name="origin">The layer's origin in the scene (Meters)</param>
     /// <param name="zoom">Zoom level for the tiles</param>
     /// <param name="tileRadius">Radius of tiles to be loaded</param>
+    /// <param name="rasterUrl">Url to fetch raster tiles</param>
     /// <param name="renderer">The layer's renderer</param>
-    public TerrainLayer(GameObject map, string id, Vector2D origin, int zoom, int tileRadius, ITerrainRenderer renderer)
+    public TerrainLayer(GameObject map, string id, Vector2D origin, int zoom, int tileRadius, ITerrainRenderer renderer, string rasterUrl)
     {
         this.Id = id;
         this.Origin = origin;
         this.Zoom = zoom;
         this.TileViewDistance = tileRadius;
         this.Renderer = renderer;
+        this.tileRasterUrl = rasterUrl;
 
         // Setup the gameobject
         GameObject = new GameObject(Id);
@@ -58,7 +62,7 @@ public class TerrainLayer : ILayer
                 if (!tiles.ContainsKey($"{Zoom}/{x}/{y}"))
                 {
                     // Only render tiles that haven't been rendered already
-                    TerrainTile tile = new TerrainTile(this, x, y);
+                    TerrainTile tile = new TerrainTile(this, x, y, tileRasterUrl);
                     tiles.Add(tile.Id, tile);
                 }
             }
