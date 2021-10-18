@@ -1,5 +1,3 @@
-using UnityEngine;
-
 /// <summary>
 /// Represents a GeoJSON Geometry Object
 /// </summary>

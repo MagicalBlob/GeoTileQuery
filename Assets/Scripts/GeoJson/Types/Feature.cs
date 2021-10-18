@@ -164,10 +164,10 @@ public class Feature : IGeoJsonObject
         if (id == null || id.Length == 0)
         {
             // There wasn't an ID set on the feature
-            if (tile.Layer.Properties.IdPropertyName != null)
+            if (((GeoJsonLayer)tile.Layer).IdPropertyName != null)
             {
                 // A property name was given to try to use as an alternative to the Id and there is a value that matches that property name for this feature
-                id = GetPropertyAsString(tile.Layer.Properties.IdPropertyName);
+                id = GetPropertyAsString(((GeoJsonLayer)tile.Layer).IdPropertyName);
             }
             else
             {
@@ -179,6 +179,7 @@ public class Feature : IGeoJsonObject
         gameObject = new GameObject(id);
         gameObject.transform.parent = tile.GameObject.transform;
         gameObject.transform.localPosition = Vector3.zero;
+        gameObject.transform.rotation = tile.GameObject.transform.rotation;
 
         if (geometry != null)
         {

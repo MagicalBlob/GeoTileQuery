@@ -13,7 +13,18 @@ public class GeoJsonLayer : ILayer
 
     public string Id { get; }
 
-    public RenderingProperties Properties { get; }
+    public Vector2D Origin { get; }
+
+    public int Zoom { get; }
+
+    public int TileViewDistance { get; }
+
+    /// <summary>
+    /// Name of the Feature's property that may be used as an id as an alternative to the actual Feature id if it doesn't exist
+    /// </summary>
+    public string IdPropertyName { get; }
+
+    public ILayerRenderer Renderer { get; }
 
     public GameObject GameObject { get; }
 
@@ -22,11 +33,19 @@ public class GeoJsonLayer : ILayer
     /// </summary>
     /// <param name="map">The map to which the layer belongs</param>
     /// <param name="id">The layer id</param>
-    /// <param name="properties">The layer rendering properties</param>
-    public GeoJsonLayer(GameObject map, string id, RenderingProperties properties)
+    /// <param name="origin">The layer's origin in the scene (Meters)</param>
+    /// <param name="zoom">Zoom level for the tiles</param>
+    /// <param name="tileRadius">Radius of tiles to be loaded</param>
+    /// <param name="idPropertyName">Name of the Feature's property that may be used as an Id as an alternative to the actual Feature Id if it doesn't exist</param>
+    /// <param name="renderer">The layer's renderer</param>
+    public GeoJsonLayer(GameObject map, string id, Vector2D origin, int zoom, int tileRadius, string idPropertyName, IGeoJsonRenderer renderer)
     {
         this.Id = id;
-        this.Properties = properties;
+        this.Origin = origin;
+        this.Zoom = zoom;
+        this.TileViewDistance = tileRadius;
+        this.IdPropertyName = idPropertyName;
+        this.Renderer = renderer;
 
         // Setup the gameobject
         GameObject = new GameObject(Id);
@@ -38,12 +57,12 @@ public class GeoJsonLayer : ILayer
 
     public void Render()
     {
-        Vector2Int tileCoords = GlobalMercator.MetersToGoogleTile(Properties.Origin, Properties.Zoom);
-        for (int y = tileCoords.y - Properties.TileViewDistance; y <= tileCoords.y + Properties.TileViewDistance; y++)
+        Vector2Int tileCoords = GlobalMercator.MetersToGoogleTile(Origin, Zoom);
+        for (int y = tileCoords.y - TileViewDistance; y <= tileCoords.y + TileViewDistance; y++)
         {
-            for (int x = tileCoords.x - Properties.TileViewDistance; x <= tileCoords.x + Properties.TileViewDistance; x++)
+            for (int x = tileCoords.x - TileViewDistance; x <= tileCoords.x + TileViewDistance; x++)
             {
-                if (!tiles.ContainsKey($"{Properties.Zoom}/{x}/{y}"))
+                if (!tiles.ContainsKey($"{Zoom}/{x}/{y}"))
                 {
                     // Only render tiles that haven't been rendered already
                     GeoJsonTile tile = new GeoJsonTile(this, x, y);

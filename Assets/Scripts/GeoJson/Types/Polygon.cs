@@ -41,7 +41,7 @@ public class Polygon : IGeometryObject, IGeoJsonObject
 
     public void Render(GeoJsonTile tile, Feature feature)
     {
-        GeoJsonRenderer.RenderArea(tile, feature, coordinates);
+        ((IGeoJsonRenderer)tile.Layer.Renderer).RenderArea(tile, feature, coordinates);
     }
 
     /// <summary>

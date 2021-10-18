@@ -32,7 +32,7 @@ public class MultiLineString : IGeometryObject, IGeoJsonObject
     {
         foreach (Position[] line in coordinates)
         {
-            GeoJsonRenderer.RenderEdge(tile, feature, line);
+            ((IGeoJsonRenderer)tile.Layer.Renderer).RenderEdge(tile, feature, line);
         }
     }
 

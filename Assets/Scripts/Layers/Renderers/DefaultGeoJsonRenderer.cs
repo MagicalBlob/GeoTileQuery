@@ -3,108 +3,77 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// Methods related to rendering GeoJSON objects
+/// Default GeoJSON renderer
 /// </summary>
-public class GeoJsonRenderer
+public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 {
     /// <summary>
-    /// Render a node with given coordinates as a child of given feature object
+    /// Node height
     /// </summary>
-    /// <param name="tile">The feature's tile</param>
-    /// <param name="feature">The parent feature</param>
-    /// <param name="coordinates">The node coordinates</param>
-    public static void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
+    private double nodeHeight = 5;
+
+    /// <summary>
+    /// Node radius
+    /// </summary>
+    private double nodeRadius = 1;
+
+    /// <summary>
+    /// Edge width
+    /// </summary>
+    private double edgeWidth = 1; //0.025; //TODO check the rendering code but I think this might actually be rendering as half the width
+
+    public void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
     {
-        if (tile.Layer.Properties.RenderModel)
+        // Setup the gameobject
+        GameObject node = new GameObject("Node"); // Create Node gameobject
+        node.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
+        node.transform.localPosition = Vector3.zero; // Set origin
+        node.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
+
+        // Setup the mesh components
+        MeshRenderer meshRenderer = node.AddComponent<MeshRenderer>();
+        MeshFilter meshFilter = node.AddComponent<MeshFilter>();
+        Mesh mesh = new Mesh();
+
+        // Setup vertices
+        double x = coordinates.GetRelativeX(tile.Bounds.Min.X);
+        double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+        double z = coordinates.GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
+        Vector3[] vertices = new Vector3[5] // TODO we're being greedy with vertices here and that means the normals will be messed up since we're sharing vertices between differently oriented faces
         {
-            // Render Node with an existing model instead
-            double x = coordinates.GetRelativeX(tile.Bounds.Min.X);
-            double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-            double z = coordinates.GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
-
-            // Get model name
-            string model;
-            if (tile.Layer.Properties.ModelName != null)
-            {
-                model = tile.Layer.Properties.ModelName;
-            }
-            else
-            {
-                model = feature.GetPropertyAsString("model");
-            }
-
-            GameObject prefab = Resources.Load<GameObject>($"Prefabs/{model}"); // TODO Actual prefabs probably shouldn't be loaded with Resources.Load
-            if (prefab != null)
-            {
-                GameObject node = GameObject.Instantiate(prefab);
-                node.name = $"Node - {model}";
-                node.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
-                node.transform.localPosition = new Vector3((float)x, (float)y, (float)z);
-            }
-            else
-            {
-                Logger.LogWarning($"Unable to find resource 'Prefabs/{model}'");
-            }
-        }
-        else
-        {
-            // Default Node Rendering
-
-            // Setup the gameobject
-            GameObject node = new GameObject("Node"); // Create Node gameobject
-            node.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
-            node.transform.localPosition = Vector3.zero; // Set origin
-
-            // Setup the mesh components
-            MeshRenderer meshRenderer = node.AddComponent<MeshRenderer>();
-            MeshFilter meshFilter = node.AddComponent<MeshFilter>();
-            Mesh mesh = new Mesh();
-
-            // Setup vertices
-            double x = coordinates.GetRelativeX(tile.Bounds.Min.X);
-            double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-            double z = coordinates.GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
-            Vector3[] vertices = new Vector3[5] // TODO we're being greedy with vertices here and that means the normals will be messed up since we're sharing vertices between differently oriented faces
-            {
             new Vector3((float)x, (float)y, (float)z),
-            new Vector3((float)(x + tile.Layer.Properties.NodeRadius), (float)(y + tile.Layer.Properties.NodeHeight), (float)(z + tile.Layer.Properties.NodeRadius)),
-            new Vector3((float)(x - tile.Layer.Properties.NodeRadius), (float)(y + tile.Layer.Properties.NodeHeight), (float)(z + tile.Layer.Properties.NodeRadius)),
-            new Vector3((float)(x - tile.Layer.Properties.NodeRadius), (float)(y + tile.Layer.Properties.NodeHeight), (float)(z - tile.Layer.Properties.NodeRadius)),
-            new Vector3((float)(x + tile.Layer.Properties.NodeRadius), (float)(y + tile.Layer.Properties.NodeHeight), (float)(z - tile.Layer.Properties.NodeRadius))
-            };
-            mesh.vertices = vertices;
+            new Vector3((float)(x + nodeRadius), (float)(y + nodeHeight), (float)(z + nodeRadius)),
+            new Vector3((float)(x - nodeRadius), (float)(y + nodeHeight), (float)(z + nodeRadius)),
+            new Vector3((float)(x - nodeRadius), (float)(y + nodeHeight), (float)(z - nodeRadius)),
+            new Vector3((float)(x + nodeRadius), (float)(y + nodeHeight), (float)(z - nodeRadius))
+        };
+        mesh.vertices = vertices;
 
-            // Setup triangles
-            int[] triangles = new int[18] // 6 * 3
-            {
+        // Setup triangles
+        int[] triangles = new int[18] // 6 * 3
+        {
             0,1,2,
             0,2,3,
             0,3,4,
             0,4,1,
             1,4,3,
             1,3,2
-            };
-            mesh.triangles = triangles;
+        };
+        mesh.triangles = triangles;
 
-            // Assign mesh
-            mesh.RecalculateNormals();
-            meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
-            meshFilter.mesh = mesh;
-        }
+        // Assign mesh
+        mesh.RecalculateNormals();
+        meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
+        meshFilter.mesh = mesh;
     }
 
-    /// <summary>
-    /// Render an edge with given coordinates as a child of given feature object
-    /// </summary>
-    /// <param name="tile">The feature's tile</param>
-    /// <param name="feature">The parent feature</param>
-    /// <param name="coordinates">The edge coordinates</param>
-    public static void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
+    public void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
     {
         // Setup the gameobject
         GameObject edge = new GameObject("Edge"); // Create Edge gameobject
         edge.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
         edge.transform.localPosition = Vector3.zero; // Set origin
+        edge.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
 
         // Setup the mesh components
         MeshRenderer meshRenderer = edge.AddComponent<MeshRenderer>();
@@ -132,8 +101,8 @@ public class GeoJsonRenderer
             double abMagnitude = Math.Sqrt(Math.Pow(abX, 2) + Math.Pow(abZ, 2));
 
             // AB⟂ with given width
-            double abPerpX = (tile.Layer.Properties.EdgeWidth * -abZ) / abMagnitude;
-            double abPerpZ = (tile.Layer.Properties.EdgeWidth * abX) / abMagnitude;
+            double abPerpX = (edgeWidth * -abZ) / abMagnitude;
+            double abPerpZ = (edgeWidth * abX) / abMagnitude;
 
             // Add vertices
             vertices[(segment * 4) + 0] = new Vector3((float)(ax - abPerpX), (float)ay, (float)(az - abPerpZ));
@@ -163,18 +132,13 @@ public class GeoJsonRenderer
         meshFilter.mesh = mesh;
     }
 
-    /// <summary>
-    /// Render an area with given coordinates as a child of given feature object
-    /// </summary>
-    /// <param name="tile">The feature's tile</param>
-    /// <param name="feature">The parent feature</param>
-    /// <param name="coordinates">The area coordinates</param>
-    public static void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
+    public void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
     {
         // Setup the gameobject
         GameObject area = new GameObject("Area"); // Create Area gameobject
         area.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
         area.transform.localPosition = Vector3.zero; // Set origin
+        area.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
 
         // Check for empty coordinates array
         if (coordinates.Length == 0)

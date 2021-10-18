@@ -45,7 +45,7 @@ public class MultiPolygon : IGeometryObject, IGeoJsonObject
     {
         foreach (Position[][] polygon in coordinates)
         {
-            GeoJsonRenderer.RenderArea(tile, feature, polygon);
+            ((IGeoJsonRenderer)tile.Layer.Renderer).RenderArea(tile, feature, polygon);
         }
     }
 

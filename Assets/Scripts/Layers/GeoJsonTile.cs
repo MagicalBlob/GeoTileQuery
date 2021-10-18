@@ -10,7 +10,7 @@ public class GeoJsonTile : ITile
 {
     public ILayer Layer { get; }
 
-    public int Zoom { get { return Layer.Properties.Zoom; } }
+    public int Zoom { get { return Layer.Zoom; } }
 
     public int X { get; }
 
@@ -51,8 +51,9 @@ public class GeoJsonTile : ITile
         // Setup the gameobject
         GameObject = new GameObject($"{Id}");
         GameObject.transform.parent = Layer.GameObject.transform; // Set it as a child of the layer gameobject
-        Vector2D relativeOrigin = Bounds.Min - Layer.Properties.Origin;
+        Vector2D relativeOrigin = Bounds.Min - Layer.Origin;
         GameObject.transform.localPosition = new Vector3((float)relativeOrigin.X, 0, (float)relativeOrigin.Y); // Set tile origin
+        GameObject.transform.rotation = Layer.GameObject.transform.rotation; // Match tile rotation with the layer
 
         // Load the tile data
         Load();

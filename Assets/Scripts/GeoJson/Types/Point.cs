@@ -21,7 +21,7 @@ public class Point : IGeometryObject, IGeoJsonObject
 
     public void Render(GeoJsonTile tile, Feature feature)
     {
-        GeoJsonRenderer.RenderNode(tile, feature, coordinates);
+        ((IGeoJsonRenderer)tile.Layer.Renderer).RenderNode(tile, feature, coordinates);
     }
 
     /// <summary>
