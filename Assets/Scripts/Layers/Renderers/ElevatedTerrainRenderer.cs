@@ -77,7 +77,7 @@ public class ElevatedTerrainRenderer : ITerrainRenderer
 
                 // Assign mesh
                 mesh.RecalculateNormals();
-                meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
+                meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
                 divisionGameObject.GetComponent<Renderer>().material.mainTexture = texture;
                 meshFilter.mesh = mesh;
             }

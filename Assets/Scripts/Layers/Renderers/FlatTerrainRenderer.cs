@@ -62,7 +62,7 @@ public class FlatTerrainRenderer : ITerrainRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
+        meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
         tile.GameObject.GetComponent<Renderer>().material.mainTexture = texture;
         meshFilter.mesh = mesh;
     }

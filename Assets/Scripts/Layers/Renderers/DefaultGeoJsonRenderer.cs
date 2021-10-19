@@ -63,7 +63,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
+        meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
         meshFilter.mesh = mesh;
     }
 
@@ -128,24 +128,24 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
+        meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
         meshFilter.mesh = mesh;
     }
 
     public void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
     {
-        // Setup the gameobject
-        GameObject area = new GameObject("Area"); // Create Area gameobject
-        area.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
-        area.transform.localPosition = Vector3.zero; // Set origin
-        area.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
-
         // Check for empty coordinates array
         if (coordinates.Length == 0)
         {
             Logger.LogWarning($"{feature.GameObject.name}: Tried to render an Area with no coordinates");
             return;
         }
+
+        // Setup the gameobject
+        GameObject area = new GameObject("Area"); // Create Area gameobject
+        area.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
+        area.transform.localPosition = Vector3.zero; // Set origin
+        area.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
 
         // Triangulate the polygon coordinates using Earcut
         EarcutLib.Data data = EarcutLib.Flatten(coordinates, tile);
@@ -175,7 +175,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Texture"));
+        meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
         meshFilter.mesh = mesh;
 
         // TODO we're getting an extra vertex because GeoJSON polygon's line rings loop around, should we cut it?
