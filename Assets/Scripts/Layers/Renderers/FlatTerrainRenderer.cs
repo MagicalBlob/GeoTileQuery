@@ -25,7 +25,6 @@ public class FlatTerrainRenderer : ITerrainRenderer
         int[] triangles = new int[divisions * divisions * 6]; // 2 * 3
         Vector2[] uvs = new Vector2[divisions * divisions * 4];
 
-        float tmpOffset = -0.01f; // TODO remove this
         for (int divisionY = 0; divisionY < divisions; divisionY++)
         {
             for (int divisionX = 0; divisionX < divisions; divisionX++)
@@ -35,10 +34,10 @@ public class FlatTerrainRenderer : ITerrainRenderer
                 double divisionYOrigin = divisionY * divisionHeight;
 
                 // Setup vertices
-                vertices[(currentDivision * 4) + 0] = new Vector3((float)(divisionXOrigin), tmpOffset, (float)(divisionYOrigin));
-                vertices[(currentDivision * 4) + 1] = new Vector3((float)(divisionXOrigin + divisionWidth), tmpOffset, (float)(divisionYOrigin));
-                vertices[(currentDivision * 4) + 2] = new Vector3((float)(divisionXOrigin + divisionWidth), tmpOffset, (float)(divisionYOrigin + divisionHeight));
-                vertices[(currentDivision * 4) + 3] = new Vector3((float)(divisionXOrigin), tmpOffset, (float)(divisionYOrigin + divisionHeight));
+                vertices[(currentDivision * 4) + 0] = new Vector3((float)(divisionXOrigin), 0, (float)(divisionYOrigin));
+                vertices[(currentDivision * 4) + 1] = new Vector3((float)(divisionXOrigin + divisionWidth), 0, (float)(divisionYOrigin));
+                vertices[(currentDivision * 4) + 2] = new Vector3((float)(divisionXOrigin + divisionWidth), 0, (float)(divisionYOrigin + divisionHeight));
+                vertices[(currentDivision * 4) + 3] = new Vector3((float)(divisionXOrigin), 0, (float)(divisionYOrigin + divisionHeight));
 
                 // Setup triangles
                 triangles[(currentDivision * 6) + 0] = (currentDivision * 4) + 0;

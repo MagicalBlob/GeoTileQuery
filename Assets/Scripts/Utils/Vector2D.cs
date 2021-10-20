@@ -60,7 +60,14 @@ public struct Vector2D
     /// Note that the current vector is unchanged and a new normalized vector is returned. If you want to normalize the current vector, use Normalize function.
     /// If the vector is too small to be normalized a zero vector will be returned.
     /// </summary>
-    public Vector2D Normalized { get => throw new System.NotImplementedException(); } // TODO implement this
+    public Vector2D Normalized
+    {
+        get
+        {
+            double magnitude = Magnitude;
+            return new Vector2D(X / magnitude, Y / magnitude);
+        }
+    }
 
     /// <summary>
     /// Returns the squared length of this vector (Read Only).
@@ -163,7 +170,9 @@ public struct Vector2D
     /// </summary>
     public void Normalize()
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        double magnitude = Magnitude;
+        X /= magnitude;
+        Y /= magnitude;
     }
 
     /// <summary>
@@ -196,7 +205,7 @@ public struct Vector2D
     /// <returns>The unsigned angle in degrees between from and to</returns>
     public static double Angle(Vector2D from, Vector2D to)
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        return RadianToDegrees(Math.Acos(Dot(from.Normalized, to.Normalized)));
     }
 
     /// <summary>
@@ -207,7 +216,14 @@ public struct Vector2D
     /// <returns>A copy of vector with its magnitude clamped to maxLength</returns>
     public static Vector2D ClampMagnitude(Vector2D vector, double maxLength)
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        double sqrMagnitude = vector.SqrMagnitude;
+        // Check if it's actually larger than maxLength to avoid unnecessary work
+        if (sqrMagnitude > maxLength * maxLength)
+        {
+            double magnitude = Math.Sqrt(sqrMagnitude);
+            return new Vector2D((vector.X / magnitude) * maxLength, (vector.Y / magnitude) * maxLength);
+        }
+        return vector;
     }
 
     /// <summary>
@@ -235,7 +251,7 @@ public struct Vector2D
     /// <returns>lhs . rhs</returns>
     public static double Dot(Vector2D lhs, Vector2D rhs)
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        return lhs.X * rhs.X + lhs.Y * rhs.Y;
     }
 
     /// <summary>
@@ -252,7 +268,10 @@ public struct Vector2D
     /// <returns>Interpolated vector</returns>
     public static Vector2D Lerp(Vector2D a, Vector2D b, double t)
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        // Clamp t to range [0, 1]
+        if (t < 0) { t = 0; } else if (t > 1) { t = 1; }
+
+        return new Vector2D(a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t);
     }
 
     /// <summary>
@@ -267,7 +286,7 @@ public struct Vector2D
     /// <returns>Interpolated vector</returns>
     public static Vector2D LerpUnclamped(Vector2D a, Vector2D b, double t)
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        return new Vector2D(a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t);
     }
 
     /// <summary>
@@ -303,7 +322,16 @@ public struct Vector2D
     /// <returns></returns>
     public static Vector2D MoveTowards(Vector2D current, Vector2D target, double maxDistanceDelta)
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        Vector2D toVector = target - current;
+
+        double sqrMagnitude = toVector.SqrMagnitude;
+
+        if (sqrMagnitude == 0 || (maxDistanceDelta >= 0 && sqrMagnitude <= maxDistanceDelta * maxDistanceDelta))
+        { return target; }
+
+        double magnitude = Math.Sqrt(sqrMagnitude);
+
+        return new Vector2D(current.X + toVector.X / magnitude * maxDistanceDelta, current.Y + toVector.Y / magnitude * maxDistanceDelta);
     }
 
     /// <summary>
@@ -313,7 +341,7 @@ public struct Vector2D
     /// <returns>The perpendicular direction</returns>
     public static Vector2D Perpendicular(Vector2D inDirection)
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        return new Vector2D(-inDirection.Y, inDirection.X);
     }
 
     /// <summary>
@@ -324,7 +352,7 @@ public struct Vector2D
     /// <returns>Reflected vector</returns>
     public static Vector2D Reflect(Vector2D inDirection, Vector2D inNormal)
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        return inDirection - 2 * (Dot(inDirection, inNormal) * inNormal);
     }
 
     /// <summary>
@@ -360,7 +388,9 @@ public struct Vector2D
     /// <returns>The signed angle in degrees between from and to</returns>
     public static double SignedAngle(Vector2D from, Vector2D to)
     {
-        throw new System.NotImplementedException(); // TODO implement this
+        double unsigned = Angle(from, to);
+        int sign = Math.Sign(from.X * to.Y - from.Y * to.X);
+        return sign * unsigned;
     }
 
     /// <summary>
@@ -469,7 +499,7 @@ public struct Vector2D
     /// <summary>
     /// Returns true if two vectors are approximately equal.
     /// 
-    /// To allow for floating point inaccuracies, the two vectors are considered equal if the magnitude of their difference is less than 1e-5.
+    /// To allow for floating point inaccuracies, the two vectors are considered equal if the magnitude of their difference is less than Single.Epsilon.
     /// </summary>
     /// <param name="lhs">Left hand side vector</param>
     /// <param name="rhs">Right hand side vector</param>
@@ -477,7 +507,7 @@ public struct Vector2D
     public static bool operator ==(Vector2D lhs, Vector2D rhs)
     {
         bool a = UnityEngine.Vector2.one != UnityEngine.Vector2.zero;
-        double tolerance = 1e-5; // TODO are we sure we should keep the same tolerance as Unity considering we're using double instead of float?
+        double tolerance = Single.Epsilon;
         return Math.Abs(lhs.X - rhs.X) < tolerance && Math.Abs(lhs.Y - rhs.Y) < tolerance;
     }
 
@@ -492,5 +522,15 @@ public struct Vector2D
     public static bool operator !=(Vector2D lhs, Vector2D rhs)
     {
         return !(lhs == rhs);
+    }
+
+    /// <summary>
+    /// Convert from radian to degrees
+    /// </summary>
+    /// <param name="radian">Angle in radians</param>
+    /// <returns>Angle in degrees</returns>
+    private static double RadianToDegrees(double radian)
+    {
+        return radian * (180 / Math.PI);
     }
 }

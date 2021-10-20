@@ -39,9 +39,20 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         double x = coordinates.GetRelativeX(tile.Bounds.Min.X);
         double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
         double z = coordinates.GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
-        Vector3[] vertices = new Vector3[5] // TODO we're being greedy with vertices here and that means the normals will be messed up since we're sharing vertices between differently oriented faces
+        Vector3[] vertices = new Vector3[16]
         {
             new Vector3((float)x, (float)y, (float)z),
+            new Vector3((float)(x + nodeRadius), (float)(y + nodeHeight), (float)(z + nodeRadius)),
+            new Vector3((float)(x - nodeRadius), (float)(y + nodeHeight), (float)(z + nodeRadius)),
+            new Vector3((float)x, (float)y, (float)z),
+            new Vector3((float)(x - nodeRadius), (float)(y + nodeHeight), (float)(z + nodeRadius)),
+            new Vector3((float)(x - nodeRadius), (float)(y + nodeHeight), (float)(z - nodeRadius)),
+            new Vector3((float)x, (float)y, (float)z),
+            new Vector3((float)(x - nodeRadius), (float)(y + nodeHeight), (float)(z - nodeRadius)),
+            new Vector3((float)(x + nodeRadius), (float)(y + nodeHeight), (float)(z - nodeRadius)),
+            new Vector3((float)x, (float)y, (float)z),
+            new Vector3((float)(x + nodeRadius), (float)(y + nodeHeight), (float)(z - nodeRadius)),
+            new Vector3((float)(x + nodeRadius), (float)(y + nodeHeight), (float)(z + nodeRadius)),
             new Vector3((float)(x + nodeRadius), (float)(y + nodeHeight), (float)(z + nodeRadius)),
             new Vector3((float)(x - nodeRadius), (float)(y + nodeHeight), (float)(z + nodeRadius)),
             new Vector3((float)(x - nodeRadius), (float)(y + nodeHeight), (float)(z - nodeRadius)),
@@ -53,11 +64,11 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         int[] triangles = new int[18] // 6 * 3
         {
             0,1,2,
-            0,2,3,
-            0,3,4,
-            0,4,1,
-            1,4,3,
-            1,3,2
+            3,4,5,
+            6,7,8,
+            9,10,11,
+            12,15,14,
+            12,14,13
         };
         mesh.triangles = triangles;
 
@@ -81,18 +92,19 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         Mesh mesh = new Mesh();
 
         // Setup vertices
+        double tmpOffset = 0.05; // TODO remove this
         int numSegments = coordinates.Length - 1; // Number of segments in the line
         Vector3[] vertices = new Vector3[numSegments * 4]; // Needs 4 vertices per line segment
         for (int segment = 0; segment < numSegments; segment++)
         {
             // Start point of segment AB
             double ax = coordinates[segment].GetRelativeX(tile.Bounds.Min.X);
-            double ay = coordinates[segment].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+            double ay = coordinates[segment].GetRelativeZ() + tmpOffset; // GeoJSON uses z for height, while Unity uses y
             double az = coordinates[segment].GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
             double bx = coordinates[segment + 1].GetRelativeX(tile.Bounds.Min.X);
-            double by = coordinates[segment + 1].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+            double by = coordinates[segment + 1].GetRelativeZ() + tmpOffset; // GeoJSON uses z for height, while Unity uses y
             double bz = coordinates[segment + 1].GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB
@@ -159,11 +171,12 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         Mesh mesh = new Mesh();
 
         // Setup vertices
+        double tmpOffset = 0.05; // TODO remove this
         Vector3[] vertices = new Vector3[data.Vertices.Count / data.Dimensions];
         for (int i = 0; i < data.Vertices.Count / data.Dimensions; i++)
         {
             double x = data.Vertices[i * data.Dimensions];
-            double y = data.Vertices[(i * data.Dimensions) + 2];   // GeoJSON uses z for height, while Unity uses y
+            double y = data.Vertices[(i * data.Dimensions) + 2] + tmpOffset;   // GeoJSON uses z for height, while Unity uses y
             double z = data.Vertices[(i * data.Dimensions) + 1];   // GeoJSON uses z for height, while Unity uses y
             vertices[i] = new Vector3((float)x, (float)y, (float)z);
         }

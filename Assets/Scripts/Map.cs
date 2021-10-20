@@ -58,7 +58,7 @@ public class Map
         layers.Add("Interventions", new GeoJsonLayer(GameObject, "Interventions", origin, zoom, tileRadius, "OBJECTID", defaultGeoJsonRenderer));
         layers.Add("Lamps", new GeoJsonLayer(GameObject, "Lamps", origin, zoom, tileRadius, "OBJECTID_1", new PrefabRenderer("Lamp")));
         layers.Add("Rails", new GeoJsonLayer(GameObject, "Rails", origin, zoom, tileRadius, "OBJECTID", defaultGeoJsonRenderer));
-        layers.Add("Roads", new GeoJsonLayer(GameObject, "Roads", origin, zoom, tileRadius, "OBJECTID_1", defaultGeoJsonRenderer));
+        layers.Add("Roads", new GeoJsonLayer(GameObject, "Roads", origin, zoom, tileRadius, "OBJECTID_1", new RoadRenderer()));
         layers.Add("Sidewalks", new GeoJsonLayer(GameObject, "Sidewalks", origin, zoom, tileRadius, null, defaultGeoJsonRenderer));
         layers.Add("Signs", new GeoJsonLayer(GameObject, "Signs", origin, zoom, tileRadius, "IdSV_Posic", defaultGeoJsonRenderer));
         layers.Add("Trees", new GeoJsonLayer(GameObject, "Trees", origin, zoom, tileRadius, "OBJECTID", new PrefabRenderer("Tree")));
