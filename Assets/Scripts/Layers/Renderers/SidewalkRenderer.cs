@@ -2,29 +2,29 @@ using UnityEngine;
 using System;
 
 /// <summary>
-/// Road GeoJSON renderer
+/// Sidewalk GeoJSON renderer
 /// </summary>
-public class RoadRenderer : IGeoJsonRenderer
+public class SidewalkRenderer : IGeoJsonRenderer
 {
     /// <summary>
-    /// Road height offset
+    /// Sidewalk height offset
     /// </summary>
-    private double roadHeightOffset = 0.05;
+    private double sidewalkHeightOffset = 0.05;
 
     /// <summary>
-    /// Road width
+    /// Sidewalk width
     /// </summary>
-    private double roadWidth = 5;
+    private double sidewalkWidth = 1;
 
     public void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
     {
-        Logger.LogWarning("[RoadRenderer] Tried to render a Node!");
+        Logger.LogWarning("[SidewalkRenderer] Tried to render a Node!");
     }
 
     public void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
     {
         // Setup the gameobject
-        GameObject edge = new GameObject("Edge - Road"); // Create Edge gameobject
+        GameObject edge = new GameObject("Edge - Sidewalk"); // Create Edge gameobject
         edge.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
         edge.transform.localPosition = Vector3.zero; // Set origin
         edge.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
@@ -41,17 +41,17 @@ public class RoadRenderer : IGeoJsonRenderer
         {
             // Start point of segment AB
             Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
-            double ay = coordinates[segment].GetRelativeZ() + roadHeightOffset; // GeoJSON uses z for height, while Unity uses y
+            double ay = coordinates[segment].GetRelativeZ() + sidewalkHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
             Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
-            double by = coordinates[segment + 1].GetRelativeZ() + roadHeightOffset; // GeoJSON uses z for height, while Unity uses y
+            double by = coordinates[segment + 1].GetRelativeZ() + sidewalkHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB and AB⟂ with given width
             Vector2D ab = b - a;
             Vector2D abPerp = Vector2D.Perpendicular(ab);
             abPerp.Normalize();
-            abPerp *= (roadWidth / 2);
+            abPerp *= (sidewalkWidth / 2);
 
             // Add vertices
             vertices[(segment * 4) + 0] = new Vector3((float)(a.X - abPerp.X), (float)ay, (float)(a.Y - abPerp.Y));
@@ -77,12 +77,12 @@ public class RoadRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Road"); // TODO use Addressables instead?
+        meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Sidewalk"); // TODO use Addressables instead?
         meshFilter.mesh = mesh;
     }
 
     public void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
     {
-        Logger.LogWarning("[RoadRenderer] Tried to render an Area!");
+        Logger.LogWarning("[SidewalkRenderer] Tried to render an Area!");
     }
 }

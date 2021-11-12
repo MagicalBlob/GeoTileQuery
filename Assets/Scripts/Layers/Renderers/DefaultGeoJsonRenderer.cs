@@ -18,9 +18,14 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
     private double nodeRadius = 1;
 
     /// <summary>
+    /// Edge height offset
+    /// </summary>
+    private double edgeHeightOffset = 0.05;
+
+    /// <summary>
     /// Edge width
     /// </summary>
-    private double edgeWidth = 1; //0.025; //TODO check the rendering code but I think this might actually be rendering as half the width
+    private double edgeWidth = 1;
 
     public void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
     {
@@ -92,35 +97,29 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         Mesh mesh = new Mesh();
 
         // Setup vertices
-        double tmpOffset = 0.05; // TODO remove this
         int numSegments = coordinates.Length - 1; // Number of segments in the line
         Vector3[] vertices = new Vector3[numSegments * 4]; // Needs 4 vertices per line segment
         for (int segment = 0; segment < numSegments; segment++)
         {
             // Start point of segment AB
-            double ax = coordinates[segment].GetRelativeX(tile.Bounds.Min.X);
-            double ay = coordinates[segment].GetRelativeZ() + tmpOffset; // GeoJSON uses z for height, while Unity uses y
-            double az = coordinates[segment].GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
+            Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+            double ay = coordinates[segment].GetRelativeZ() + edgeHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
-            double bx = coordinates[segment + 1].GetRelativeX(tile.Bounds.Min.X);
-            double by = coordinates[segment + 1].GetRelativeZ() + tmpOffset; // GeoJSON uses z for height, while Unity uses y
-            double bz = coordinates[segment + 1].GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
+            Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+            double by = coordinates[segment + 1].GetRelativeZ() + edgeHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
-            // Calculate AB
-            double abX = bx - ax;
-            double abZ = bz - az;
-            double abMagnitude = Math.Sqrt(Math.Pow(abX, 2) + Math.Pow(abZ, 2));
-
-            // AB⟂ with given width
-            double abPerpX = (edgeWidth * -abZ) / abMagnitude;
-            double abPerpZ = (edgeWidth * abX) / abMagnitude;
+            // Calculate AB and AB⟂ with given width
+            Vector2D ab = b - a;
+            Vector2D abPerp = Vector2D.Perpendicular(ab);
+            abPerp.Normalize();
+            abPerp *= (edgeWidth / 2);
 
             // Add vertices
-            vertices[(segment * 4) + 0] = new Vector3((float)(ax - abPerpX), (float)ay, (float)(az - abPerpZ));
-            vertices[(segment * 4) + 1] = new Vector3((float)(ax + abPerpX), (float)ay, (float)(az + abPerpZ));
-            vertices[(segment * 4) + 2] = new Vector3((float)(bx - abPerpX), (float)by, (float)(bz - abPerpZ));
-            vertices[(segment * 4) + 3] = new Vector3((float)(bx + abPerpX), (float)by, (float)(bz + abPerpZ));
+            vertices[(segment * 4) + 0] = new Vector3((float)(a.X - abPerp.X), (float)ay, (float)(a.Y - abPerp.Y));
+            vertices[(segment * 4) + 1] = new Vector3((float)(a.X + abPerp.X), (float)ay, (float)(a.Y + abPerp.Y));
+            vertices[(segment * 4) + 2] = new Vector3((float)(b.X - abPerp.X), (float)by, (float)(b.Y - abPerp.Y));
+            vertices[(segment * 4) + 3] = new Vector3((float)(b.X + abPerp.X), (float)by, (float)(b.Y + abPerp.Y));
         }
         mesh.vertices = vertices;
 
