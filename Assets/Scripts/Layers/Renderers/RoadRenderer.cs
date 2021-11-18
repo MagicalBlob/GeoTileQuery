@@ -23,6 +23,13 @@ public class RoadRenderer : IGeoJsonRenderer
 
     public void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
     {
+        // Check for empty coordinates array
+        if (coordinates.Length == 0)
+        {
+            Logger.LogWarning($"{feature.GameObject.name}: Tried to render an Edge with no coordinates");
+            return;
+        }
+
         // Setup the gameobject
         GameObject edge = new GameObject("Edge - Road"); // Create Edge gameobject
         edge.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
@@ -34,45 +41,87 @@ public class RoadRenderer : IGeoJsonRenderer
         MeshFilter meshFilter = edge.AddComponent<MeshFilter>();
         Mesh mesh = new Mesh();
 
-        // Setup vertices
+        // Setup vertices and triangles
         int numSegments = coordinates.Length - 1; // Number of segments in the line
-        Vector3[] vertices = new Vector3[numSegments * 4]; // Needs 4 vertices per line segment
+        Vector3[] vertices = new Vector3[numSegments * 5]; // Needs 5 vertices per line segment
+        int[] triangles = new int[numSegments * 9]; // numSegments * 3 * 3
         for (int segment = 0; segment < numSegments; segment++)
         {
-            // Start point of segment AB
+            // Point A
             Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
             double ay = coordinates[segment].GetRelativeZ() + roadHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
-            // End point of segment AB
+            // Point B
             Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
             double by = coordinates[segment + 1].GetRelativeZ() + roadHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
-            // Calculate AB and AB⟂ with given width
+            // Calculate AB
             Vector2D ab = b - a;
-            Vector2D abPerp = Vector2D.Perpendicular(ab);
-            abPerp.Normalize();
+
+            // Normalize AB
+            Vector2D abNorm = ab.Normalized;
+
+            // Calculate AB⟂ with given width
+            Vector2D abPerp = Vector2D.Perpendicular(abNorm);
             abPerp *= (roadWidth / 2);
 
             // Add vertices
-            vertices[(segment * 4) + 0] = new Vector3((float)(a.X - abPerp.X), (float)ay, (float)(a.Y - abPerp.Y));
-            vertices[(segment * 4) + 1] = new Vector3((float)(a.X + abPerp.X), (float)ay, (float)(a.Y + abPerp.Y));
-            vertices[(segment * 4) + 2] = new Vector3((float)(b.X - abPerp.X), (float)by, (float)(b.Y - abPerp.Y));
-            vertices[(segment * 4) + 3] = new Vector3((float)(b.X + abPerp.X), (float)by, (float)(b.Y + abPerp.Y));
+            vertices[(segment * 5) + 0] = new Vector3((float)(a.X - abPerp.X), (float)ay, (float)(a.Y - abPerp.Y));
+            vertices[(segment * 5) + 1] = new Vector3((float)(a.X + abPerp.X), (float)ay, (float)(a.Y + abPerp.Y));
+            vertices[(segment * 5) + 2] = new Vector3((float)(b.X - abPerp.X), (float)by, (float)(b.Y - abPerp.Y));
+            vertices[(segment * 5) + 3] = new Vector3((float)(b.X + abPerp.X), (float)by, (float)(b.Y + abPerp.Y));
+
+            // Add triangles
+            triangles[(segment * 9) + 0] = (segment * 5) + 0; // tri 01
+            triangles[(segment * 9) + 1] = (segment * 5) + 1; // tri 01
+            triangles[(segment * 9) + 2] = (segment * 5) + 3; // tri 01
+            triangles[(segment * 9) + 3] = (segment * 5) + 0; // tri 02
+            triangles[(segment * 9) + 4] = (segment * 5) + 3; // tri 02
+            triangles[(segment * 9) + 5] = (segment * 5) + 2; // tri 02
+
+            // Bevel joins
+            if (segment + 1 < numSegments)
+            {
+                // Point C
+                Vector2D c = new Vector2D(coordinates[segment + 2].GetRelativeX(tile.Bounds.Min.X), coordinates[segment + 2].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+                double cy = coordinates[segment + 2].GetRelativeZ() + roadHeightOffset; // GeoJSON uses z for height, while Unity uses y
+
+                // Calculate BC
+                Vector2D bc = c - b;
+
+                // Normalize BC
+                Vector2D bcNorm = bc.Normalized;
+
+                // Calculate tangent
+                Vector2D tangent = bcNorm + abNorm;
+                tangent.Normalize();
+
+                // Calculate normal
+                Vector2D normal = Vector2D.Perpendicular(tangent);
+
+                // Calculate CB
+                Vector2D cb = b - c;
+
+                // Calculate the direction of the bend
+                int direction = Math.Sign(Vector2D.Dot(ab + cb, normal));
+
+                // Add vertices and triangles
+                vertices[(segment * 5) + 4] = new Vector3((float)b.X, (float)by, (float)b.Y);
+                if (direction < 0)
+                {
+                    triangles[(segment * 9) + 6] = (segment * 5) + 4; // tri 03
+                    triangles[(segment * 9) + 7] = ((segment + 1) * 5) + 0; // tri 03
+                    triangles[(segment * 9) + 8] = (segment * 5) + 2; // tri 03
+                }
+                else
+                {
+                    triangles[(segment * 9) + 6] = ((segment + 1) * 5) + 1; // tri 03
+                    triangles[(segment * 9) + 7] = (segment * 5) + 4; // tri 03
+                    triangles[(segment * 9) + 8] = (segment * 5) + 3; // tri 03
+                }
+            }
         }
         mesh.vertices = vertices;
-
-        // Setup triangles
-        int[] triangles = new int[numSegments * 6]; // numSegments * 2 * 3
-        for (int segment = 0; segment < numSegments; segment++)
-        {
-            triangles[(segment * 6) + 0] = (segment * 4) + 0;
-            triangles[(segment * 6) + 1] = (segment * 4) + 1;
-            triangles[(segment * 6) + 2] = (segment * 4) + 3;
-
-            triangles[(segment * 6) + 3] = (segment * 4) + 0;
-            triangles[(segment * 6) + 4] = (segment * 4) + 3;
-            triangles[(segment * 6) + 5] = (segment * 4) + 2;
-        }
         mesh.triangles = triangles;
 
         // Assign mesh

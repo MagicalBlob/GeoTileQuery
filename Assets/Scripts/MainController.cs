@@ -33,9 +33,12 @@ public class MainController : MonoBehaviour
 
     public static string MapboxAccessToken { get; private set; }
 
+    private UIController ui;
+
     private void Awake()
     {
         MapboxAccessToken = Resources.Load<TextAsset>("Config/secrets").text;
+        ui = new UIController();
     }
 
     private void Start()
@@ -47,6 +50,11 @@ public class MainController : MonoBehaviour
         loadButton.onClick.AddListener(LoadButtonClicked);
         arButton.onClick.AddListener(ARButtonClicked);
         testButton.onClick.AddListener(TestButtonClicked);
+    }
+
+    private void Update()
+    {
+        ui.Render();
     }
 
     private void SwitchToARMode()
@@ -124,7 +132,7 @@ public class MainController : MonoBehaviour
         Logger.Log("Loading data!");
         try
         {
-            map.Render();
+            map.Load();
         }
         catch (Exception e)
         {

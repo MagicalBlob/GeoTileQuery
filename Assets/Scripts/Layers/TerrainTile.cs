@@ -9,7 +9,7 @@ public class TerrainTile : ITile
 {
     public ILayer Layer { get; }
 
-    public int Zoom { get { return Layer.Zoom; } }
+    public int Zoom { get; }
 
     public int X { get; }
 
@@ -25,40 +25,43 @@ public class TerrainTile : ITile
 
     public GameObject GameObject { get; }
 
-    public TileState State { get; }
+    public TileState State { get; private set; }
 
     private Texture2D tmpHeighmapThing; // TODO probably a better idea to only store the converted data
+
+    private string tileRasterUrl;
 
     /// <summary>
     /// Constructs a new Terrain tile
     /// </summary>
     /// <param name="layer">The layer where the tile belongs</param>
+    /// <param name="layerOrigin">The layer's origin in the scene (Meters)</param>
+    /// <param name="zoom">Tile's zoom level</param>
     /// <param name="x">Tile's X coordinate</param>
     /// <param name="y">Tile's Y coordinate</param>
     /// <param name="tileRasterUrl">Url to fetch raster tiles</param>
-    public TerrainTile(ILayer layer, int x, int y, string tileRasterUrl)
+    public TerrainTile(ILayer layer, Vector2D layerOrigin, int zoom, int x, int y, string tileRasterUrl)
     {
+        this.State = TileState.Initial;
         this.Layer = layer;
+        this.Zoom = zoom;
         this.X = x;
         this.Y = y;
-        // Calculate tile bounds
-        this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom);
+        this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom); // Calculate tile bounds
+        this.tileRasterUrl = tileRasterUrl;
 
         // Setup the gameobject
         GameObject = new GameObject($"{Id}");
         GameObject.transform.parent = Layer.GameObject.transform; // Set it as a child of the layer gameobject
-        Vector2D relativeOrigin = Bounds.Min - Layer.Origin;
+        Vector2D relativeOrigin = Bounds.Min - layerOrigin;
         GameObject.transform.localPosition = new Vector3((float)relativeOrigin.X, 0, (float)relativeOrigin.Y); // Set tile origin
         GameObject.transform.rotation = Layer.GameObject.transform.rotation; // Match tile rotation with the layer
-
-        // Load and render the tile
-        Load(tileRasterUrl);
     }
 
     /// <summary>
     /// Load the tile
     /// </summary>
-    private async void Load(string tileRasterUrl)
+    public async Task Load()
     {
         // Request heightmap
         string heightmapUrl = $"https://api.mapbox.com/v4/mapbox.terrain-rgb/{Zoom}/{X}/{Y}.pngraw?access_token={MainController.MapboxAccessToken}";
@@ -95,8 +98,11 @@ public class TerrainTile : ITile
             Texture2D rasterTexture = DownloadHandlerTexture.GetContent(rasterReq);
             rasterTexture.wrapMode = TextureWrapMode.Clamp;
 
+            State = TileState.Loaded;
+
             // Render the tile
             ((ITerrainRenderer)Layer.Renderer).RenderTerrain(this, rasterTexture);
+            State = TileState.Rendered;
         }
     }
 

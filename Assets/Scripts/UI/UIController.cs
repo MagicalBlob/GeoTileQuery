@@ -1,27 +1,47 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Profiling;
 using System.Text;
+using UnityEngine;
+using UnityEngine.Profiling;
+using UnityEngine.UI;
 
 /// <summary>
-/// Controls the Debug UI
+/// Controls the user interface
 /// </summary>
-public class DebugUIController : MonoBehaviour
+public class UIController
 {
+    private GameObject layers;
+    private GameObject debugInfo;
+
     private float update = 0.0f;
-    public Text debugTextDisplay;
-    public GameObject log;
+
+    private Text debugTextDisplay;
+    private GameObject log;
 
     private int numFrames = 0;
     private float totalFps = 0;
 
-    private void Awake()
+    /// <summary>
+    /// Constructs a new UI Controller
+    /// </summary>
+    public UIController()
     {
-        // Listen for new log messages to display
-        Logger.Subscribe(UpdateLog);
+        // Layers screen
+        layers = GameObject.Find("/UI/Layers");
+        layers.SetActive(false); // Disabled by default, but we needed it active first to be able to find it
+        GameObject.Find("/UI/Buttons/Layers").GetComponent<Button>().onClick.AddListener(ToggleLayers);
+
+        // Debug info screen
+        debugTextDisplay = GameObject.Find("/UI/Debug Info/Panel/Debug Text Display").GetComponent<Text>();
+        log = GameObject.Find("/UI/Debug Info/Scroll View/Viewport/Log");
+        Logger.Subscribe(UpdateLog); // Listen for new log messages to display
+        debugInfo = GameObject.Find("/UI/Debug Info");
+        debugInfo.SetActive(false); // Disabled by default, but we needed it active first to be able to find it
+        GameObject.Find("/UI/Buttons/Debug Info").GetComponent<Button>().onClick.AddListener(ToggleDebugInfo);
     }
 
-    private void Update()
+    /// <summary>
+    /// Called every frame
+    /// </summary>
+    public void Render()
     {
         UpdateAverageFps();
 
@@ -32,6 +52,23 @@ public class DebugUIController : MonoBehaviour
             update = 0.0f;
             UpdateDebugTextDisplay();
         }
+    }
+
+    /// <summary>
+    /// Toggles the display of the layers screen
+    /// </summary>
+    private void ToggleLayers()
+    {
+        layers.SetActive(!layers.activeSelf);
+        Logger.Log("Toggled Layers screen");
+    }
+
+    /// <summary>
+    /// Toggles the display of the debug info screen
+    /// </summary>
+    private void ToggleDebugInfo()
+    {
+        debugInfo.SetActive(!debugInfo.activeSelf);
     }
 
     /// <summary>
@@ -132,5 +169,4 @@ public class DebugUIController : MonoBehaviour
         numFrames = 0;
         return averageFps;
     }
-
 }

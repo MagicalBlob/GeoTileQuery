@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
@@ -12,12 +13,6 @@ public class GeoJsonLayer : ILayer
     private Dictionary<string, GeoJsonTile> tiles;
 
     public string Id { get; }
-
-    public Vector2D Origin { get; }
-
-    public int Zoom { get; }
-
-    public int TileViewDistance { get; }
 
     /// <summary>
     /// Name of the Feature's property that may be used as an id as an alternative to the actual Feature id if it doesn't exist
@@ -33,17 +28,11 @@ public class GeoJsonLayer : ILayer
     /// </summary>
     /// <param name="map">The map to which the layer belongs</param>
     /// <param name="id">The layer id</param>
-    /// <param name="origin">The layer's origin in the scene (Meters)</param>
-    /// <param name="zoom">Zoom level for the tiles</param>
-    /// <param name="tileRadius">Radius of tiles to be loaded</param>
     /// <param name="idPropertyName">Name of the Feature's property that may be used as an Id as an alternative to the actual Feature Id if it doesn't exist</param>
     /// <param name="renderer">The layer's renderer</param>
-    public GeoJsonLayer(GameObject map, string id, Vector2D origin, int zoom, int tileRadius, string idPropertyName, IGeoJsonRenderer renderer)
+    public GeoJsonLayer(GameObject map, string id, string idPropertyName, IGeoJsonRenderer renderer)
     {
         this.Id = id;
-        this.Origin = origin;
-        this.Zoom = zoom;
-        this.TileViewDistance = tileRadius;
         this.IdPropertyName = idPropertyName;
         this.Renderer = renderer;
 
@@ -55,20 +44,21 @@ public class GeoJsonLayer : ILayer
         tiles = new Dictionary<string, GeoJsonTile>();
     }
 
-    public void Render()
+    /// <summary>
+    /// Load the tile with given parameters
+    /// </summary>
+    /// <param name="origin">The layer's origin in the scene (Meters)</param>
+    /// <param name="zoom">The tile's zoom level</param>
+    /// <param name="x">The tile's X coordinate</param>
+    /// <param name="y">The tile's Y coordinate</param>
+    public void LoadTile(Vector2D origin, int zoom, int x, int y)
     {
-        Vector2Int tileCoords = GlobalMercator.MetersToGoogleTile(Origin, Zoom);
-        for (int y = tileCoords.y - TileViewDistance; y <= tileCoords.y + TileViewDistance; y++)
+        // Only load tiles that haven't been loaded already
+        if (!tiles.ContainsKey($"{zoom}/{x}/{y}"))
         {
-            for (int x = tileCoords.x - TileViewDistance; x <= tileCoords.x + TileViewDistance; x++)
-            {
-                if (!tiles.ContainsKey($"{Zoom}/{x}/{y}"))
-                {
-                    // Only render tiles that haven't been rendered already
-                    GeoJsonTile tile = new GeoJsonTile(this, x, y);
-                    tiles.Add(tile.Id, tile);
-                }
-            }
+            GeoJsonTile tile = new GeoJsonTile(this, origin, zoom, x, y);
+            tile.Load();
+            tiles.Add(tile.Id, tile);
         }
     }
 }
