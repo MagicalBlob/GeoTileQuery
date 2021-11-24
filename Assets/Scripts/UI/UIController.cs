@@ -64,6 +64,34 @@ public class UIController
     }
 
     /// <summary>
+    /// Update the list of map layers
+    /// </summary>
+    public void UpdateMapLayersList()
+    {
+        // Get the layer toggle prefab
+        GameObject togglePrefab = Resources.Load<GameObject>("UI/Layer Toggle");
+
+        int currentPos = 0;
+        foreach (ILayer layer in MainController.Map.Layers.Values)
+        {
+            // Instantiate the layer toggle prefabs as children of the layers screen
+            GameObject toggle = GameObject.Instantiate(togglePrefab, layers.transform);
+            toggle.name = layer.Id;
+            toggle.GetComponentInChildren<Text>().text = layer.Id;
+            toggle.transform.position = new Vector3(toggle.transform.position.x, toggle.transform.position.y + currentPos, toggle.transform.position.z);
+            currentPos -= 45;
+
+            // Add a listener to the toggle
+            toggle.GetComponent<Toggle>().onValueChanged.AddListener(
+                delegate
+                {
+                    layer.GameObject.SetActive(!layer.GameObject.activeSelf);
+                    Logger.Log(layer.GameObject.activeSelf ? $"Enabled layer `{layer.Id}`" : $"Disabled layer `{layer.Id}`");
+                });
+        }
+    }
+
+    /// <summary>
     /// Toggles the display of the debug info screen
     /// </summary>
     private void ToggleDebugInfo()

@@ -12,9 +12,14 @@ using UnityEngine.XR.ARSubsystems;
 public class MainController : MonoBehaviour
 {
     /// <summary>
+    /// The User Interface controller
+    /// </summary>
+    public static UIController UI { get; private set; }
+
+    /// <summary>
     /// The map
     /// </summary>
-    public Map map;
+    public static Map Map { get; private set; }
 
     public GameObject ModeRoot2D;
     public GameObject ModeRootAR;
@@ -33,17 +38,13 @@ public class MainController : MonoBehaviour
 
     public static string MapboxAccessToken { get; private set; }
 
-    private UIController ui;
-
-    private void Awake()
-    {
-        MapboxAccessToken = Resources.Load<TextAsset>("Config/secrets").text;
-        ui = new UIController();
-    }
-
     private void Start()
     {
-        map = new Map();
+        MapboxAccessToken = Resources.Load<TextAsset>("Config/secrets").text;
+        UI = new UIController();
+
+        Map = new Map();
+        UI.UpdateMapLayersList();
 
         SwitchTo2DMode();
 
@@ -54,7 +55,7 @@ public class MainController : MonoBehaviour
 
     private void Update()
     {
-        ui.Render();
+        UI.Render();
     }
 
     private void SwitchToARMode()
@@ -72,8 +73,8 @@ public class MainController : MonoBehaviour
         ModeRootAR.SetActive(false);
         ModeRoot2D.SetActive(true);
 
-        map.GameObject.transform.parent = ModeRoot2D.transform; // Set the map as a child of the 2D Mode root
-        map.GameObject.transform.SetPositionAndRotation(ModeRoot2D.transform.position, ModeRoot2D.transform.rotation); // Match position and rotation with parent
+        Map.GameObject.transform.parent = ModeRoot2D.transform; // Set the map as a child of the 2D Mode root
+        Map.GameObject.transform.SetPositionAndRotation(ModeRoot2D.transform.position, ModeRoot2D.transform.rotation); // Match position and rotation with parent
     }
 
     private void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs args)
@@ -103,14 +104,14 @@ public class MainController : MonoBehaviour
             if (trackedImage.trackingState != TrackingState.None)
             {
                 // Check if the tracked image still isn't the map parent and if the image is being actively tracked
-                if (map.GameObject.transform.parent != trackedImage.transform && trackedImage.trackingState == TrackingState.Tracking)
+                if (Map.GameObject.transform.parent != trackedImage.transform && trackedImage.trackingState == TrackingState.Tracking)
                 {
                     // Set the map as a child of the tracked image
-                    map.GameObject.transform.parent = trackedImage.transform;
+                    Map.GameObject.transform.parent = trackedImage.transform;
 
                     //TODO remove debug
                     Logger.Log($"Setting tracked image `{trackedImage.referenceImage.name}` as the map parent. Tracking state: {trackedImage.trackingState}");
-                    Transform t = map.GameObject.transform;
+                    Transform t = Map.GameObject.transform;
                     while (t != null)
                     {
                         Logger.Log($"{t.name} | {t.gameObject.activeInHierarchy} | {t.gameObject.activeSelf} | {t.gameObject.transform.position} | {t.gameObject.transform.localPosition}  | {t.gameObject.transform.rotation} | {t.gameObject.transform.localRotation} | {t.gameObject.transform.localScale}");
@@ -118,7 +119,7 @@ public class MainController : MonoBehaviour
                     }
                 }
                 // Match position and rotation with parent
-                map.GameObject.transform.SetPositionAndRotation(trackedImage.transform.position, trackedImage.transform.rotation);
+                Map.GameObject.transform.SetPositionAndRotation(trackedImage.transform.position, trackedImage.transform.rotation);
             }
         }
         else
@@ -132,7 +133,7 @@ public class MainController : MonoBehaviour
         Logger.Log("Loading data!");
         try
         {
-            map.Load();
+            Map.Load();
         }
         catch (Exception e)
         {
