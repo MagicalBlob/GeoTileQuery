@@ -31,7 +31,6 @@ public class MainController : MonoBehaviour
     public Button testButton;
 
     public ARTrackedImageManager arTrackedImageManager;
-    public GameObject testPrefab;
 
     public static readonly HttpClient client = new HttpClient();
     public static readonly SemaphoreSlim networkSemaphore = new SemaphoreSlim(6, 6);
