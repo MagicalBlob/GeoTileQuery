@@ -10,13 +10,7 @@ This project is licensed under the GNU General Public License v3.0 (SPDX-License
 
 A copy of this license is available at: [`COPYING`](COPYING)
 
-## Dependencies
-
-|  Name  |  Version  | License | Repository |
-|--------|-----------|---------|------------|
-| Newtonsoft.Json for Unity | `13.0.102` | [`LICENSES/Newtonsoft.Json-for-Unity/LICENSE.md`](LICENSES/Newtonsoft.Json-for-Unity/LICENSE.md) | [https://github.com/jilleJr/Newtonsoft.Json-for-Unity](https://github.com/jilleJr/Newtonsoft.Json-for-Unity) |
-
-### Ported Code
+## Ported Code
 
 |  Name  |  Version  | License | Original Source Code |
 |--------|-----------|---------|------------|
