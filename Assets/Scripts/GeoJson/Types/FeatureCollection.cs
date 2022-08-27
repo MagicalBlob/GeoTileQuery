@@ -24,7 +24,7 @@ public class FeatureCollection : IGeoJsonObject
     /// Render the FeatureCollection
     /// </summary>
     /// <param name="tile">The FeatureCollection's tile</param>
-    public void Render(GeoJsonTile tile)
+    public void Render(GeoJsonTileLayer tile)
     {
         foreach (Feature feature in features)
         {

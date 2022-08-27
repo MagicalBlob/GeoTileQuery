@@ -10,5 +10,5 @@ public interface ITerrainRenderer : ILayerRenderer
     /// </summary>
     /// <param name="tile">The terrain's tile</param>
     /// <param name="texture">The raster texture</param>
-    void RenderTerrain(TerrainTile tile, Texture2D texture);
+    void RenderTerrain(TerrainTileLayer tile, Texture2D texture);
 }

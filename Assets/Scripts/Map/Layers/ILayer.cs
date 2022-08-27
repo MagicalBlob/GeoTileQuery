@@ -1,6 +1,3 @@
-using System.Threading.Tasks;
-using UnityEngine;
-
 /// <summary>
 /// Represents a map layer
 /// </summary>
@@ -15,9 +12,4 @@ public interface ILayer
     /// The layer's renderer
     /// </summary>
     ILayerRenderer Renderer { get; }
-
-    /// <summary>
-    /// The layer's GameObject representation
-    /// </summary>
-    GameObject GameObject { get; }
 }

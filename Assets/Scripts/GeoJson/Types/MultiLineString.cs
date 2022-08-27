@@ -28,7 +28,7 @@ public class MultiLineString : IGeometryObject, IGeoJsonObject
         this.coordinates = coordinates;
     }
 
-    public void Render(GeoJsonTile tile, Feature feature)
+    public void Render(GeoJsonTileLayer tile, Feature feature)
     {
         foreach (Position[] line in coordinates)
         {

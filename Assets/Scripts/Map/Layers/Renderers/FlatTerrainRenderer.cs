@@ -8,17 +8,17 @@ public class FlatTerrainRenderer : ITerrainRenderer
     /// </summary>
     private int terrainTileDivisions = 4;
 
-    public void RenderTerrain(TerrainTile tile, Texture2D texture)
+    public void RenderTerrain(TerrainTileLayer tileLayer, Texture2D texture)
     {
-        double tileWidth = tile.Bounds.Width;
-        double tileHeight = tile.Bounds.Height;
+        double tileWidth = tileLayer.Tile.Bounds.Width;
+        double tileHeight = tileLayer.Tile.Bounds.Height;
         int divisions = terrainTileDivisions;
         double divisionWidth = tileWidth / divisions;
         double divisionHeight = tileHeight / divisions;
 
         // Setup the mesh components
-        MeshRenderer meshRenderer = tile.GameObject.AddComponent<MeshRenderer>();
-        MeshFilter meshFilter = tile.GameObject.AddComponent<MeshFilter>();
+        MeshRenderer meshRenderer = tileLayer.GameObject.AddComponent<MeshRenderer>();
+        MeshFilter meshFilter = tileLayer.GameObject.AddComponent<MeshFilter>();
         Mesh mesh = new Mesh();
 
         Vector3[] vertices = new Vector3[divisions * divisions * 4];
@@ -62,7 +62,7 @@ public class FlatTerrainRenderer : ITerrainRenderer
         // Assign mesh
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
-        tile.GameObject.GetComponent<Renderer>().material.mainTexture = texture;
+        tileLayer.GameObject.GetComponent<Renderer>().material.mainTexture = texture;
         meshFilter.mesh = mesh;
     }
 }

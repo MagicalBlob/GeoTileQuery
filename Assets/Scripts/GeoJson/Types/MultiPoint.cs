@@ -20,7 +20,7 @@ public class MultiPoint : IGeometryObject, IGeoJsonObject
         this.coordinates = coordinates;
     }
 
-    public void Render(GeoJsonTile tile, Feature feature)
+    public void Render(GeoJsonTileLayer tile, Feature feature)
     {
         foreach (Position position in coordinates)
         {

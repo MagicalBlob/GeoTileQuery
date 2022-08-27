@@ -82,12 +82,13 @@ public class UIController
             currentPos -= 45;
 
             // Add a listener to the toggle
-            toggle.GetComponent<Toggle>().onValueChanged.AddListener(
+            Logger.LogWarning("// TODO Temporarily disabled layer toggle");
+            /*toggle.GetComponent<Toggle>().onValueChanged.AddListener(
                 delegate
                 {
                     layer.GameObject.SetActive(!layer.GameObject.activeSelf);
                     Logger.Log(layer.GameObject.activeSelf ? $"Enabled layer `{layer.Id}`" : $"Disabled layer `{layer.Id}`");
-                });
+                });*/
         }
     }
 

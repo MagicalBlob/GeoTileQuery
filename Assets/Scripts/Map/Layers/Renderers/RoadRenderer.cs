@@ -16,12 +16,12 @@ public class RoadRenderer : IGeoJsonRenderer
     /// </summary>
     private double roadWidth = 5;
 
-    public void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
+    public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         Logger.LogWarning("[RoadRenderer] Tried to render a Node!");
     }
 
-    public void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
+    public void RenderEdge(GeoJsonTileLayer tileLayer, Feature feature, Position[] coordinates)
     {
         // Check for empty coordinates array
         if (coordinates.Length == 0)
@@ -48,11 +48,11 @@ public class RoadRenderer : IGeoJsonRenderer
         for (int segment = 0; segment < numSegments; segment++)
         {
             // Point A
-            Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+            Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
             double ay = coordinates[segment].GetRelativeZ() + roadHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // Point B
-            Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+            Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
             double by = coordinates[segment + 1].GetRelativeZ() + roadHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB
@@ -83,7 +83,7 @@ public class RoadRenderer : IGeoJsonRenderer
             if (segment + 1 < numSegments)
             {
                 // Point C
-                Vector2D c = new Vector2D(coordinates[segment + 2].GetRelativeX(tile.Bounds.Min.X), coordinates[segment + 2].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+                Vector2D c = new Vector2D(coordinates[segment + 2].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment + 2].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
                 double cy = coordinates[segment + 2].GetRelativeZ() + roadHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
                 // Calculate BC
@@ -130,7 +130,7 @@ public class RoadRenderer : IGeoJsonRenderer
         meshFilter.mesh = mesh;
     }
 
-    public void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
+    public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
     {
         Logger.LogWarning("[RoadRenderer] Tried to render an Area!");
     }

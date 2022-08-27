@@ -27,7 +27,7 @@ public class LineString : IGeometryObject, IGeoJsonObject
         }
     }
 
-    public void Render(GeoJsonTile tile, Feature feature)
+    public void Render(GeoJsonTileLayer tile, Feature feature)
     {
         ((IGeoJsonRenderer)tile.Layer.Renderer).RenderEdge(tile, feature, coordinates);
     }

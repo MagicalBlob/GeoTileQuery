@@ -11,17 +11,17 @@ public class BuildingRenderer : IGeoJsonRenderer
     /// </summary>
     private double defaultHeight = 5;
 
-    public void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
+    public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         Logger.LogWarning("[BuildingRenderer] Tried to render a Node!");
     }
 
-    public void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
+    public void RenderEdge(GeoJsonTileLayer tileLayer, Feature feature, Position[] coordinates)
     {
         Logger.LogWarning("[BuildingRenderer] Tried to render an Edge!");
     }
 
-    public void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
+    public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
     {
         // Check for empty coordinates array
         if (coordinates.Length == 0)
@@ -43,18 +43,18 @@ public class BuildingRenderer : IGeoJsonRenderer
             height = defaultHeight;
         }
 
-        RenderWalls(tile, building, coordinates, height);
-        RenderRoof(tile, building, coordinates, height);
+        RenderWalls(tileLayer, building, coordinates, height);
+        RenderRoof(tileLayer, building, coordinates, height);
     }
 
     /// <summary>
     /// Render the building walls
     /// </summary>
-    /// <param name="tile">The tile where the building is located</param>
+    /// <param name="tileLayer">The tile layer where the building is located</param>
     /// <param name="building">The building GameObject</param>
     /// <param name="coordinates">The building coordinates</param>
     /// <param name="height">The building height</param>
-    private void RenderWalls(GeoJsonTile tile, GameObject building, Position[][] coordinates, double height)
+    private void RenderWalls(GeoJsonTileLayer tileLayer, GameObject building, Position[][] coordinates, double height)
     {
         // Setup the gameobject
         GameObject walls = new GameObject("Walls"); // Create Walls gameobject
@@ -81,13 +81,13 @@ public class BuildingRenderer : IGeoJsonRenderer
         {
             for (int point = 0; point < ring.Length - 1; point++)
             {
-                double x0 = ring[point].GetRelativeX(tile.Bounds.Min.X);
+                double x0 = ring[point].GetRelativeX(tileLayer.Tile.Bounds.Min.X);
                 double y0 = ring[point].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-                double z0 = ring[point].GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
+                double z0 = ring[point].GetRelativeY(tileLayer.Tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
-                double x1 = ring[point + 1].GetRelativeX(tile.Bounds.Min.X);
+                double x1 = ring[point + 1].GetRelativeX(tileLayer.Tile.Bounds.Min.X);
                 double y1 = ring[point + 1].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-                double z1 = ring[point + 1].GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
+                double z1 = ring[point + 1].GetRelativeY(tileLayer.Tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
                 vertices[vertOffset + 0] = new Vector3((float)x0, (float)y0, (float)z0);
                 vertices[vertOffset + 1] = new Vector3((float)x1, (float)y1, (float)z1);
@@ -117,11 +117,11 @@ public class BuildingRenderer : IGeoJsonRenderer
     /// <summary>
     /// Render the building roof
     /// </summary>
-    /// <param name="tile">The tile where the building is located</param>
+    /// <param name="tileLayer">The tile layer where the building is located</param>
     /// <param name="building">The building GameObject</param>
     /// <param name="coordinates">The building coordinates</param>
     /// <param name="height">The building height</param>
-    private void RenderRoof(GeoJsonTile tile, GameObject building, Position[][] coordinates, double height)
+    private void RenderRoof(GeoJsonTileLayer tileLayer, GameObject building, Position[][] coordinates, double height)
     {
         // Setup the gameobject
         GameObject roof = new GameObject("Roof"); // Create Roof gameobject
@@ -130,7 +130,7 @@ public class BuildingRenderer : IGeoJsonRenderer
         roof.transform.rotation = building.transform.rotation; // Match rotation
 
         // Triangulate the polygon coordinates for the roof using Earcut
-        EarcutLib.Data data = EarcutLib.Flatten(coordinates, tile);
+        EarcutLib.Data data = EarcutLib.Flatten(coordinates, tileLayer);
         List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
 
         // Setup the mesh components

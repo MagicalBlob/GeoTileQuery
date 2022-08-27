@@ -159,7 +159,7 @@ public class Feature : IGeoJsonObject
     /// Render the Feature
     /// </summary>
     /// <param name="tile">The Feature's tile</param>
-    public void Render(GeoJsonTile tile)
+    public void Render(GeoJsonTileLayer tile)
     {
         if (id == null || id.Length == 0)
         {

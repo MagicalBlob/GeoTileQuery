@@ -16,12 +16,12 @@ public class SidewalkRenderer : IGeoJsonRenderer
     /// </summary>
     private double sidewalkWidth = 1;
 
-    public void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
+    public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         Logger.LogWarning("[SidewalkRenderer] Tried to render a Node!");
     }
 
-    public void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
+    public void RenderEdge(GeoJsonTileLayer tileLayer, Feature feature, Position[] coordinates)
     {
         // Setup the gameobject
         GameObject edge = new GameObject("Edge - Sidewalk"); // Create Edge gameobject
@@ -40,11 +40,11 @@ public class SidewalkRenderer : IGeoJsonRenderer
         for (int segment = 0; segment < numSegments; segment++)
         {
             // Start point of segment AB
-            Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+            Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
             double ay = coordinates[segment].GetRelativeZ() + sidewalkHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
-            Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+            Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
             double by = coordinates[segment + 1].GetRelativeZ() + sidewalkHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB and AB⟂ with given width
@@ -81,7 +81,7 @@ public class SidewalkRenderer : IGeoJsonRenderer
         meshFilter.mesh = mesh;
     }
 
-    public void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
+    public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
     {
         Logger.LogWarning("[SidewalkRenderer] Tried to render an Area!");
     }

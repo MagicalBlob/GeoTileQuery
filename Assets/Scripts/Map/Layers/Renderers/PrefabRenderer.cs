@@ -19,12 +19,12 @@ public class PrefabRenderer : IGeoJsonRenderer
         this.model = model;
     }
 
-    public void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
+    public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         // Render Node with an existing model instead
-        double x = coordinates.GetRelativeX(tile.Bounds.Min.X);
+        double x = coordinates.GetRelativeX(tileLayer.Tile.Bounds.Min.X);
         double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-        double z = coordinates.GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
+        double z = coordinates.GetRelativeY(tileLayer.Tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
         // Get model name
         if (model == null)
@@ -47,12 +47,12 @@ public class PrefabRenderer : IGeoJsonRenderer
         }
     }
 
-    public void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
+    public void RenderEdge(GeoJsonTileLayer tileLayer, Feature feature, Position[] coordinates)
     {
         Logger.LogWarning("[PrefabRenderer] Tried to render an Edge!");
     }
 
-    public void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
+    public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
     {
         Logger.LogWarning("[PrefabRenderer] Tried to render an Area!");
     }

@@ -19,7 +19,7 @@ public class Point : IGeometryObject, IGeoJsonObject
         this.coordinates = coordinates;
     }
 
-    public void Render(GeoJsonTile tile, Feature feature)
+    public void Render(GeoJsonTileLayer tile, Feature feature)
     {
         ((IGeoJsonRenderer)tile.Layer.Renderer).RenderNode(tile, feature, coordinates);
     }

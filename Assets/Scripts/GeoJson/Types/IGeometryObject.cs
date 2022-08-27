@@ -8,5 +8,5 @@ public interface IGeometryObject : IGeoJsonObject
     /// </summary>
     /// <param name="tile">The feature's tile</param>
     /// <param name="feature">The feature to which the geometry object belongs</param>
-    void Render(GeoJsonTile tile, Feature feature);
+    void Render(GeoJsonTileLayer tile, Feature feature);
 }

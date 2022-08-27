@@ -39,7 +39,7 @@ public class Polygon : IGeometryObject, IGeoJsonObject
         this.coordinates = coordinates;
     }
 
-    public void Render(GeoJsonTile tile, Feature feature)
+    public void Render(GeoJsonTileLayer tile, Feature feature)
     {
         ((IGeoJsonRenderer)tile.Layer.Renderer).RenderArea(tile, feature, coordinates);
     }

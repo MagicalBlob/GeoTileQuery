@@ -27,7 +27,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
     /// </summary>
     private double edgeWidth = 1;
 
-    public void RenderNode(GeoJsonTile tile, Feature feature, Position coordinates)
+    public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         // Setup the gameobject
         GameObject node = new GameObject("Node"); // Create Node gameobject
@@ -41,9 +41,9 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         Mesh mesh = new Mesh();
 
         // Setup vertices
-        double x = coordinates.GetRelativeX(tile.Bounds.Min.X);
+        double x = coordinates.GetRelativeX(tileLayer.Tile.Bounds.Min.X);
         double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
-        double z = coordinates.GetRelativeY(tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
+        double z = coordinates.GetRelativeY(tileLayer.Tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
         Vector3[] vertices = new Vector3[16]
         {
             new Vector3((float)x, (float)y, (float)z),
@@ -83,7 +83,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         meshFilter.mesh = mesh;
     }
 
-    public void RenderEdge(GeoJsonTile tile, Feature feature, Position[] coordinates)
+    public void RenderEdge(GeoJsonTileLayer tileLayer, Feature feature, Position[] coordinates)
     {
         // Setup the gameobject
         GameObject edge = new GameObject("Edge"); // Create Edge gameobject
@@ -102,11 +102,11 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         for (int segment = 0; segment < numSegments; segment++)
         {
             // Start point of segment AB
-            Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+            Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
             double ay = coordinates[segment].GetRelativeZ() + edgeHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
-            Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
+            Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
             double by = coordinates[segment + 1].GetRelativeZ() + edgeHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB and AB⟂ with given width
@@ -143,7 +143,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         meshFilter.mesh = mesh;
     }
 
-    public void RenderArea(GeoJsonTile tile, Feature feature, Position[][] coordinates)
+    public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
     {
         // Check for empty coordinates array
         if (coordinates.Length == 0)
@@ -159,7 +159,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         area.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
 
         // Triangulate the polygon coordinates using Earcut
-        EarcutLib.Data data = EarcutLib.Flatten(coordinates, tile);
+        EarcutLib.Data data = EarcutLib.Flatten(coordinates, tileLayer);
         List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
         /*double deviation = EarcutLib.Deviation(data.Vertices, data.Holes, data.Dimensions, triangles);
         Logger.Log(deviation == 0 ? "The triangulation is fully correct" : $"Triangulation deviation: {Math.Round(deviation, 6)}"); TODO clear this */
