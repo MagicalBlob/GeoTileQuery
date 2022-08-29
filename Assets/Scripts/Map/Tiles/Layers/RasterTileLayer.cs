@@ -29,6 +29,7 @@ public class RasterTileLayer : ITileLayer
 
         // Setup the gameobject
         GameObject = new GameObject(Layer.Id);
+        GameObject.SetActive(Layer.Visible);
         GameObject.transform.parent = Tile.GameObject.transform; // Set it as a child of the tile gameobject
         GameObject.transform.localPosition = Vector3.zero;
 
@@ -61,7 +62,7 @@ public class RasterTileLayer : ITileLayer
         }
         else
         {
-            Logger.LogError(rasterReq.error);
+            Logger.LogError($"Failed to load `{FullId}`: {rasterReq.error}");
         }
     }
 }

@@ -43,17 +43,17 @@ public class PrefabRenderer : IGeoJsonRenderer
         }
         else
         {
-            Logger.LogWarning($"Unable to find resource 'Prefabs/{model}'");
+            Logger.LogWarning($"[PrefabRenderer] {tileLayer.FullId}: Unable to find resource 'Prefabs/{model}'");
         }
     }
 
     public void RenderEdge(GeoJsonTileLayer tileLayer, Feature feature, Position[] coordinates)
     {
-        Logger.LogWarning("[PrefabRenderer] Tried to render an Edge!");
+        Logger.LogWarning($"[PrefabRenderer] {tileLayer.FullId}: Tried to render an Edge!");
     }
 
     public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
     {
-        Logger.LogWarning("[PrefabRenderer] Tried to render an Area!");
+        Logger.LogWarning($"[PrefabRenderer] {tileLayer.FullId}: Tried to render an Area!");
     }
 }

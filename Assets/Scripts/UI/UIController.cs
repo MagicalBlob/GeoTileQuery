@@ -75,20 +75,29 @@ public class UIController
         foreach (ILayer layer in MainController.Map.Layers.Values)
         {
             // Instantiate the layer toggle prefabs as children of the layers screen
-            GameObject toggle = GameObject.Instantiate(togglePrefab, layers.transform);
-            toggle.name = layer.Id;
-            toggle.GetComponentInChildren<Text>().text = layer.Id;
-            toggle.transform.position = new Vector3(toggle.transform.position.x, toggle.transform.position.y + currentPos, toggle.transform.position.z);
+            GameObject toggleObj = GameObject.Instantiate(togglePrefab, layers.transform);
+            toggleObj.name = layer.Id;
+            toggleObj.GetComponentInChildren<Text>().text = layer.Id;
+            toggleObj.transform.position = new Vector3(toggleObj.transform.position.x, toggleObj.transform.position.y + currentPos, toggleObj.transform.position.z);
             currentPos -= 45;
 
-            // Add a listener to the toggle
-            Logger.LogWarning("// TODO Temporarily disabled layer toggle");
-            /*toggle.GetComponent<Toggle>().onValueChanged.AddListener(
+            // Setup the toggle
+            Toggle toggle = toggleObj.GetComponent<Toggle>();
+            toggle.isOn = layer.Visible; // Set the initial state of the toggle to the layer's default visibility
+            toggle.onValueChanged.AddListener(
                 delegate
                 {
-                    layer.GameObject.SetActive(!layer.GameObject.activeSelf);
-                    Logger.Log(layer.GameObject.activeSelf ? $"Enabled layer `{layer.Id}`" : $"Disabled layer `{layer.Id}`");
-                });*/
+                    // When the toggle is toggled, set the layer's visibility to the new state
+                    layer.Visible = toggle.isOn;
+
+                    // Update the layer visibility for all the tiles already in the map
+                    foreach (Tile tile in MainController.Map.Tiles.Values)
+                    {
+                        tile.Layers[layer.Id].GameObject.SetActive(layer.Visible);
+                    }
+
+                    Logger.Log(toggle.isOn ? $"Enabled layer '{layer.Id}'" : $"Disabled layer '{layer.Id}'");
+                });
         }
     }
 

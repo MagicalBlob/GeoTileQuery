@@ -18,7 +18,7 @@ public class SidewalkRenderer : IGeoJsonRenderer
 
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
-        Logger.LogWarning("[SidewalkRenderer] Tried to render a Node!");
+        Logger.LogWarning($"[SidewalkRenderer] {tileLayer.FullId}: Tried to render a Node!");
     }
 
     public void RenderEdge(GeoJsonTileLayer tileLayer, Feature feature, Position[] coordinates)
@@ -83,6 +83,6 @@ public class SidewalkRenderer : IGeoJsonRenderer
 
     public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
     {
-        Logger.LogWarning("[SidewalkRenderer] Tried to render an Area!");
+        Logger.LogWarning($"[SidewalkRenderer] {tileLayer.FullId}: Tried to render an Area!");
     }
 }

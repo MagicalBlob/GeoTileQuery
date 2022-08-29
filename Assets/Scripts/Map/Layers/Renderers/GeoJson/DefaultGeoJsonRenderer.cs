@@ -148,7 +148,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         // Check for empty coordinates array
         if (coordinates.Length == 0)
         {
-            Logger.LogWarning($"{feature.GameObject.name}: Tried to render an Area with no coordinates");
+            Logger.LogWarning($"[DefaultGeoJsonRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates");
             return;
         }
 

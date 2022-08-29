@@ -35,6 +35,7 @@ public class GeoJsonTileLayer : ITileLayer
 
         // Setup the gameobject
         GameObject = new GameObject(Layer.Id);
+        GameObject.SetActive(Layer.Visible);
         GameObject.transform.parent = Tile.GameObject.transform; // Set it as a child of the tile gameobject
         GameObject.transform.localPosition = Vector3.zero;
 
@@ -71,7 +72,7 @@ public class GeoJsonTileLayer : ITileLayer
                     throw new InvalidGeoJsonException("Can't render the tile. GeoJSON root isn't a FeatureCollection");
                 }
                 DateTime afterRender = DateTime.Now;
-                Logger.Log($"{FullId} : Semaphore > {(afterSemaphore - loadCalled).TotalSeconds} | Request > {(afterRequest - afterSemaphore).TotalSeconds} | Parse > {(afterParse - afterRequest).TotalSeconds} | Render > {(afterRender - afterParse).TotalSeconds} | TOTAL > {(afterRender - loadCalled).TotalSeconds}");
+                //Logger.Log($"{FullId} : Semaphore > {(afterSemaphore - loadCalled).TotalSeconds} | Request > {(afterRequest - afterSemaphore).TotalSeconds} | Parse > {(afterParse - afterRequest).TotalSeconds} | Render > {(afterRender - afterParse).TotalSeconds} | TOTAL > {(afterRender - loadCalled).TotalSeconds}"); TODO: Remove this and timers
             }
             catch (InvalidGeoJsonException e)
             {
