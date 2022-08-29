@@ -1,18 +1,18 @@
 using UnityEngine;
 
-// Elevated Terrain renderer
-public class ElevatedTerrainRenderer : ITerrainRenderer
+// Terrain Raster renderer
+public class TerrainRenderer : IRasterRenderer
 {
     /// <summary>
-    /// Number of divisions that each terrain tile will be split (eg: if 4, each terrain tile will be split into 4 x 4 subdivisions)
+    /// Number of divisions that each raster tile will be split (eg: if 4, each raster tile will be split into 4 x 4 subdivisions)
     /// </summary>
-    private int terrainTileDivisions = 4;
+    private int rasterTileDivisions = 4;
 
-    public void RenderTerrain(TerrainTileLayer tileLayer, Texture2D texture)
+    public void Render(RasterTileLayer tileLayer, Texture2D texture)
     {
         double tileWidth = tileLayer.Tile.Bounds.Width;
         double tileHeight = tileLayer.Tile.Bounds.Height;
-        int divisions = terrainTileDivisions;
+        int divisions = rasterTileDivisions;
         double divisionWidth = tileWidth / divisions;
         double divisionHeight = tileHeight / divisions;
         int pixelsPerDivision = GlobalMercator.TileSize / divisions;
@@ -50,10 +50,10 @@ public class ElevatedTerrainRenderer : ITerrainRenderer
                         double pixelYOrigin = pixelY * pixelHeight;
 
                         // Setup vertices
-                        vertices[(currentPixel * 4) + 0] = new Vector3((float)(pixelXOrigin), (float)tileLayer.GetHeight((divisionX * pixelsPerDivision) + pixelX, (divisionY * pixelsPerDivision) + pixelY), (float)(pixelYOrigin));
-                        vertices[(currentPixel * 4) + 1] = new Vector3((float)(pixelXOrigin + pixelWidth), (float)tileLayer.GetHeight((divisionX * pixelsPerDivision) + pixelX + 1, (divisionY * pixelsPerDivision) + pixelY), (float)(pixelYOrigin));
-                        vertices[(currentPixel * 4) + 2] = new Vector3((float)(pixelXOrigin + pixelWidth), (float)tileLayer.GetHeight((divisionX * pixelsPerDivision) + pixelX + 1, (divisionY * pixelsPerDivision) + pixelY + 1), (float)(pixelYOrigin + pixelHeight));
-                        vertices[(currentPixel * 4) + 3] = new Vector3((float)(pixelXOrigin), (float)tileLayer.GetHeight((divisionX * pixelsPerDivision) + pixelX, (divisionY * pixelsPerDivision) + pixelY + 1), (float)(pixelYOrigin + pixelHeight));
+                        vertices[(currentPixel * 4) + 0] = new Vector3((float)(pixelXOrigin), (float)tileLayer.Tile.GetHeight((divisionX * pixelsPerDivision) + pixelX, (divisionY * pixelsPerDivision) + pixelY), (float)(pixelYOrigin));
+                        vertices[(currentPixel * 4) + 1] = new Vector3((float)(pixelXOrigin + pixelWidth), (float)tileLayer.Tile.GetHeight((divisionX * pixelsPerDivision) + pixelX + 1, (divisionY * pixelsPerDivision) + pixelY), (float)(pixelYOrigin));
+                        vertices[(currentPixel * 4) + 2] = new Vector3((float)(pixelXOrigin + pixelWidth), (float)tileLayer.Tile.GetHeight((divisionX * pixelsPerDivision) + pixelX + 1, (divisionY * pixelsPerDivision) + pixelY + 1), (float)(pixelYOrigin + pixelHeight));
+                        vertices[(currentPixel * 4) + 3] = new Vector3((float)(pixelXOrigin), (float)tileLayer.Tile.GetHeight((divisionX * pixelsPerDivision) + pixelX, (divisionY * pixelsPerDivision) + pixelY + 1), (float)(pixelYOrigin + pixelHeight));
 
                         // Setup triangles
                         triangles[(currentPixel * 6) + 0] = (currentPixel * 4) + 0;

@@ -25,6 +25,11 @@ public interface ITileLayer
     GameObject GameObject { get; }
 
     /// <summary>
+    /// The tile layer's state
+    /// </summary>
+    TileLayerState State { get; }
+
+    /// <summary>
     /// Load the tile layer
     /// </summary>
     void Load();

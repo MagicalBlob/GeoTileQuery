@@ -12,62 +12,52 @@ public class Map
     public GameObject GameObject { get; }
 
     /// <summary>
-    /// The terrain layer
-    /// </summary>
-    public TerrainLayer Terrain { get; private set; }
-
-    /// <summary>
     /// The data layers
     /// </summary>
     public Dictionary<string, ILayer> Layers { get; private set; }
 
     /// <summary>
-    /// The loaded tiles in the map
+    /// The tiles in the map
     /// </summary>
-    private Dictionary<string, Tile> tiles;
+    public Dictionary<string, Tile> Tiles { get; private set; }
 
     /// <summary>
     /// Constructs a new Map
     /// </summary>
     public Map()
     {
+        Layers = new Dictionary<string, ILayer>();
+        Tiles = new Dictionary<string, Tile>();
+
         // Setup the gameobject
         GameObject = new GameObject("Map");
 
-        // Create the layer dictionary
-        Layers = new Dictionary<string, ILayer>();
-
-        // Add the Terrain layers
-        //TODO probably should separate the terrain height from the layer, since the heightmap is needed by all layers, and these are essentially raster layers
-        Layers.Add("StamenWatercolor", new TerrainLayer("StamenWatercolor", new FlatTerrainRenderer(), "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{0}.jpg"));
-        Layers.Add("StamenToner", new TerrainLayer("StamenToner", new FlatTerrainRenderer(), "https://stamen-tiles-b.a.ssl.fastly.net/toner-background/{0}.png"));
-        Layers.Add("StamenTerrain", new TerrainLayer("StamenTerrain", new FlatTerrainRenderer(), "http://stamen-tiles-c.a.ssl.fastly.net/terrain-background/{0}.png"));
-        Layers.Add("OSMStandard", new TerrainLayer("OSMStandard", new FlatTerrainRenderer(), "https://tile.openstreetmap.org/{0}.png"));
-        Layers.Add("MapboxSatellite", new TerrainLayer("MapboxSatellite", new FlatTerrainRenderer(), $"https://api.mapbox.com/v4/mapbox.satellite/{{0}}.jpg?access_token={MainController.MapboxAccessToken}"));
-
-        // Add the GeoJSON layers
-        DefaultGeoJsonRenderer defaultGeoJsonRenderer = new DefaultGeoJsonRenderer();
-        Layers.Add("Bikepaths", new GeoJsonLayer("Bikepaths", "OBJECTID", defaultGeoJsonRenderer));
-        Layers.Add("Buildings", new GeoJsonLayer("Buildings", "name", new BuildingRenderer()));
-        Layers.Add("BuildingsLOD3", new GeoJsonLayer("BuildingsLOD3", "id", new PrefabRenderer(null)));
-        Layers.Add("Closures", new GeoJsonLayer("Closures", "id", defaultGeoJsonRenderer));
-        Layers.Add("Electrical_IP_especial", new GeoJsonLayer("Electrical_IP_especial", null, defaultGeoJsonRenderer));
-        Layers.Add("Electrical_PS", new GeoJsonLayer("Electrical_PS", null, defaultGeoJsonRenderer));
-        Layers.Add("Electrical_PTC", new GeoJsonLayer("Electrical_PTC", null, defaultGeoJsonRenderer));
-        Layers.Add("Electrical_PTD", new GeoJsonLayer("Electrical_PTD", null, defaultGeoJsonRenderer));
-        Layers.Add("Electrical_Subestacao", new GeoJsonLayer("Electrical_Subestacao", null, defaultGeoJsonRenderer));
-        Layers.Add("Electrical_Troco_MT", new GeoJsonLayer("Electrical_Troco_MT-AT", null, defaultGeoJsonRenderer));
-        Layers.Add("Environment", new GeoJsonLayer("Environment", "id", defaultGeoJsonRenderer));
-        Layers.Add("Interventions", new GeoJsonLayer("Interventions", "OBJECTID", defaultGeoJsonRenderer));
-        Layers.Add("Lamps", new GeoJsonLayer("Lamps", "OBJECTID_1", new PrefabRenderer("Lamp")));
-        Layers.Add("Rails", new GeoJsonLayer("Rails", "OBJECTID", defaultGeoJsonRenderer));
-        Layers.Add("Roads", new GeoJsonLayer("Roads", "OBJECTID_1", new RoadRenderer()));
-        Layers.Add("Sidewalks", new GeoJsonLayer("Sidewalks", null, new SidewalkRenderer()));
-        Layers.Add("Signs", new GeoJsonLayer("Signs", "IdSV_Posic", defaultGeoJsonRenderer));
-        Layers.Add("Trees", new GeoJsonLayer("Trees", "OBJECTID", new PrefabRenderer("Tree")));
-
-        // Create the tile dictionary
-        tiles = new Dictionary<string, Tile>();
+        // Add the data layers        
+        IRasterRenderer defaultRasterRenderer = new TerrainRenderer();
+        IGeoJsonRenderer defaultGeoJsonRenderer = new DefaultGeoJsonRenderer();
+        Layers.Add("StamenWatercolor", new RasterLayer("StamenWatercolor", defaultRasterRenderer, "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{0}.jpg"));
+        Layers.Add("StamenToner", new RasterLayer("StamenToner", defaultRasterRenderer, "https://stamen-tiles-b.a.ssl.fastly.net/toner-background/{0}.png"));
+        Layers.Add("StamenTerrain", new RasterLayer("StamenTerrain", defaultRasterRenderer, "http://stamen-tiles-c.a.ssl.fastly.net/terrain-background/{0}.png"));
+        Layers.Add("OSMStandard", new RasterLayer("OSMStandard", defaultRasterRenderer, "https://tile.openstreetmap.org/{0}.png"));
+        Layers.Add("MapboxSatellite", new RasterLayer("MapboxSatellite", defaultRasterRenderer, $"https://api.mapbox.com/v4/mapbox.satellite/{{0}}.jpg?access_token={MainController.MapboxAccessToken}"));
+        Layers.Add("Bikepaths", new GeoJsonLayer("Bikepaths", defaultGeoJsonRenderer, "OBJECTID"));
+        Layers.Add("Buildings", new GeoJsonLayer("Buildings", new BuildingRenderer(), "name"));
+        Layers.Add("BuildingsLOD3", new GeoJsonLayer("BuildingsLOD3", new PrefabRenderer(null), "id"));
+        Layers.Add("Closures", new GeoJsonLayer("Closures", defaultGeoJsonRenderer, "id"));
+        Layers.Add("Electrical_IP_especial", new GeoJsonLayer("Electrical_IP_especial", defaultGeoJsonRenderer, null));
+        Layers.Add("Electrical_PS", new GeoJsonLayer("Electrical_PS", defaultGeoJsonRenderer, null));
+        Layers.Add("Electrical_PTC", new GeoJsonLayer("Electrical_PTC", defaultGeoJsonRenderer, null));
+        Layers.Add("Electrical_PTD", new GeoJsonLayer("Electrical_PTD", defaultGeoJsonRenderer, null));
+        Layers.Add("Electrical_Subestacao", new GeoJsonLayer("Electrical_Subestacao", defaultGeoJsonRenderer, null));
+        Layers.Add("Electrical_Troco_MT", new GeoJsonLayer("Electrical_Troco_MT-AT", defaultGeoJsonRenderer, null));
+        Layers.Add("Environment", new GeoJsonLayer("Environment", defaultGeoJsonRenderer, "id"));
+        Layers.Add("Interventions", new GeoJsonLayer("Interventions", defaultGeoJsonRenderer, "OBJECTID"));
+        Layers.Add("Lamps", new GeoJsonLayer("Lamps", new PrefabRenderer("Lamp"), "OBJECTID_1"));
+        Layers.Add("Rails", new GeoJsonLayer("Rails", defaultGeoJsonRenderer, "OBJECTID"));
+        Layers.Add("Roads", new GeoJsonLayer("Roads", new RoadRenderer(), "OBJECTID_1"));
+        Layers.Add("Sidewalks", new GeoJsonLayer("Sidewalks", new SidewalkRenderer(), null));
+        Layers.Add("Signs", new GeoJsonLayer("Signs", defaultGeoJsonRenderer, "IdSV_Posic"));
+        Layers.Add("Trees", new GeoJsonLayer("Trees", new PrefabRenderer("Tree"), "OBJECTID"));
     }
 
     /// <summary>
@@ -80,6 +70,7 @@ public class Map
         Vector2D marques = GlobalMercator.LatLonToMeters(38.725249, -9.149994);
         Vector2D alta = GlobalMercator.LatLonToMeters(38.773310, -9.153689);
         Vector2D campolide = GlobalMercator.LatLonToMeters(38.733744, -9.160745);
+        Vector2D nullIsland = GlobalMercator.LatLonToMeters(0, 0);
         Vector2D origin = baixa;
 
         int zoom = 16;
@@ -91,11 +82,11 @@ public class Map
             for (int x = originTile.x - tileLoadDistance; x <= originTile.x + tileLoadDistance; x++)
             {
                 // Only load tiles that haven't been loaded already
-                if (!tiles.ContainsKey($"{zoom}/{x}/{y}"))
+                if (!Tiles.ContainsKey($"{zoom}/{x}/{y}"))
                 {
                     Tile tile = new Tile(this, origin, zoom, x, y);
+                    Tiles.Add(tile.Id, tile);
                     tile.Load();
-                    tiles.Add(tile.Id, tile);
                 }
             }
         }

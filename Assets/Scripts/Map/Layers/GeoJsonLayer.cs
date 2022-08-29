@@ -16,12 +16,12 @@ public class GeoJsonLayer : ILayer
     /// Construct a new GeoJSONLayer
     /// </summary>
     /// <param name="id">The layer id</param>
-    /// <param name="idPropertyName">Name of the Feature's property that may be used as an Id as an alternative to the actual Feature Id if it doesn't exist</param>
     /// <param name="renderer">The layer's renderer</param>
-    public GeoJsonLayer(string id, string idPropertyName, IGeoJsonRenderer renderer)
+    /// <param name="idPropertyName">Name of the Feature's property that may be used as an Id as an alternative to the actual Feature Id if it doesn't exist</param>
+    public GeoJsonLayer(string id, IGeoJsonRenderer renderer, string idPropertyName)
     {
         this.Id = id;
-        this.IdPropertyName = idPropertyName;
         this.Renderer = renderer;
+        this.IdPropertyName = idPropertyName;
     }
 }

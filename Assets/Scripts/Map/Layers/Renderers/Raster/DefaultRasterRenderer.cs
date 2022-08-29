@@ -1,18 +1,18 @@
 using UnityEngine;
 
-// Flat Terrain renderer
-public class FlatTerrainRenderer : ITerrainRenderer
+// Default Raster renderer
+public class DefaultRasterRenderer : IRasterRenderer
 {
     /// <summary>
-    /// Number of divisions that each terrain tile will be split (eg: if 4, each terrain tile will be split into 4 x 4 subdivisions)
+    /// Number of divisions that each raster tile will be split (eg: if 4, each raster tile will be split into 4 x 4 subdivisions)
     /// </summary>
-    private int terrainTileDivisions = 4;
+    private int rasterTileDivisions = 4;
 
-    public void RenderTerrain(TerrainTileLayer tileLayer, Texture2D texture)
+    public void Render(RasterTileLayer tileLayer, Texture2D texture)
     {
         double tileWidth = tileLayer.Tile.Bounds.Width;
         double tileHeight = tileLayer.Tile.Bounds.Height;
-        int divisions = terrainTileDivisions;
+        int divisions = rasterTileDivisions;
         double divisionWidth = tileWidth / divisions;
         double divisionHeight = tileHeight / divisions;
 

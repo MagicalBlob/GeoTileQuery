@@ -8,11 +8,7 @@ public enum TileState
     /// </summary>
     Initial,
     /// <summary>
-    /// The tile's data has been loaded
+    /// The tile's terrain data has been loaded
     /// </summary>
-    Loaded,
-    /// <summary>
-    /// The tile has been rendered
-    /// </summary>
-    Rendered
+    LoadedTerrain,
 }

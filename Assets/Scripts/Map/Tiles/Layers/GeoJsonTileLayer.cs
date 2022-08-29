@@ -16,8 +16,10 @@ public class GeoJsonTileLayer : ITileLayer
 
     public GameObject GameObject { get; }
 
+    public TileLayerState State { get; private set; }
+
     /// <summary>
-    /// The layer's GeoJSON
+    /// The tile layer's GeoJSON
     /// </summary>
     private IGeoJsonObject geoJson;
 
@@ -28,7 +30,6 @@ public class GeoJsonTileLayer : ITileLayer
     /// <param name="layer">The map layer that this tile layer is a part of</param>
     public GeoJsonTileLayer(Tile tile, ILayer layer)
     {
-        //this.State = TileState.Initial; TODO: State
         this.Tile = tile;
         this.Layer = layer;
 
@@ -36,6 +37,8 @@ public class GeoJsonTileLayer : ITileLayer
         GameObject = new GameObject(Layer.Id);
         GameObject.transform.parent = Tile.GameObject.transform; // Set it as a child of the tile gameobject
         GameObject.transform.localPosition = Vector3.zero;
+
+        this.State = TileLayerState.Initial;
     }
 
     public async void Load()
@@ -52,15 +55,15 @@ public class GeoJsonTileLayer : ITileLayer
             {
                 // Parse the GeoJSON text
                 geoJson = GeoJson.Parse(geoJsonText);
+                State = TileLayerState.Loaded;
                 DateTime afterParse = DateTime.Now;
-                //State = TileState.Loaded; TODO: State
 
                 // Check if it's a FeatureCollection
                 if (geoJson.GetType() == typeof(FeatureCollection))
                 {
                     // Render the GeoJSON
                     ((FeatureCollection)geoJson).Render(this);
-                    //State = TileState.Rendered; TODO: State
+                    State = TileLayerState.Rendered;
                 }
                 else
                 {
