@@ -65,11 +65,10 @@ public class Tile
     /// Constructs a new tile
     /// </summary>
     /// <param name="map">The map to which the tile belongs</param>
-    /// <param name="origin">The map's origin in the scene (Meters)</param>
     /// <param name="zoom">The tile's zoom level</param>
     /// <param name="x">The tile's X coordinate</param>
     /// <param name="y">The tile's Y coordinate</param>
-    public Tile(Map map, Vector2D origin, int zoom, int x, int y)
+    public Tile(Map map, int zoom, int x, int y)
     {
         this.Map = map;
         this.Zoom = zoom;
@@ -81,7 +80,7 @@ public class Tile
         // Setup the gameobject
         GameObject = new GameObject(Id);
         GameObject.transform.parent = map.GameObject.transform; // Set it as a child of the map gameobject
-        Vector2D relativeOrigin = Bounds.Min - origin;
+        Vector2D relativeOrigin = Bounds.Min - Map.Origin;
         GameObject.transform.localPosition = new Vector3((float)relativeOrigin.X, 0, (float)relativeOrigin.Y); // Set tile origin
         GameObject.transform.rotation = map.GameObject.transform.rotation; // Match tile rotation with the layer
 

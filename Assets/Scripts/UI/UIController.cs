@@ -8,40 +8,70 @@ using UnityEngine.UI;
 /// </summary>
 public class UIController
 {
-    private GameObject layers;
-    private GameObject debugInfo;
+    /// <summary>
+    /// Reference to the map
+    /// </summary>
+    private Map Map { get; }
+
+    /// <summary>
+    /// Layers screen
+    /// </summary>
+    private GameObject LayersScreen { get; }
+
+    /// <summary>
+    /// Debug screen
+    /// </summary>
+    private GameObject DebugScreen { get; }
+
+    /// <summary>
+    /// Debug text display
+    /// </summary>
+    private Text DebugTextDisplay { get; }
+
+    /// <summary>
+    /// Log display
+    /// </summary>
+    private GameObject Log { get; }
 
     private float update = 0.0f;
-
-    private Text debugTextDisplay;
-    private GameObject log;
 
     private int numFrames = 0;
     private float totalFps = 0;
 
+    private bool arMode = false;
+
     /// <summary>
     /// Constructs a new UI Controller
+    /// <param name="map">The map</param>
     /// </summary>
-    public UIController()
+    public UIController(Map map)
     {
-        // Layers screen
-        layers = GameObject.Find("/UI/Layers");
-        layers.SetActive(false); // Disabled by default, but we needed it active first to be able to find it
-        GameObject.Find("/UI/Buttons/Layers").GetComponent<Button>().onClick.AddListener(ToggleLayers);
+        this.Map = map;
 
-        // Debug info screen
-        debugTextDisplay = GameObject.Find("/UI/Debug Info/Panel/Debug Text Display").GetComponent<Text>();
-        log = GameObject.Find("/UI/Debug Info/Scroll View/Viewport/Log");
+        // Layers screen
+        LayersScreen = GameObject.Find("/UI/Screens/Layers");
+        LayersScreen.SetActive(false); // Disabled by default, but we needed it active first to be able to find it
+        GameObject.Find("/UI/Buttons/Layers").GetComponent<Button>().onClick.AddListener(ToggleLayers);
+        UpdateMapLayersList();
+
+        // Debug screen
+        DebugTextDisplay = GameObject.Find("/UI/Screens/Debug/Panel/Debug Text Display").GetComponent<Text>();
+        Log = GameObject.Find("/UI/Screens/Debug/Scroll View/Viewport/Log");
         Logger.Subscribe(UpdateLog); // Listen for new log messages to display
-        debugInfo = GameObject.Find("/UI/Debug Info");
-        debugInfo.SetActive(false); // Disabled by default, but we needed it active first to be able to find it
-        GameObject.Find("/UI/Buttons/Debug Info").GetComponent<Button>().onClick.AddListener(ToggleDebugInfo);
+        DebugScreen = GameObject.Find("/UI/Screens/Debug");
+        DebugScreen.SetActive(false); // Disabled by default, but we needed it active first to be able to find it
+        GameObject.Find("/UI/Buttons/Debug").GetComponent<Button>().onClick.AddListener(ToggleDebug);
+
+        // Other buttons
+        GameObject.Find("/UI/Buttons/AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
+        GameObject.Find("/UI/Buttons/Test").GetComponent<Button>().onClick.AddListener(TestButtonClicked);
+        GameObject.Find("/UI/Buttons/Test 2").GetComponent<Button>().onClick.AddListener(Test2ButtonClicked);
     }
 
     /// <summary>
     /// Called every frame
     /// </summary>
-    public void Render()
+    public void Update()
     {
         UpdateAverageFps();
 
@@ -59,23 +89,107 @@ public class UIController
     /// </summary>
     private void ToggleLayers()
     {
-        layers.SetActive(!layers.activeSelf);
+        LayersScreen.SetActive(!LayersScreen.activeSelf);
         Logger.Log("Toggled Layers screen");
+    }
+
+    /// <summary>
+    /// Toggles the display of the debug screen
+    /// </summary>
+    private void ToggleDebug()
+    {
+        DebugScreen.SetActive(!DebugScreen.activeSelf);
+    }
+
+    /// <summary>
+    /// Toggles AR mode
+    /// </summary>
+    private void ToggleAR()
+    {
+        if (arMode)
+        {
+            Map.SwitchTo2DMode();
+            Logger.Log("Switched to 2D mode");
+        }
+        else
+        {
+            Map.SwitchToARMode();
+            Logger.Log("Switched to AR mode");
+        }
+        arMode = !arMode;
+    }
+
+    int currentCameraAngle = 0;
+    private void TestButtonClicked()
+    {
+        Logger.Log("Test button clicked!");
+        switch (currentCameraAngle)
+        {
+            case 0:
+                Map.Move2DCamera(new Vector3(350, 20, 235), new Vector3(20, 325, 0));
+                currentCameraAngle = 1;
+                break;
+            case 1:
+                Map.Move2DCamera(new Vector3(420, 120, 125), new Vector3(30, 310, 0));
+                currentCameraAngle = 2;
+                break;
+            case 2:
+                Map.Move2DCamera(new Vector3(600, 270, -60), new Vector3(40, 310, 0));
+                currentCameraAngle = 3;
+                break;
+            case 3:
+                Map.Move2DCamera(new Vector3(350, 760, -980), new Vector3(35, 330, 0));
+                currentCameraAngle = 0;
+                break;
+        }
+    }
+
+    int currentOrigin = 0;
+    private void Test2ButtonClicked()
+    {
+        switch (currentOrigin)
+        {
+            case 0:
+                Map.MoveOrigin(38.765514, -9.093839);
+                Logger.Log("Moved origin to expo");
+                currentOrigin = 1;
+                break;
+            case 1:
+                Map.MoveOrigin(38.725249, -9.149994);
+                Logger.Log("Moved origin to marques");
+                currentOrigin = 2;
+                break;
+            case 2:
+                Map.MoveOrigin(38.773310, -9.153689);
+                Logger.Log("Moved origin to alta");
+                currentOrigin = 3;
+                break;
+            case 3:
+                Map.MoveOrigin(38.733744, -9.160745);
+                Logger.Log("Moved origin to campolide");
+                currentOrigin = 4;
+                break;
+            case 4:
+                Map.MoveOrigin(38.706808, -9.136164);
+                Logger.Log("Moved origin to baixa");
+                currentOrigin = 0;
+                break;
+        }
     }
 
     /// <summary>
     /// Update the list of map layers
     /// </summary>
-    public void UpdateMapLayersList()
+    private void UpdateMapLayersList()
     {
         // Get the layer toggle prefab
         GameObject togglePrefab = Resources.Load<GameObject>("UI/Layer Toggle");
 
         int currentPos = 0;
-        foreach (ILayer layer in MainController.Map.Layers.Values)
+        foreach (ILayer layer in Map.Layers.Values)
         {
             // Instantiate the layer toggle prefabs as children of the layers screen
-            GameObject toggleObj = GameObject.Instantiate(togglePrefab, layers.transform);
+            GameObject toggleObj = GameObject.Instantiate(togglePrefab, LayersScreen.transform);
             toggleObj.name = layer.Id;
             toggleObj.GetComponentInChildren<Text>().text = layer.Id;
             toggleObj.transform.position = new Vector3(toggleObj.transform.position.x, toggleObj.transform.position.y + currentPos, toggleObj.transform.position.z);
@@ -91,7 +205,7 @@ public class UIController
                     layer.Visible = toggle.isOn;
 
                     // Update the layer visibility for all the tiles already in the map
-                    foreach (Tile tile in MainController.Map.Tiles.Values)
+                    foreach (Tile tile in Map.Tiles.Values)
                     {
                         tile.Layers[layer.Id].GameObject.SetActive(layer.Visible);
                     }
@@ -102,19 +216,11 @@ public class UIController
     }
 
     /// <summary>
-    /// Toggles the display of the debug info screen
-    /// </summary>
-    private void ToggleDebugInfo()
-    {
-        debugInfo.SetActive(!debugInfo.activeSelf);
-    }
-
-    /// <summary>
     /// Updates log to render new messages
     /// </summary>
     private void UpdateLog()
     {
-        Logger.Render(log);
+        Logger.Render(Log);
     }
 
     /// <summary>
@@ -175,7 +281,7 @@ public class UIController
         debugText.Append(SystemInfo.batteryStatus);
         debugText.Append(")");
 
-        debugTextDisplay.text = debugText.ToString();
+        DebugTextDisplay.text = debugText.ToString();
     }
 
     /// <summary>

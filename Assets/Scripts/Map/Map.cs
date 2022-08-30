@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.ARFoundation;
+using UnityEngine.XR.ARSubsystems;
 
 /// <summary>
 /// Represents the Map
@@ -22,15 +24,38 @@ public class Map
     public Dictionary<string, Tile> Tiles { get; private set; }
 
     /// <summary>
+    /// The map's origin in Unity space
+    /// </summary>
+    public Vector2D Origin { get; private set; }
+
+    /// <summary>
+    /// The root GameObject for 2D mode
+    /// </summary>
+    private GameObject Root2D { get; }
+
+    /// <summary>
+    /// The root GameObject for AR mode
+    /// </summary>
+    private GameObject RootAR { get; }
+
+    /// <summary>
+    /// AR Manager for 2D images tracking
+    /// </summary>
+    private ARTrackedImageManager ARTrackedImageManager { get; }
+
+    /// <summary>
     /// Constructs a new Map
     /// </summary>
     public Map()
     {
+        GameObject = new GameObject("Tiles");
         Layers = new Dictionary<string, ILayer>();
         Tiles = new Dictionary<string, Tile>();
+        Root2D = GameObject.Find("/Map/Root 2D");
+        RootAR = GameObject.Find("/Map/Root AR");
+        ARTrackedImageManager = GameObject.Find("/Map/Root AR/AR Session Origin").GetComponent<ARTrackedImageManager>();
 
-        // Setup the gameobject
-        GameObject = new GameObject("Map");
+        SwitchTo2DMode();
 
         // Add the data layers        
         IRasterRenderer defaultRasterRenderer = new DefaultRasterRenderer();
@@ -58,6 +83,9 @@ public class Map
         Layers.Add("Sidewalks", new GeoJsonLayer("Sidewalks", true, new SidewalkRenderer(), null));
         Layers.Add("Signs", new GeoJsonLayer("Signs", true, defaultGeoJsonRenderer, "IdSV_Posic"));
         Layers.Add("Trees", new GeoJsonLayer("Trees", true, new PrefabRenderer("Tree"), "OBJECTID"));
+
+        // Set the origin
+        Origin = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
     }
 
     /// <summary>
@@ -65,17 +93,9 @@ public class Map
     /// </summary>
     public void Load()
     {
-        Vector2D baixa = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
-        Vector2D expo = GlobalMercator.LatLonToMeters(38.765514, -9.093839);
-        Vector2D marques = GlobalMercator.LatLonToMeters(38.725249, -9.149994);
-        Vector2D alta = GlobalMercator.LatLonToMeters(38.773310, -9.153689);
-        Vector2D campolide = GlobalMercator.LatLonToMeters(38.733744, -9.160745);
-        Vector2D nullIsland = GlobalMercator.LatLonToMeters(0, 0);
-        Vector2D origin = baixa;
-
         int zoom = 16;
 
-        Vector2Int originTile = GlobalMercator.MetersToGoogleTile(origin, zoom);
+        Vector2Int originTile = GlobalMercator.MetersToGoogleTile(Origin, zoom);
         int tileLoadDistance = 1;
         for (int y = originTile.y - tileLoadDistance; y <= originTile.y + tileLoadDistance; y++)
         {
@@ -84,11 +104,129 @@ public class Map
                 // Only load tiles that haven't been loaded already
                 if (!Tiles.ContainsKey($"{zoom}/{x}/{y}"))
                 {
-                    Tile tile = new Tile(this, origin, zoom, x, y);
+                    Tile tile = new Tile(this, zoom, x, y);
                     Tiles.Add(tile.Id, tile);
                     tile.Load();
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Move the map origin
+    /// </summary>
+    /// <param name="latitude">The new origin's latitude</param>
+    /// <param name="longitude">The new origin's longitude</param>
+    public void MoveOrigin(double latitude, double longitude)
+    {
+        // Update the origin
+        Origin = GlobalMercator.LatLonToMeters(latitude, longitude);
+
+        // Move the currently loaded tiles
+        // TODO this
+
+        // Load any new tiles around the origin
+        Load();
+    }
+
+    /// <summary>
+    /// Switch the map to 2D mode
+    /// </summary>
+    public void SwitchTo2DMode()
+    {
+        // Stop listening to the changed tracked images event since we aren't using AR
+        ARTrackedImageManager.trackedImagesChanged -= OnARTrackedImagesChanged;
+
+        // Update the currently active root
+        RootAR.SetActive(false);
+        Root2D.SetActive(true);
+
+        // Set the tiles as a child of the 2D root and match their scale and position with it
+        GameObject.transform.parent = Root2D.transform;
+        GameObject.transform.SetPositionAndRotation(Root2D.transform.position, Root2D.transform.rotation);
+    }
+
+    /// <summary>
+    /// Move the 2D camera to the given position and rotation
+    /// </summary>
+    /// <param name="position">The position to move the camera to</param>
+    /// <param name="eulerAngles">The rotation to move the camera to</param>
+    public void Move2DCamera(Vector3 position, Vector3 eulerAngles)
+    {
+        Root2D.transform.GetChild(0).position = position;
+        Root2D.transform.GetChild(0).eulerAngles = eulerAngles;
+    }
+
+    /// <summary>
+    /// Switch the map to AR mode
+    /// </summary>
+    public void SwitchToARMode()
+    {
+        // Update the currently active root
+        Root2D.SetActive(false);
+        RootAR.SetActive(true);
+
+        // Start listening to the changed tracked images event so we can place the tiles
+        ARTrackedImageManager.trackedImagesChanged += OnARTrackedImagesChanged;
+    }
+
+    /// <summary>
+    /// React to the changed AR tracked images
+    /// </summary>
+    /// <param name="args">The changed AR tracked images event arguments</param>
+    private void OnARTrackedImagesChanged(ARTrackedImagesChangedEventArgs args)
+    {
+        foreach (ARTrackedImage trackedImage in args.added)
+        {
+            OnARImageChanged(trackedImage);
+        }
+
+        foreach (ARTrackedImage trackedImage in args.updated)
+        {
+            OnARImageChanged(trackedImage);
+        }
+
+        foreach (ARTrackedImage trackedImage in args.removed)
+        {
+            Logger.LogWarning($"Image `{trackedImage.referenceImage.name}` removed!");
+        }
+    }
+
+    /// <summary>
+    /// React to a changed AR tracked image
+    /// </summary>
+    /// <param name="trackedImage">The AR tracked image that changed</param>
+    private void OnARImageChanged(ARTrackedImage trackedImage)
+    {
+        // Check if it's the correct image
+        if (trackedImage.referenceImage.name == "lisboa")
+        {
+            // Check if the image is being tracked
+            if (trackedImage.trackingState != TrackingState.None)
+            {
+                // Check if the tracked image still isn't the map parent and if the image is being actively tracked
+                if (GameObject.transform.parent != trackedImage.transform && trackedImage.trackingState == TrackingState.Tracking)
+                {
+                    // Set the tiles as a child of the tracked image
+                    GameObject.transform.parent = trackedImage.transform;
+
+                    //TODO remove debug
+                    Logger.Log($"Setting tracked image `{trackedImage.referenceImage.name}` as the map parent. Tracking state: {trackedImage.trackingState}");
+                    Transform t = GameObject.transform;
+                    while (t != null)
+                    {
+                        Logger.Log($"{t.name} | {t.gameObject.activeInHierarchy} | {t.gameObject.activeSelf} | {t.gameObject.transform.position} | {t.gameObject.transform.localPosition}  | {t.gameObject.transform.rotation} | {t.gameObject.transform.localRotation} | {t.gameObject.transform.localScale}");
+                        t = t.parent;
+                    }
+                }
+
+                // Match position and rotation with parent
+                GameObject.transform.SetPositionAndRotation(trackedImage.transform.position, trackedImage.transform.rotation);
+            }
+        }
+        else
+        {
+            Logger.LogWarning($"Detected `{trackedImage.referenceImage.name}` image instead!");
         }
     }
 }
