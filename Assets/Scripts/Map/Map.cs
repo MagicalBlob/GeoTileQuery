@@ -161,32 +161,36 @@ public class Map
     }
 
     /// <summary>
-    /// Move the map origin
+    /// Move the map origin according to the given delta
+    /// </summary>
+    /// <param name="delta">The delta vector to move the origin by (in meters)</param>
+    public void MoveOrigin(Vector2D delta)
+    {
+        // Update the origin
+        Origin += delta;
+
+        // Move the currently loaded tiles
+        foreach (Tile tile in Tiles.Values)
+        {
+            tile.Move(-delta);
+        }
+
+        // Load any new tiles around the origin and update the generation of the existing ones
+        Load();
+
+        // Unload all the old tiles
+        Unload();
+    }
+
+    /// <summary>
+    /// Move the map origin to the given position (lat/lon)
     /// </summary>
     /// <param name="latitude">The new origin's latitude</param>
     /// <param name="longitude">The new origin's longitude</param>
     public void MoveOrigin(double latitude, double longitude)
     {
-        // Convert the given coordinates to meters
-        Vector2D newOrigin = GlobalMercator.LatLonToMeters(latitude, longitude);
-
-        // Calculate the difference between the new origin and the old one
-        Vector2D delta = Origin - newOrigin;
-
-        // Update the origin
-        Origin = newOrigin;
-
-        // Move the currently loaded tiles
-        foreach (Tile tile in Tiles.Values)
-        {
-            tile.Move(delta);
-        }
-
-        // Load any new tiles around the origin
-        Load();
-
-        // Unload any tiles that are no longer visible
-        Unload();
+        // Convert the given coordinates to meters, calculate the difference and move the origin
+        MoveOrigin(GlobalMercator.LatLonToMeters(latitude, longitude) - Origin);
     }
 
     /// <summary>

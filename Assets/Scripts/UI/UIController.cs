@@ -62,10 +62,16 @@ public class UIController
         DebugScreen.SetActive(false); // Disabled by default, but we needed it active first to be able to find it
         GameObject.Find("/UI/Buttons/Debug").GetComponent<Button>().onClick.AddListener(ToggleDebug);
 
+        // Navigation buttons
+        GameObject.Find("/UI/Buttons/Navigation/Up").GetComponent<Button>().onClick.AddListener(MoveUp);
+        GameObject.Find("/UI/Buttons/Navigation/Down").GetComponent<Button>().onClick.AddListener(MoveDown);
+        GameObject.Find("/UI/Buttons/Navigation/Left").GetComponent<Button>().onClick.AddListener(MoveLeft);
+        GameObject.Find("/UI/Buttons/Navigation/Right").GetComponent<Button>().onClick.AddListener(MoveRight);
+
         // Other buttons
         GameObject.Find("/UI/Buttons/AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
+        GameObject.Find("/UI/Buttons/POI").GetComponent<Button>().onClick.AddListener(TogglePOI);
         GameObject.Find("/UI/Buttons/Test").GetComponent<Button>().onClick.AddListener(TestButtonClicked);
-        GameObject.Find("/UI/Buttons/Test 2").GetComponent<Button>().onClick.AddListener(Test2ButtonClicked);
     }
 
     /// <summary>
@@ -82,6 +88,38 @@ public class UIController
             update = 0.0f;
             UpdateDebugTextDisplay();
         }
+    }
+
+    /// <summary>
+    /// Moves the map up
+    /// </summary>
+    private void MoveUp()
+    {
+        Map.MoveOrigin(new Vector2D(0, 100));
+    }
+
+    /// <summary>
+    /// Moves the map down
+    /// </summary>
+    private void MoveDown()
+    {
+        Map.MoveOrigin(new Vector2D(0, -100));
+    }
+
+    /// <summary>
+    /// Moves the map left
+    /// </summary>
+    private void MoveLeft()
+    {
+        Map.MoveOrigin(new Vector2D(-100, 0));
+    }
+
+    /// <summary>
+    /// Moves the map right
+    /// </summary>
+    private void MoveRight()
+    {
+        Map.MoveOrigin(new Vector2D(100, 0));
     }
 
     /// <summary>
@@ -119,33 +157,8 @@ public class UIController
         arMode = !arMode;
     }
 
-    int currentCameraAngle = 0;
-    private void TestButtonClicked()
-    {
-        Logger.Log("Test button clicked!");
-        switch (currentCameraAngle)
-        {
-            case 0:
-                Map.Move2DCamera(new Vector3(350, 20, 235), new Vector3(20, 325, 0));
-                currentCameraAngle = 1;
-                break;
-            case 1:
-                Map.Move2DCamera(new Vector3(420, 120, 125), new Vector3(30, 310, 0));
-                currentCameraAngle = 2;
-                break;
-            case 2:
-                Map.Move2DCamera(new Vector3(600, 270, -60), new Vector3(40, 310, 0));
-                currentCameraAngle = 3;
-                break;
-            case 3:
-                Map.Move2DCamera(new Vector3(350, 760, -980), new Vector3(35, 330, 0));
-                currentCameraAngle = 0;
-                break;
-        }
-    }
-
     int currentOrigin = 0;
-    private void Test2ButtonClicked()
+    private void TogglePOI()
     {
         switch (currentOrigin)
         {
@@ -178,6 +191,31 @@ public class UIController
                 Map.MoveOrigin(38.706808, -9.136164);
                 Logger.Log("Moved origin to baixa");
                 currentOrigin = 0;
+                break;
+        }
+    }
+
+    int currentCameraAngle = 0;
+    private void TestButtonClicked()
+    {
+        Logger.Log("Test button clicked!");
+        switch (currentCameraAngle)
+        {
+            case 0:
+                Map.Move2DCamera(new Vector3(350, 20, 235), new Vector3(20, 325, 0));
+                currentCameraAngle = 1;
+                break;
+            case 1:
+                Map.Move2DCamera(new Vector3(420, 120, 125), new Vector3(30, 310, 0));
+                currentCameraAngle = 2;
+                break;
+            case 2:
+                Map.Move2DCamera(new Vector3(600, 270, -60), new Vector3(40, 310, 0));
+                currentCameraAngle = 3;
+                break;
+            case 3:
+                Map.Move2DCamera(new Vector3(350, 760, -980), new Vector3(35, 330, 0));
+                currentCameraAngle = 0;
                 break;
         }
     }
