@@ -55,9 +55,7 @@ public class MainController : MonoBehaviour
     {
         try
         {
-            // Load the map
-            Logger.Log("Loading data!");
-            Map.Load();
+            Map.Start();
         }
         catch (Exception e)
         {

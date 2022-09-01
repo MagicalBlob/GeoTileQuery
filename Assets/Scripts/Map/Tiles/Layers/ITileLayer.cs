@@ -33,4 +33,9 @@ public interface ITileLayer
     /// Load the tile layer
     /// </summary>
     void Load();
+
+    /// <summary>
+    /// Unload the tile layer
+    /// </summary>
+    void Unload();
 }

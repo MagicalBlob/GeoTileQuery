@@ -59,6 +59,11 @@ public class Tile
     /// </summary>
     public TileState State { get; private set; }
 
+    /// <summary>
+    /// The tile's generation
+    /// </summary>
+    public uint Generation { get; set; }
+
     private Texture2D tmpHeighmapThing; // TODO probably a better idea to only store the converted data
 
     /// <summary>
@@ -68,7 +73,8 @@ public class Tile
     /// <param name="zoom">The tile's zoom level</param>
     /// <param name="x">The tile's X coordinate</param>
     /// <param name="y">The tile's Y coordinate</param>
-    public Tile(Map map, int zoom, int x, int y)
+    /// <param name="generation">The tile's generation</param>
+    public Tile(Map map, int zoom, int x, int y, uint generation)
     {
         this.Map = map;
         this.Zoom = zoom;
@@ -76,6 +82,7 @@ public class Tile
         this.Y = y;
         this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom); // Calculate tile bounds
         this.Layers = new Dictionary<string, ITileLayer>();
+        this.Generation = generation;
 
         // Setup the gameobject
         GameObject = new GameObject(Id);
@@ -127,12 +134,12 @@ public class Tile
         {
             tmpHeighmapThing = DownloadHandlerTexture.GetContent(heightmapReq);
             tmpHeighmapThing.wrapMode = TextureWrapMode.Clamp; // TODO actually take care of the edges
-
             State = TileState.LoadedTerrain;
         }
         else
         {
             Logger.LogError(heightmapReq.error);
+            State = TileState.LoadFailed;
         }
     }
 
@@ -184,5 +191,51 @@ public class Tile
         float B = color.b * 255;
 
         return -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
+    }
+
+    /// <summary>
+    /// Move the tile according to the given vector
+    /// </summary>
+    /// <param name="delta">The vector to move the tile by</param>
+    internal void Move(Vector2D delta)
+    {
+        GameObject.transform.localPosition += new Vector3((float)delta.X, 0, (float)delta.Y);
+    }
+
+    /// <summary>
+    /// Unload the tile
+    /// </summary>
+    /// <returns>Whether the tile was unloaded</returns>
+    public bool Unload()
+    {
+        // Check if the tile can be unloaded
+        if (State != TileState.LoadedTerrain && State != TileState.LoadFailed)
+        {
+            // Need to wait for the tile terrain to load or at least fail to load
+            return false;
+        }
+        foreach (ITileLayer tileLayer in Layers.Values)
+        {
+            if (tileLayer.State != TileLayerState.Rendered && tileLayer.State != TileLayerState.LoadFailed)
+            {
+                // Need to wait for the tile layer to render or at least have fail to load
+                return false;
+            }
+        }
+
+        // Update the state
+        State = TileState.Unloaded;
+
+        // Unload the layers
+        foreach (ITileLayer tileLayer in Layers.Values)
+        {
+            tileLayer.Unload();
+        }
+        Layers.Clear();
+
+        // Destroy the gameobject
+        GameObject.Destroy(GameObject);
+
+        return true;
     }
 }

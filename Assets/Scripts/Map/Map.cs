@@ -44,6 +44,11 @@ public class Map
     private ARTrackedImageManager ARTrackedImageManager { get; }
 
     /// <summary>
+    /// The current tile generation
+    /// </summary>
+    private uint CurrentTileGeneration { get; set; }
+
+    /// <summary>
     /// Constructs a new Map
     /// </summary>
     public Map()
@@ -54,8 +59,6 @@ public class Map
         Root2D = GameObject.Find("/Map/Root 2D");
         RootAR = GameObject.Find("/Map/Root AR");
         ARTrackedImageManager = GameObject.Find("/Map/Root AR/AR Session Origin").GetComponent<ARTrackedImageManager>();
-
-        SwitchTo2DMode();
 
         // Add the data layers        
         IRasterRenderer defaultRasterRenderer = new DefaultRasterRenderer();
@@ -89,11 +92,23 @@ public class Map
     }
 
     /// <summary>
-    /// Load the map  
+    /// Starts the map
     /// </summary>
-    public void Load()
+    public void Start()
+    {
+        SwitchTo2DMode();
+        Logger.Log("Loading data!");
+        Load();
+    }
+
+    /// <summary>
+    /// Load the map tiles
+    /// </summary>
+    private void Load()
     {
         int zoom = 16;
+
+        CurrentTileGeneration += 1;
 
         Vector2Int originTile = GlobalMercator.MetersToGoogleTile(Origin, zoom);
         int tileLoadDistance = 1;
@@ -101,14 +116,47 @@ public class Map
         {
             for (int x = originTile.x - tileLoadDistance; x <= originTile.x + tileLoadDistance; x++)
             {
-                // Only load tiles that haven't been loaded already
-                if (!Tiles.ContainsKey($"{zoom}/{x}/{y}"))
+                Tile existingTile;
+                if (!Tiles.TryGetValue($"{zoom}/{x}/{y}", out existingTile))
                 {
-                    Tile tile = new Tile(this, zoom, x, y);
+                    // Only load tiles that haven't been loaded already
+                    Tile tile = new Tile(this, zoom, x, y, CurrentTileGeneration);
                     Tiles.Add(tile.Id, tile);
                     tile.Load();
                 }
+                else
+                {
+                    // If the tile has already been loaded, update its generation
+                    existingTile.Generation = CurrentTileGeneration;
+                }
             }
+        }
+    }
+
+    /// <summary>
+    /// Unload the old map tiles
+    /// </summary>
+    private void Unload()
+    {
+        List<string> tilesToRemove = new List<string>();
+
+        // Iterate over all tiles and unload the old ones
+        foreach (Tile tile in Tiles.Values)
+        {
+            if (tile.Generation < CurrentTileGeneration)
+            {
+                if (tile.Unload())
+                {
+                    Logger.Log($"Unloaded tile {tile.Id} with generation {tile.Generation}");
+                    tilesToRemove.Add(tile.Id);
+                }
+            }
+        }
+
+        // Remove the unloaded tiles from the dictionary
+        foreach (string tileId in tilesToRemove)
+        {
+            Tiles.Remove(tileId);
         }
     }
 
@@ -119,14 +167,26 @@ public class Map
     /// <param name="longitude">The new origin's longitude</param>
     public void MoveOrigin(double latitude, double longitude)
     {
+        // Convert the given coordinates to meters
+        Vector2D newOrigin = GlobalMercator.LatLonToMeters(latitude, longitude);
+
+        // Calculate the difference between the new origin and the old one
+        Vector2D delta = Origin - newOrigin;
+
         // Update the origin
-        Origin = GlobalMercator.LatLonToMeters(latitude, longitude);
+        Origin = newOrigin;
 
         // Move the currently loaded tiles
-        // TODO this
+        foreach (Tile tile in Tiles.Values)
+        {
+            tile.Move(delta);
+        }
 
         // Load any new tiles around the origin
         Load();
+
+        // Unload any tiles that are no longer visible
+        Unload();
     }
 
     /// <summary>
@@ -210,7 +270,6 @@ public class Map
                     // Set the tiles as a child of the tracked image
                     GameObject.transform.parent = trackedImage.transform;
 
-                    //TODO remove debug
                     Logger.Log($"Setting tracked image `{trackedImage.referenceImage.name}` as the map parent. Tracking state: {trackedImage.trackingState}");
                     Transform t = GameObject.transform;
                     while (t != null)

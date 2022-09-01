@@ -51,12 +51,12 @@ public class GeoJsonTileLayer : ITileLayer
             DateTime afterSemaphore = DateTime.Now;
             string geoJsonText = await MainController.client.GetStringAsync($"https://tese.flamino.eu/api/tiles/{Layer.Id}/{Tile.Zoom}/{Tile.X}/{Tile.Y}.geojson");
             MainController.networkSemaphore.Release(); // Release the semaphore
+            State = TileLayerState.Loaded;
             DateTime afterRequest = DateTime.Now;
             try
             {
                 // Parse the GeoJSON text
                 geoJson = GeoJson.Parse(geoJsonText);
-                State = TileLayerState.Loaded;
                 DateTime afterParse = DateTime.Now;
 
                 // Check if it's a FeatureCollection
@@ -64,30 +64,41 @@ public class GeoJsonTileLayer : ITileLayer
                 {
                     // Render the GeoJSON
                     ((FeatureCollection)geoJson).Render(this);
-                    State = TileLayerState.Rendered;
+                    DateTime afterRender = DateTime.Now;
+                    //Logger.Log($"{FullId} : Semaphore > {(afterSemaphore - loadCalled).TotalSeconds} | Request > {(afterRequest - afterSemaphore).TotalSeconds} | Parse > {(afterParse - afterRequest).TotalSeconds} | Render > {(afterRender - afterParse).TotalSeconds} | TOTAL > {(afterRender - loadCalled).TotalSeconds}"); TODO: Remove this and timers
                 }
                 else
                 {
                     // Can't render the tile. GeoJSON root isn't a FeatureCollection
                     throw new InvalidGeoJsonException("Can't render the tile. GeoJSON root isn't a FeatureCollection");
                 }
-                DateTime afterRender = DateTime.Now;
-                //Logger.Log($"{FullId} : Semaphore > {(afterSemaphore - loadCalled).TotalSeconds} | Request > {(afterRequest - afterSemaphore).TotalSeconds} | Parse > {(afterParse - afterRequest).TotalSeconds} | Render > {(afterRender - afterParse).TotalSeconds} | TOTAL > {(afterRender - loadCalled).TotalSeconds}"); TODO: Remove this and timers
             }
             catch (InvalidGeoJsonException e)
             {
                 Logger.LogException(e);
             }
+            State = TileLayerState.Rendered;
         }
         catch (HttpRequestException e)
         {
             MainController.networkSemaphore.Release(); // Release the semaphore
             Logger.LogException(e);
+            State = TileLayerState.LoadFailed;
         }
         catch (TaskCanceledException e)
         {
             MainController.networkSemaphore.Release(); // Release the semaphore
             Logger.LogException(e);
+            State = TileLayerState.LoadFailed;
         }
+    }
+
+    public void Unload()
+    {
+        // Update the state
+        State = TileLayerState.Unloaded;
+
+        // Destroy the gameobject
+        GameObject.Destroy(GameObject);
     }
 }

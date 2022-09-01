@@ -150,26 +150,31 @@ public class UIController
         switch (currentOrigin)
         {
             case 0:
-                Map.MoveOrigin(38.765514, -9.093839);
-                Logger.Log("Moved origin to expo");
+                Map.MoveOrigin(38.711992, -9.140663);
+                Logger.Log("Moved origin to carmo");
                 currentOrigin = 1;
                 break;
             case 1:
-                Map.MoveOrigin(38.725249, -9.149994);
-                Logger.Log("Moved origin to marques");
+                Map.MoveOrigin(38.765514, -9.093839);
+                Logger.Log("Moved origin to expo");
                 currentOrigin = 2;
                 break;
             case 2:
-                Map.MoveOrigin(38.773310, -9.153689);
-                Logger.Log("Moved origin to alta");
+                Map.MoveOrigin(38.725249, -9.149994);
+                Logger.Log("Moved origin to marques");
                 currentOrigin = 3;
                 break;
             case 3:
-                Map.MoveOrigin(38.733744, -9.160745);
-                Logger.Log("Moved origin to campolide");
+                Map.MoveOrigin(38.773310, -9.153689);
+                Logger.Log("Moved origin to alta");
                 currentOrigin = 4;
                 break;
             case 4:
+                Map.MoveOrigin(38.733744, -9.160745);
+                Logger.Log("Moved origin to campolide");
+                currentOrigin = 5;
+                break;
+            case 5:
                 Map.MoveOrigin(38.706808, -9.136164);
                 Logger.Log("Moved origin to baixa");
                 currentOrigin = 0;

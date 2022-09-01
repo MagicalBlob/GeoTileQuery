@@ -63,6 +63,16 @@ public class RasterTileLayer : ITileLayer
         else
         {
             Logger.LogError($"Failed to load `{FullId}`: {rasterReq.error}");
+            State = TileLayerState.LoadFailed;
         }
+    }
+
+    public void Unload()
+    {
+        // Update the state
+        State = TileLayerState.Unloaded;
+
+        // Destroy the gameobject
+        GameObject.Destroy(GameObject);
     }
 }
