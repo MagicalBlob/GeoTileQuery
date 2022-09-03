@@ -9,6 +9,8 @@ public class GeoJsonLayer : ILayer
 
     public ILayerRenderer Renderer { get; }
 
+    public string Url { get; }
+
     /// <summary>
     /// Name of the Feature's property that may be used as an id as an alternative to the actual Feature id if it doesn't exist
     /// </summary>
@@ -21,12 +23,14 @@ public class GeoJsonLayer : ILayer
     /// <param name="id">The layer id</param>
     /// <param name="visible">Whether the layer is visible</param>
     /// <param name="renderer">The layer's renderer</param>
+    /// <param name="url">Url to fetch the tile data</param>
     /// <param name="idPropertyName">Name of the Feature's property that may be used as an Id as an alternative to the actual Feature Id if it doesn't exist</param>
-    public GeoJsonLayer(string id, bool visible, IGeoJsonRenderer renderer, string idPropertyName)
+    public GeoJsonLayer(string id, bool visible, IGeoJsonRenderer renderer, string url, string idPropertyName)
     {
         this.Id = id;
         this.Visible = visible;
         this.Renderer = renderer;
+        this.Url = url;
         this.IdPropertyName = idPropertyName;
     }
 }

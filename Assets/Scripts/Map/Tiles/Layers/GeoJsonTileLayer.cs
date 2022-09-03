@@ -49,10 +49,15 @@ public class GeoJsonTileLayer : ITileLayer
         try
         {
             DateTime afterSemaphore = DateTime.Now;
-            string geoJsonText = await MainController.client.GetStringAsync($"https://tese.flamino.eu/api/tiles/{Layer.Id}/{Tile.Zoom}/{Tile.X}/{Tile.Y}.geojson");
+            string geoJsonText = await MainController.client.GetStringAsync(string.Format(Layer.Url, Tile.Id));
             MainController.networkSemaphore.Release(); // Release the semaphore
             State = TileLayerState.Loaded;
             DateTime afterRequest = DateTime.Now;
+
+            // If the gameobject was destroyed before the request finished, we're done here
+            if (GameObject == null) { return; }
+
+            // Process the GeoJSON
             try
             {
                 // Parse the GeoJSON text
@@ -62,10 +67,18 @@ public class GeoJsonTileLayer : ITileLayer
                 // Check if it's a FeatureCollection
                 if (geoJson.GetType() == typeof(FeatureCollection))
                 {
-                    // Render the GeoJSON
-                    ((FeatureCollection)geoJson).Render(this);
-                    DateTime afterRender = DateTime.Now;
-                    //Logger.Log($"{FullId} : Semaphore > {(afterSemaphore - loadCalled).TotalSeconds} | Request > {(afterRequest - afterSemaphore).TotalSeconds} | Parse > {(afterParse - afterRequest).TotalSeconds} | Render > {(afterRender - afterParse).TotalSeconds} | TOTAL > {(afterRender - loadCalled).TotalSeconds}"); TODO: Remove this and timers
+                    try
+                    {
+                        // Render the GeoJSON
+                        ((FeatureCollection)geoJson).Render(this);
+                        DateTime afterRender = DateTime.Now;
+                        //Logger.Log($"{FullId} : Semaphore > {(afterSemaphore - loadCalled).TotalSeconds} | Request > {(afterRequest - afterSemaphore).TotalSeconds} | Parse > {(afterParse - afterRequest).TotalSeconds} | Render > {(afterRender - afterParse).TotalSeconds} | TOTAL > {(afterRender - loadCalled).TotalSeconds}"); TODO: Remove this and timers
+                    }
+                    catch (Exception e) // TODO: Should we be catching these exceptions?
+                    {
+                        // An error occurred while rendering the GeoJSON
+                        Logger.LogError($"{FullId}: Failed to render GeoJSON. {e.ToString()} {e.Message}");
+                    }
                 }
                 else
                 {

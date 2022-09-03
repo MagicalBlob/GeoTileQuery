@@ -26,7 +26,7 @@ public class BuildingRenderer : IGeoJsonRenderer
         // Check for empty coordinates array
         if (coordinates.Length == 0)
         {
-            Logger.LogWarning($"[BuildingRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates");
+            //Logger.LogWarning($"[BuildingRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates"); TODO: Do we want to log this?
             return;
         }
 

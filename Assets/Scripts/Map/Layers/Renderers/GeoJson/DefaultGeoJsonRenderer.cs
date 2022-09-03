@@ -148,7 +148,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         // Check for empty coordinates array
         if (coordinates.Length == 0)
         {
-            Logger.LogWarning($"[DefaultGeoJsonRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates");
+            //Logger.LogWarning($"[DefaultGeoJsonRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates"); TODO: Do we want to log this?
             return;
         }
 
@@ -191,6 +191,6 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         meshFilter.mesh = mesh;
 
         // TODO we're getting an extra vertex because GeoJSON polygon's line rings loop around, should we cut it?
-        // Logger.Log($"Mesh>Vertices:{meshFilter.mesh.vertexCount},Triangles:{meshFilter.mesh.triangles.Length / 3},Normals:{meshFilter.mesh.normals.Length}");
+        //Logger.Log($"Mesh>Vertices:{meshFilter.mesh.vertexCount},Triangles:{meshFilter.mesh.triangles.Length / 3},Normals:{meshFilter.mesh.normals.Length}");
     }
 }

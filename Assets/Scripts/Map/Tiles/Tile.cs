@@ -129,6 +129,9 @@ public class Tile
             await Task.Yield();
         }
 
+        // If the gameobject was destroyed before the request finished, we're done here
+        if (GameObject == null) { return; }
+
         // Grab the heightmap if the request was successful
         if (heightmapReq.result == UnityWebRequest.Result.Success)
         {

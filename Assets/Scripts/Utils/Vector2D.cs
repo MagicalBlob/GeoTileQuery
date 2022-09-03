@@ -65,7 +65,15 @@ public struct Vector2D
         get
         {
             double magnitude = Magnitude;
-            return new Vector2D(X / magnitude, Y / magnitude);
+            double tolerance = Single.Epsilon;
+            if (magnitude < tolerance)
+            {
+                return Zero;
+            }
+            else
+            {
+                return new Vector2D(X / magnitude, Y / magnitude);
+            }
         }
     }
 
@@ -171,8 +179,17 @@ public struct Vector2D
     public void Normalize()
     {
         double magnitude = Magnitude;
-        X /= magnitude;
-        Y /= magnitude;
+        double tolerance = Single.Epsilon;
+        if (magnitude < tolerance)
+        {
+            X = 0;
+            Y = 0;
+        }
+        else
+        {
+            X /= magnitude;
+            Y /= magnitude;
+        }
     }
 
     /// <summary>

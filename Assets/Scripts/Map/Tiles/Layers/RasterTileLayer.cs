@@ -39,8 +39,7 @@ public class RasterTileLayer : ITileLayer
     public async void Load()
     {
         // Request raster texture
-        string rasterUrl = string.Format(((RasterLayer)Layer).RasterUrl, Tile.Id);
-        using UnityWebRequest rasterReq = UnityWebRequestTexture.GetTexture(rasterUrl);
+        using UnityWebRequest rasterReq = UnityWebRequestTexture.GetTexture(string.Format(Layer.Url, Tile.Id));
         UnityWebRequestAsyncOperation rasterOp = rasterReq.SendWebRequest();
 
         // Wait for the request
@@ -48,6 +47,9 @@ public class RasterTileLayer : ITileLayer
         {
             await Task.Yield();
         }
+
+        // If the gameobject was destroyed before the request finished, we're done here
+        if (GameObject == null) { return; }
 
         // Render the layer if the request was successful
         if (rasterReq.result == UnityWebRequest.Result.Success)

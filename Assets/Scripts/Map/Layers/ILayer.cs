@@ -17,4 +17,9 @@ public interface ILayer
     /// The layer's renderer
     /// </summary>
     ILayerRenderer Renderer { get; }
+
+    /// <summary>
+    /// Url to fetch the tile data
+    /// </summary>
+    string Url { get; }
 }

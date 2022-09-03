@@ -76,29 +76,29 @@ public class Map
         // Add the data layers        
         IRasterRenderer defaultRasterRenderer = new DefaultRasterRenderer();
         IGeoJsonRenderer defaultGeoJsonRenderer = new DefaultGeoJsonRenderer();
-        Layers.Add("StamenWatercolor", new RasterLayer("StamenWatercolor", true, defaultRasterRenderer, "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{0}.jpg"));
-        Layers.Add("StamenToner", new RasterLayer("StamenToner", false, defaultRasterRenderer, "https://stamen-tiles-b.a.ssl.fastly.net/toner-background/{0}.png"));
+        Layers.Add("StamenWatercolor", new RasterLayer("StamenWatercolor", false, defaultRasterRenderer, "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{0}.jpg"));
+        Layers.Add("StamenToner", new RasterLayer("StamenToner", true, defaultRasterRenderer, "https://stamen-tiles-b.a.ssl.fastly.net/toner-background/{0}.png"));
         Layers.Add("StamenTerrain", new RasterLayer("StamenTerrain", false, defaultRasterRenderer, "http://stamen-tiles-c.a.ssl.fastly.net/terrain-background/{0}.png"));
         Layers.Add("OSMStandard", new RasterLayer("OSMStandard", false, defaultRasterRenderer, "https://tile.openstreetmap.org/{0}.png"));
         Layers.Add("MapboxSatellite", new RasterLayer("MapboxSatellite", false, defaultRasterRenderer, $"https://api.mapbox.com/v4/mapbox.satellite/{{0}}.jpg?access_token={MainController.MapboxAccessToken}"));
-        Layers.Add("Bikepaths", new GeoJsonLayer("Bikepaths", true, defaultGeoJsonRenderer, "OBJECTID"));
-        Layers.Add("Buildings", new GeoJsonLayer("Buildings", true, new BuildingRenderer(), "name"));
-        Layers.Add("BuildingsLOD3", new GeoJsonLayer("BuildingsLOD3", true, new PrefabRenderer(null), "id"));
-        Layers.Add("Closures", new GeoJsonLayer("Closures", true, defaultGeoJsonRenderer, "id"));
-        Layers.Add("Electrical_IP_especial", new GeoJsonLayer("Electrical_IP_especial", true, defaultGeoJsonRenderer, null));
-        Layers.Add("Electrical_PS", new GeoJsonLayer("Electrical_PS", true, defaultGeoJsonRenderer, null));
-        Layers.Add("Electrical_PTC", new GeoJsonLayer("Electrical_PTC", true, defaultGeoJsonRenderer, null));
-        Layers.Add("Electrical_PTD", new GeoJsonLayer("Electrical_PTD", true, defaultGeoJsonRenderer, null));
-        Layers.Add("Electrical_Subestacao", new GeoJsonLayer("Electrical_Subestacao", true, defaultGeoJsonRenderer, null));
-        Layers.Add("Electrical_Troco_MT", new GeoJsonLayer("Electrical_Troco_MT-AT", true, defaultGeoJsonRenderer, null));
-        Layers.Add("Environment", new GeoJsonLayer("Environment", true, defaultGeoJsonRenderer, "id"));
-        Layers.Add("Interventions", new GeoJsonLayer("Interventions", true, defaultGeoJsonRenderer, "OBJECTID"));
-        Layers.Add("Lamps", new GeoJsonLayer("Lamps", true, new PrefabRenderer("Lamp"), "OBJECTID_1"));
-        Layers.Add("Rails", new GeoJsonLayer("Rails", true, defaultGeoJsonRenderer, "OBJECTID"));
-        Layers.Add("Roads", new GeoJsonLayer("Roads", true, new RoadRenderer(), "OBJECTID_1"));
-        Layers.Add("Sidewalks", new GeoJsonLayer("Sidewalks", true, new SidewalkRenderer(), null));
-        Layers.Add("Signs", new GeoJsonLayer("Signs", true, defaultGeoJsonRenderer, "IdSV_Posic"));
-        Layers.Add("Trees", new GeoJsonLayer("Trees", true, new PrefabRenderer("Tree"), "OBJECTID"));
+        Layers.Add("Bikepaths", new GeoJsonLayer("Bikepaths", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Bikepaths/{0}.geojson", "OBJECTID"));
+        Layers.Add("Buildings", new GeoJsonLayer("Buildings", true, new BuildingRenderer(), "https://tese.flamino.eu/api/tiles/Buildings/{0}.geojson", "name"));
+        Layers.Add("BuildingsLOD3", new GeoJsonLayer("BuildingsLOD3", true, new PrefabRenderer(null), "https://tese.flamino.eu/api/tiles/BuildingsLOD3/{0}.geojson", "id"));
+        Layers.Add("Closures", new GeoJsonLayer("Closures", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Closures/{0}.geojson", "id"));
+        Layers.Add("Electrical_IP_especial", new GeoJsonLayer("Electrical_IP_especial", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Electrical_IP_especial/{0}.geojson", null));
+        Layers.Add("Electrical_PS", new GeoJsonLayer("Electrical_PS", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Electrical_PS/{0}.geojson", null));
+        Layers.Add("Electrical_PTC", new GeoJsonLayer("Electrical_PTC", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Electrical_PTC/{0}.geojson", null));
+        Layers.Add("Electrical_PTD", new GeoJsonLayer("Electrical_PTD", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Electrical_PTD/{0}.geojson", null));
+        Layers.Add("Electrical_Subestacao", new GeoJsonLayer("Electrical_Subestacao", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Electrical_Subestacao/{0}.geojson", null));
+        Layers.Add("Electrical_Troco_MT", new GeoJsonLayer("Electrical_Troco_MT-AT", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Electrical_Troco_MT-AT/{0}.geojson", null));
+        Layers.Add("Environment", new GeoJsonLayer("Environment", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Environment/{0}.geojson", "id"));
+        Layers.Add("Interventions", new GeoJsonLayer("Interventions", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Interventions/{0}.geojson", "OBJECTID"));
+        Layers.Add("Lamps", new GeoJsonLayer("Lamps", true, new PrefabRenderer("Lamp"), "https://tese.flamino.eu/api/tiles/Lamps/{0}.geojson", "OBJECTID_1"));
+        Layers.Add("Rails", new GeoJsonLayer("Rails", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Rails/{0}.geojson", "OBJECTID"));
+        Layers.Add("Roads", new GeoJsonLayer("Roads", true, new RoadRenderer(), "https://tese.flamino.eu/api/tiles/Roads/{0}.geojson", "OBJECTID_1"));
+        Layers.Add("Sidewalks", new GeoJsonLayer("Sidewalks", true, new SidewalkRenderer(), "https://tese.flamino.eu/api/tiles/Sidewalks/{0}.geojson", null));
+        Layers.Add("Signs", new GeoJsonLayer("Signs", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Signs/{0}.geojson", "IdSV_Posic"));
+        Layers.Add("Trees", new GeoJsonLayer("Trees", true, new PrefabRenderer("Tree"), "https://tese.flamino.eu/api/tiles/Trees/{0}.geojson", "OBJECTID"));
 
         // Set the map's initial zoom level and center, as well as the tile load distance
         ZoomLevel = 17;
@@ -137,8 +137,9 @@ public class Map
                 }
                 else
                 {
-                    // If the tile has already been loaded, update its generation
-                    existingTile.Generation = CurrentTileGeneration;
+                    // The tile was loaded already
+                    existingTile.Generation = CurrentTileGeneration; // Update its generation
+                    existingTile.GameObject.SetActive(true); // Make the tile visible
                 }
             }
         }
@@ -156,9 +157,12 @@ public class Map
         {
             if (tile.Generation < CurrentTileGeneration)
             {
+                // Hide the tile
+                tile.GameObject.SetActive(false);
+
+                // Attempt to unload the tile
                 if (tile.Unload())
                 {
-                    Logger.Log($"Unloaded tile {tile.Id} with generation {tile.Generation}");
                     tilesToRemove.Add(tile.Id);
                 }
             }
