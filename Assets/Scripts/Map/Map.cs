@@ -24,9 +24,27 @@ public class Map
     public Dictionary<string, Tile> Tiles { get; private set; }
 
     /// <summary>
+    /// The map's zoom level
+    /// </summary>
+    public int ZoomLevel { get; private set; }
+
+    /// <summary>
     /// The map's origin in Unity space
     /// </summary>
-    public Vector2D Origin { get; private set; }
+    public Vector2D Center { get; private set; }
+
+    /// <summary>
+    /// Number of tiles to be loaded in each direction relative to the origin (0 loads only the origin tile)
+    /// </summary>
+    /// <remarks>
+    /// The total number of tiles loaded will be (2 * X + 1) * (2 * Y + 1)
+    /// </remarks>
+    private Vector2Int TileLoadDistance { get; set; }
+
+    /// <summary>
+    /// The current tile generation
+    /// </summary>
+    private uint CurrentTileGeneration { get; set; }
 
     /// <summary>
     /// The root GameObject for 2D mode
@@ -42,11 +60,6 @@ public class Map
     /// AR Manager for 2D images tracking
     /// </summary>
     private ARTrackedImageManager ARTrackedImageManager { get; }
-
-    /// <summary>
-    /// The current tile generation
-    /// </summary>
-    private uint CurrentTileGeneration { get; set; }
 
     /// <summary>
     /// Constructs a new Map
@@ -87,8 +100,10 @@ public class Map
         Layers.Add("Signs", new GeoJsonLayer("Signs", true, defaultGeoJsonRenderer, "IdSV_Posic"));
         Layers.Add("Trees", new GeoJsonLayer("Trees", true, new PrefabRenderer("Tree"), "OBJECTID"));
 
-        // Set the origin
-        Origin = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
+        // Set the map's initial zoom level and center, as well as the tile load distance
+        ZoomLevel = 17;
+        Center = GlobalMercator.LatLonToMeters(38.704802, -9.137878);
+        TileLoadDistance = new Vector2Int(4, 3);
     }
 
     /// <summary>
@@ -97,7 +112,7 @@ public class Map
     public void Start()
     {
         SwitchTo2DMode();
-        Logger.Log("Loading data!");
+        Update2DCameraHeight();
         Load();
     }
 
@@ -106,21 +121,17 @@ public class Map
     /// </summary>
     private void Load()
     {
-        int zoom = 16;
-
         CurrentTileGeneration += 1;
-
-        Vector2Int originTile = GlobalMercator.MetersToGoogleTile(Origin, zoom);
-        int tileLoadDistance = 1;
-        for (int y = originTile.y - tileLoadDistance; y <= originTile.y + tileLoadDistance; y++)
+        Vector2Int originTile = GlobalMercator.MetersToGoogleTile(Center, ZoomLevel);
+        for (int tileY = originTile.y - TileLoadDistance.y; tileY <= originTile.y + TileLoadDistance.y; tileY++)
         {
-            for (int x = originTile.x - tileLoadDistance; x <= originTile.x + tileLoadDistance; x++)
+            for (int tileX = originTile.x - TileLoadDistance.x; tileX <= originTile.x + TileLoadDistance.x; tileX++)
             {
                 Tile existingTile;
-                if (!Tiles.TryGetValue($"{zoom}/{x}/{y}", out existingTile))
+                if (!Tiles.TryGetValue($"{ZoomLevel}/{tileX}/{tileY}", out existingTile))
                 {
                     // Only load tiles that haven't been loaded already
-                    Tile tile = new Tile(this, zoom, x, y, CurrentTileGeneration);
+                    Tile tile = new Tile(this, ZoomLevel, tileX, tileY, CurrentTileGeneration);
                     Tiles.Add(tile.Id, tile);
                     tile.Load();
                 }
@@ -161,13 +172,13 @@ public class Map
     }
 
     /// <summary>
-    /// Move the map origin according to the given delta
+    /// Move the map center according to the given delta
     /// </summary>
-    /// <param name="delta">The delta vector to move the origin by (in meters)</param>
-    public void MoveOrigin(Vector2D delta)
+    /// <param name="delta">The delta vector to move the center by (in meters)</param>
+    public void MoveCenter(Vector2D delta)
     {
-        // Update the origin
-        Origin += delta;
+        // Update the center
+        Center += delta;
 
         // Move the currently loaded tiles
         foreach (Tile tile in Tiles.Values)
@@ -175,7 +186,7 @@ public class Map
             tile.Move(-delta);
         }
 
-        // Load any new tiles around the origin and update the generation of the existing ones
+        // Load any new tiles around the center and update the generation of the existing ones
         Load();
 
         // Unload all the old tiles
@@ -183,14 +194,77 @@ public class Map
     }
 
     /// <summary>
-    /// Move the map origin to the given position (lat/lon)
+    /// Move the map center to the given position (lat/lon)
     /// </summary>
-    /// <param name="latitude">The new origin's latitude</param>
-    /// <param name="longitude">The new origin's longitude</param>
-    public void MoveOrigin(double latitude, double longitude)
+    /// <param name="latitude">The new center's latitude</param>
+    /// <param name="longitude">The new center's longitude</param>
+    public void MoveCenter(double latitude, double longitude)
     {
-        // Convert the given coordinates to meters, calculate the difference and move the origin
-        MoveOrigin(GlobalMercator.LatLonToMeters(latitude, longitude) - Origin);
+        // Convert the given coordinates to meters, calculate the difference and move the center
+        MoveCenter(GlobalMercator.LatLonToMeters(latitude, longitude) - Center);
+    }
+
+    /// <summary>
+    /// Zoom the map by the given amount
+    /// </summary>
+    /// <param name="amount">The amount to zoom by</param>
+    public void Zoom(int amount)
+    {
+        // Update the zoom level
+        ZoomLevel += amount;
+        if (ZoomLevel < 0)
+        {
+            Logger.LogWarning("Zoom level cannot be less than 0");
+            ZoomLevel = 0;
+        }
+        if (ZoomLevel > 17)
+        {
+            Logger.LogWarning("Zoom level is too high, setting it to 17");
+            ZoomLevel = 17;
+        }
+
+        // Move the 2D camera to the new zoom level
+        Update2DCameraHeight();
+
+        // Load the new tiles
+        Load();
+
+        // Unload all the old tiles
+        Unload();
+    }
+
+    /// <summary>
+    /// Update the 2D camera height according to the current zoom level
+    /// </summary>
+    private void Update2DCameraHeight()
+    {
+        // Grab the camera
+        Transform cameraTransform = Root2D.transform.GetChild(0);
+        Camera camera = cameraTransform.GetComponent<Camera>();
+        // Calculate the bounds of the origin tile
+        Vector2Int originTile = GlobalMercator.MetersToGoogleTile(Center, ZoomLevel);
+        Bounds bounds = GlobalMercator.GoogleTileBounds(originTile.x, originTile.y, ZoomLevel);
+        // Calculate what is the screen height in meters if we keep the tile size on screen constant
+        double meterHeight = (camera.pixelHeight * bounds.Height) / GlobalMercator.TileSize;
+        // Calculate the distance from the camera to the center of the tile at sea level, such that the tile size on screen is constant
+        double cameraHeight = (meterHeight / 2) / System.Math.Tan((camera.fieldOfView * System.Math.PI) / 360);
+        // Move the camera to the new position
+        cameraTransform.position = new Vector3(cameraTransform.position.x, (float)cameraHeight, cameraTransform.position.z);
+        cameraTransform.eulerAngles = new Vector3(90, 0, 0);
+        // Update the clip planes to make sure the map is always visible
+        camera.nearClipPlane = (float)(cameraHeight / 100);
+        camera.farClipPlane = (float)(cameraHeight * 2);
+    }
+
+    /// <summary>
+    /// Move the 2D camera to the given position and rotation
+    /// </summary>
+    /// <param name="position">The position to move the camera to</param>
+    /// <param name="eulerAngles">The rotation to move the camera to</param>
+    public void Test2DCamera(Vector3 position, Vector3 eulerAngles)
+    {
+        Root2D.transform.GetChild(0).position = position;
+        Root2D.transform.GetChild(0).eulerAngles = eulerAngles;
     }
 
     /// <summary>
@@ -208,17 +282,6 @@ public class Map
         // Set the tiles as a child of the 2D root and match their scale and position with it
         GameObject.transform.parent = Root2D.transform;
         GameObject.transform.SetPositionAndRotation(Root2D.transform.position, Root2D.transform.rotation);
-    }
-
-    /// <summary>
-    /// Move the 2D camera to the given position and rotation
-    /// </summary>
-    /// <param name="position">The position to move the camera to</param>
-    /// <param name="eulerAngles">The rotation to move the camera to</param>
-    public void Move2DCamera(Vector3 position, Vector3 eulerAngles)
-    {
-        Root2D.transform.GetChild(0).position = position;
-        Root2D.transform.GetChild(0).eulerAngles = eulerAngles;
     }
 
     /// <summary>

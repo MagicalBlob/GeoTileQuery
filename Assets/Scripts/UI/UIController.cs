@@ -68,6 +68,10 @@ public class UIController
         GameObject.Find("/UI/Buttons/Navigation/Left").GetComponent<Button>().onClick.AddListener(MoveLeft);
         GameObject.Find("/UI/Buttons/Navigation/Right").GetComponent<Button>().onClick.AddListener(MoveRight);
 
+        // Zoom buttons
+        GameObject.Find("/UI/Buttons/Zoom/In").GetComponent<Button>().onClick.AddListener(ZoomIn);
+        GameObject.Find("/UI/Buttons/Zoom/Out").GetComponent<Button>().onClick.AddListener(ZoomOut);
+
         // Other buttons
         GameObject.Find("/UI/Buttons/AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
         GameObject.Find("/UI/Buttons/POI").GetComponent<Button>().onClick.AddListener(TogglePOI);
@@ -95,7 +99,7 @@ public class UIController
     /// </summary>
     private void MoveUp()
     {
-        Map.MoveOrigin(new Vector2D(0, 100));
+        Map.MoveCenter(new Vector2D(0, 100));
     }
 
     /// <summary>
@@ -103,7 +107,7 @@ public class UIController
     /// </summary>
     private void MoveDown()
     {
-        Map.MoveOrigin(new Vector2D(0, -100));
+        Map.MoveCenter(new Vector2D(0, -100));
     }
 
     /// <summary>
@@ -111,7 +115,7 @@ public class UIController
     /// </summary>
     private void MoveLeft()
     {
-        Map.MoveOrigin(new Vector2D(-100, 0));
+        Map.MoveCenter(new Vector2D(-100, 0));
     }
 
     /// <summary>
@@ -119,7 +123,23 @@ public class UIController
     /// </summary>
     private void MoveRight()
     {
-        Map.MoveOrigin(new Vector2D(100, 0));
+        Map.MoveCenter(new Vector2D(100, 0));
+    }
+
+    /// <summary>
+    /// Zooms the map in
+    /// </summary>
+    private void ZoomIn()
+    {
+        Map.Zoom(1);
+    }
+
+    /// <summary>
+    /// Zooms the map out
+    /// </summary>
+    private void ZoomOut()
+    {
+        Map.Zoom(-1);
     }
 
     /// <summary>
@@ -163,32 +183,32 @@ public class UIController
         switch (currentOrigin)
         {
             case 0:
-                Map.MoveOrigin(38.711992, -9.140663);
+                Map.MoveCenter(38.711992, -9.140663);
                 Logger.Log("Moved origin to carmo");
                 currentOrigin = 1;
                 break;
             case 1:
-                Map.MoveOrigin(38.765514, -9.093839);
+                Map.MoveCenter(38.765514, -9.093839);
                 Logger.Log("Moved origin to expo");
                 currentOrigin = 2;
                 break;
             case 2:
-                Map.MoveOrigin(38.725249, -9.149994);
+                Map.MoveCenter(38.725249, -9.149994);
                 Logger.Log("Moved origin to marques");
                 currentOrigin = 3;
                 break;
             case 3:
-                Map.MoveOrigin(38.773310, -9.153689);
+                Map.MoveCenter(38.773310, -9.153689);
                 Logger.Log("Moved origin to alta");
                 currentOrigin = 4;
                 break;
             case 4:
-                Map.MoveOrigin(38.733744, -9.160745);
+                Map.MoveCenter(38.733744, -9.160745);
                 Logger.Log("Moved origin to campolide");
                 currentOrigin = 5;
                 break;
             case 5:
-                Map.MoveOrigin(38.706808, -9.136164);
+                Map.MoveCenter(38.706808, -9.136164);
                 Logger.Log("Moved origin to baixa");
                 currentOrigin = 0;
                 break;
@@ -202,19 +222,19 @@ public class UIController
         switch (currentCameraAngle)
         {
             case 0:
-                Map.Move2DCamera(new Vector3(350, 20, 235), new Vector3(20, 325, 0));
+                Map.Test2DCamera(new Vector3(350, 20, 235), new Vector3(20, 325, 0));
                 currentCameraAngle = 1;
                 break;
             case 1:
-                Map.Move2DCamera(new Vector3(420, 120, 125), new Vector3(30, 310, 0));
+                Map.Test2DCamera(new Vector3(420, 120, 125), new Vector3(30, 310, 0));
                 currentCameraAngle = 2;
                 break;
             case 2:
-                Map.Move2DCamera(new Vector3(600, 270, -60), new Vector3(40, 310, 0));
+                Map.Test2DCamera(new Vector3(600, 270, -60), new Vector3(40, 310, 0));
                 currentCameraAngle = 3;
                 break;
             case 3:
-                Map.Move2DCamera(new Vector3(350, 760, -980), new Vector3(35, 330, 0));
+                Map.Test2DCamera(new Vector3(350, 760, -980), new Vector3(35, 330, 0));
                 currentCameraAngle = 0;
                 break;
         }

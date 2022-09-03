@@ -87,7 +87,7 @@ public class Tile
         // Setup the gameobject
         GameObject = new GameObject(Id);
         GameObject.transform.parent = map.GameObject.transform; // Set it as a child of the map gameobject
-        Vector2D relativeOrigin = Bounds.Min - Map.Origin;
+        Vector2D relativeOrigin = Bounds.Min - Map.Center;
         GameObject.transform.localPosition = new Vector3((float)relativeOrigin.X, 0, (float)relativeOrigin.Y); // Set tile origin
         GameObject.transform.rotation = map.GameObject.transform.rotation; // Match tile rotation with the layer
 
