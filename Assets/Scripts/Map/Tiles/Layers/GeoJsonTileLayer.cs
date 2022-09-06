@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -42,20 +43,26 @@ public class GeoJsonTileLayer : ITileLayer
         this.State = TileLayerState.Initial;
     }
 
-    public async void Load()
+    public async Task LoadAsync(CancellationToken cancellationToken)
     {
         DateTime loadCalled = DateTime.Now;
-        await MainController.networkSemaphore.WaitAsync(); // Wait for the semaphore so we don't overload the client with too many requests
+        await MainController.networkSemaphore.WaitAsync(cancellationToken); // Wait for the semaphore so we don't overload the client with too many requests
         try
         {
             DateTime afterSemaphore = DateTime.Now;
-            string geoJsonText = await MainController.client.GetStringAsync(string.Format(Layer.Url, Tile.Id));
+            string geoJsonText = await Task<string>.Run(async () => await MainController.client.GetStringAsync(string.Format(Layer.Url, Tile.Id)), cancellationToken);
             MainController.networkSemaphore.Release(); // Release the semaphore
-            State = TileLayerState.Loaded;
             DateTime afterRequest = DateTime.Now;
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                State = TileLayerState.Unloaded;
+                return;
+            }
 
             // If the gameobject was destroyed before the request finished, we're done here
             if (GameObject == null) { return; }
+            State = TileLayerState.Loaded;
 
             // Process the GeoJSON
             try
@@ -96,13 +103,13 @@ public class GeoJsonTileLayer : ITileLayer
         {
             MainController.networkSemaphore.Release(); // Release the semaphore
             Logger.LogException(e);
-            State = TileLayerState.LoadFailed;
+            State = cancellationToken.IsCancellationRequested ? TileLayerState.Unloaded : TileLayerState.LoadFailed;
         }
-        catch (TaskCanceledException e)
+        catch (TaskCanceledException)
         {
+            // The request was cancelled
             MainController.networkSemaphore.Release(); // Release the semaphore
-            Logger.LogException(e);
-            State = TileLayerState.LoadFailed;
+            State = TileLayerState.Unloaded;
         }
     }
 

@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -36,7 +37,7 @@ public class RasterTileLayer : ITileLayer
         this.State = TileLayerState.Initial;
     }
 
-    public async void Load()
+    public async Task LoadAsync(CancellationToken cancellationToken)
     {
         // Request raster texture
         using UnityWebRequest rasterReq = UnityWebRequestTexture.GetTexture(string.Format(Layer.Url, Tile.Id));
@@ -45,7 +46,20 @@ public class RasterTileLayer : ITileLayer
         // Wait for the request
         while (!rasterOp.isDone)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Cancel the request
+                rasterReq.Abort();
+                State = TileLayerState.Unloaded;
+                return;
+            }
             await Task.Yield();
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            State = TileLayerState.Unloaded;
+            return;
         }
 
         // If the gameobject was destroyed before the request finished, we're done here

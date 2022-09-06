@@ -1,4 +1,7 @@
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
+
 /// <summary>
 /// Represents a tile's layer
 /// </summary>
@@ -30,9 +33,10 @@ public interface ITileLayer
     TileLayerState State { get; }
 
     /// <summary>
-    /// Load the tile layer
+    /// Load the tile layer asynchronously
     /// </summary>
-    void Load();
+    /// <param name="cancellationToken">The cancellation token to cancel the operation</param>
+    Task LoadAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Unload the tile layer

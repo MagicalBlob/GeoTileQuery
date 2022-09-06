@@ -68,6 +68,8 @@ public class MainController : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        // Update the map
+        Map.Update();
         // Update the UI
         UI.Update();
     }

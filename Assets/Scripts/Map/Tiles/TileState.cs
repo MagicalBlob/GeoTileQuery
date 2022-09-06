@@ -11,14 +11,21 @@ public enum TileState
     /// </remarks>
     Initial,
     /// <summary>
-    /// The tile's data failed to load
+    /// The tile's terrain data failed to load
     /// </summary>
-    LoadFailed,
+    TerrainLoadFailed,
     /// <summary>
     /// The tile's terrain data has been loaded
     /// </summary>
-    LoadedTerrain,
+    TerrainLoaded,
     /// <summary>
+    /// The tile's layers failed to load
+    /// </summary>
+    LayersLoadFailed,
+    /// <summary>
+    /// The tile has been loaded
+    /// <summary>
+    Loaded,
     /// The tile has been unloaded
     /// </summary>
     /// <remarks>

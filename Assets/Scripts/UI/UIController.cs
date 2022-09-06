@@ -344,6 +344,11 @@ public class UIController
         debugText.Append(SystemInfo.batteryStatus);
         debugText.Append(")");
 
+        debugText.Append("\n\nAvailable semaphore threads: ");
+        debugText.Append(MainController.networkSemaphore.CurrentCount);
+        debugText.Append("\nTiles: ");
+        debugText.Append(Map.Tiles.Count);
+
         DebugTextDisplay.text = debugText.ToString();
     }
 

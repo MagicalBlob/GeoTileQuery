@@ -116,6 +116,22 @@ public class Map
         Load();
     }
 
+    private float tileCleanup = 0.0f;
+    /// <summary>
+    /// Called every frame
+    /// </summary>
+    public void Update()
+    {
+        tileCleanup += Time.unscaledDeltaTime;
+        if (tileCleanup > 60.0f)
+        {
+            tileCleanup = 0.0f;
+            int oldCount = Tiles.Count;
+            Unload();
+            Logger.Log($"Auto unloading old tiles. {oldCount - Tiles.Count} tiles unloaded.");
+        }
+    }
+
     /// <summary>
     /// Load the map tiles
     /// </summary>
@@ -133,13 +149,12 @@ public class Map
                     // Only load tiles that haven't been loaded already
                     Tile tile = new Tile(this, ZoomLevel, tileX, tileY, CurrentTileGeneration);
                     Tiles.Add(tile.Id, tile);
-                    tile.Load();
+                    tile.LoadAsync();
                 }
                 else
                 {
                     // The tile was loaded already
                     existingTile.Generation = CurrentTileGeneration; // Update its generation
-                    existingTile.GameObject.SetActive(true); // Make the tile visible
                 }
             }
         }
@@ -160,11 +175,9 @@ public class Map
                 // Hide the tile
                 tile.GameObject.SetActive(false);
 
-                // Attempt to unload the tile
-                if (tile.Unload())
-                {
-                    tilesToRemove.Add(tile.Id);
-                }
+                // Unload the tile
+                tile.Unload();
+                tilesToRemove.Add(tile.Id);
             }
         }
 

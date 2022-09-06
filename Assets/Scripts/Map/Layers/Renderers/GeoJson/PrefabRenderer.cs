@@ -30,6 +30,7 @@ public class PrefabRenderer : IGeoJsonRenderer
         if (model == null)
         {
             model = feature.GetPropertyAsString("model");
+            Logger.LogError($"No model name specified for prefab renderer, trying to get it from the GeoJSON properties. Model name: {model}. // TODO This will cause issues if the model name is not the same for all features, but I'm too tired to fix it right now");
         }
 
         GameObject prefab = Resources.Load<GameObject>($"Prefabs/{model}"); // TODO Actual prefabs probably shouldn't be loaded with Resources.Load

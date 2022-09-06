@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -64,7 +65,9 @@ public class Tile
     /// </summary>
     public uint Generation { get; set; }
 
-    private Texture2D tmpHeighmapThing; // TODO probably a better idea to only store the converted data
+    private CancellationTokenSource _cancellationTokenSource;
+
+    private Texture2D _tmpHeighmapThing; // TODO probably a better idea to only store the converted data
 
     /// <summary>
     /// Constructs a new tile
@@ -83,6 +86,7 @@ public class Tile
         this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom); // Calculate tile bounds
         this.Layers = new Dictionary<string, ITileLayer>();
         this.Generation = generation;
+        _cancellationTokenSource = new CancellationTokenSource();
 
         // Setup the gameobject
         GameObject = new GameObject(Id);
@@ -95,15 +99,15 @@ public class Tile
     }
 
     /// <summary>
-    /// Load the tile
+    /// Load the tile asynchronously
     /// </summary>
-    public async void Load()
+    public async Task LoadAsync()
     {
         // Load the heightmap
-        await LoadHeightmap();
+        await LoadHeightmapAsync();
 
         // Load the layers
-        if (State == TileState.LoadedTerrain)
+        if (State == TileState.TerrainLoaded)
         {
             LoadLayers();
         }
@@ -114,9 +118,9 @@ public class Tile
     }
 
     /// <summary>
-    /// Load the tile's heightmap
+    /// Load the tile's heightmap asynchronously
     /// </summary>
-    private async Task LoadHeightmap()
+    private async Task LoadHeightmapAsync()
     {
         // Request heightmap texture
         string heightmapUrl = $"https://api.mapbox.com/v4/mapbox.terrain-rgb/{Zoom}/{X}/{Y}.pngraw?access_token={MainController.MapboxAccessToken}";
@@ -126,7 +130,20 @@ public class Tile
         // Wait for the request
         while (!heightmapOp.isDone)
         {
+            if (_cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                // Cancel the request
+                heightmapReq.Abort();
+                State = TileState.Unloaded;
+                return;
+            }
             await Task.Yield();
+        }
+
+        if (_cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            State = TileState.Unloaded;
+            return;
         }
 
         // If the gameobject was destroyed before the request finished, we're done here
@@ -135,14 +152,14 @@ public class Tile
         // Grab the heightmap if the request was successful
         if (heightmapReq.result == UnityWebRequest.Result.Success)
         {
-            tmpHeighmapThing = DownloadHandlerTexture.GetContent(heightmapReq);
-            tmpHeighmapThing.wrapMode = TextureWrapMode.Clamp; // TODO actually take care of the edges
-            State = TileState.LoadedTerrain;
+            _tmpHeighmapThing = DownloadHandlerTexture.GetContent(heightmapReq);
+            _tmpHeighmapThing.wrapMode = TextureWrapMode.Clamp; // TODO actually take care of the edges
+            State = TileState.TerrainLoaded;
         }
         else
         {
             Logger.LogError(heightmapReq.error);
-            State = TileState.LoadFailed;
+            State = TileState.TerrainLoadFailed;
         }
     }
 
@@ -151,6 +168,7 @@ public class Tile
     /// </summary>
     private void LoadLayers()
     {
+        List<Task> layerLoadTasks = new List<Task>();
         foreach (ILayer layer in Map.Layers.Values)
         {
             ITileLayer tileLayer;
@@ -166,8 +184,35 @@ public class Tile
                     throw new Exception($"Unknown layer type: {layer.GetType()}");
             }
             Layers.Add(layer.Id, tileLayer);
-            tileLayer.Load();
+            layerLoadTasks.Add(tileLayer.LoadAsync(_cancellationTokenSource.Token));
         }
+
+        // Wait for all layers to finish loading
+        Task.WhenAll(layerLoadTasks).ContinueWith((task) =>
+        {
+            if (_cancellationTokenSource.IsCancellationRequested)
+            {
+                // The operation was cancelled
+                State = TileState.Unloaded;
+                return;
+            }
+
+            // Check if all layers loaded successfully
+            foreach (ITileLayer tileLayer in Layers.Values)
+            {
+                if (tileLayer.State != TileLayerState.Rendered)
+                {
+                    // A layer failed to load
+                    State = TileState.LayersLoadFailed;
+                }
+            }
+
+            // If all layers loaded successfully, set the tile state to loaded
+            if (State != TileState.LayersLoadFailed)
+            {
+                State = TileState.Loaded;
+            }
+        });
     }
 
     /// <summary>
@@ -178,7 +223,7 @@ public class Tile
     /// <returns>Height at given location (meters)</returns>
     public double GetHeight(int pixelX, int pixelY)
     {
-        return MapboxHeightFromColor(tmpHeighmapThing.GetPixel(pixelX, pixelY));
+        return MapboxHeightFromColor(_tmpHeighmapThing.GetPixel(pixelX, pixelY));
     }
 
     /// <summary>
@@ -208,26 +253,20 @@ public class Tile
     /// <summary>
     /// Unload the tile
     /// </summary>
-    /// <returns>Whether the tile was unloaded</returns>
-    public bool Unload()
+    public void Unload()
     {
         // Check if the tile can be unloaded
-        if (State != TileState.LoadedTerrain && State != TileState.LoadFailed)
+        if (State == TileState.Initial || State == TileState.TerrainLoaded)
         {
-            // Need to wait for the tile terrain to load or at least fail to load
-            return false;
-        }
-        foreach (ITileLayer tileLayer in Layers.Values)
-        {
-            if (tileLayer.State != TileLayerState.Rendered && tileLayer.State != TileLayerState.LoadFailed)
-            {
-                // Need to wait for the tile layer to render or at least have fail to load
-                return false;
-            }
+            // Abort loading terrain or tile layers
+            _cancellationTokenSource.Cancel();
         }
 
         // Update the state
         State = TileState.Unloaded;
+
+        // Destroy the gameobject
+        GameObject.Destroy(GameObject);
 
         // Unload the layers
         foreach (ITileLayer tileLayer in Layers.Values)
@@ -235,10 +274,5 @@ public class Tile
             tileLayer.Unload();
         }
         Layers.Clear();
-
-        // Destroy the gameobject
-        GameObject.Destroy(GameObject);
-
-        return true;
     }
 }
