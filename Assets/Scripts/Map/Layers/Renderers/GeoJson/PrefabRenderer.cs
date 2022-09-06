@@ -6,6 +6,11 @@ using UnityEngine;
 public class PrefabRenderer : IGeoJsonRenderer
 {
     /// <summary>
+    /// Whether to use the feature's properties to determine the prefab to use
+    /// </summary>
+    private bool checkGeoJson;
+
+    /// <summary>
     /// Name of the model to load
     /// </summary>
     private string model;
@@ -13,9 +18,22 @@ public class PrefabRenderer : IGeoJsonRenderer
     /// <summary>
     /// Constructs a new PrefabRenderer
     /// </summary>
-    /// <param name="model">Name of the model to load. If null, it tries to find the value in the GeoJSON</param>
+    /// <remarks>
+    /// Since no model is specified, it will lookup the model name in the GeoJSON properties under the key "model"
+    /// </remarks>
+    public PrefabRenderer()
+    {
+        this.checkGeoJson = true;
+        this.model = null;
+    }
+
+    /// <summary>
+    /// Constructs a new PrefabRenderer
+    /// </summary>
+    /// <param name="model">Name of the model to load</param>
     public PrefabRenderer(string model)
     {
+        this.checkGeoJson = false;
         this.model = model;
     }
 
@@ -27,10 +45,9 @@ public class PrefabRenderer : IGeoJsonRenderer
         double z = coordinates.GetRelativeY(tileLayer.Tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
         // Get model name
-        if (model == null)
+        if (checkGeoJson)
         {
             model = feature.GetPropertyAsString("model");
-            Logger.LogError($"No model name specified for prefab renderer, trying to get it from the GeoJSON properties. Model name: {model}. // TODO This will cause issues if the model name is not the same for all features, but I'm too tired to fix it right now");
         }
 
         GameObject prefab = Resources.Load<GameObject>($"Prefabs/{model}"); // TODO Actual prefabs probably shouldn't be loaded with Resources.Load

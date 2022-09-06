@@ -83,7 +83,7 @@ public class Map
         Layers.Add("MapboxSatellite", new RasterLayer("MapboxSatellite", false, defaultRasterRenderer, $"https://api.mapbox.com/v4/mapbox.satellite/{{0}}.jpg?access_token={MainController.MapboxAccessToken}"));
         Layers.Add("Bikepaths", new GeoJsonLayer("Bikepaths", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Bikepaths/{0}.geojson", "OBJECTID"));
         Layers.Add("Buildings", new GeoJsonLayer("Buildings", true, new BuildingRenderer(), "https://tese.flamino.eu/api/tiles/Buildings/{0}.geojson", "name"));
-        Layers.Add("BuildingsLOD3", new GeoJsonLayer("BuildingsLOD3", true, new PrefabRenderer(null), "https://tese.flamino.eu/api/tiles/BuildingsLOD3/{0}.geojson", "id"));
+        Layers.Add("BuildingsLOD3", new GeoJsonLayer("BuildingsLOD3", true, new PrefabRenderer(), "https://tese.flamino.eu/api/tiles/BuildingsLOD3/{0}.geojson", "id"));
         Layers.Add("Closures", new GeoJsonLayer("Closures", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Closures/{0}.geojson", "id"));
         Layers.Add("Electrical_IP_especial", new GeoJsonLayer("Electrical_IP_especial", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Electrical_IP_especial/{0}.geojson", null));
         Layers.Add("Electrical_PS", new GeoJsonLayer("Electrical_PS", true, defaultGeoJsonRenderer, "https://tese.flamino.eu/api/tiles/Electrical_PS/{0}.geojson", null));
@@ -149,7 +149,7 @@ public class Map
                     // Only load tiles that haven't been loaded already
                     Tile tile = new Tile(this, ZoomLevel, tileX, tileY, CurrentTileGeneration);
                     Tiles.Add(tile.Id, tile);
-                    tile.LoadAsync();
+                    _ = tile.LoadAsync();
                 }
                 else
                 {
