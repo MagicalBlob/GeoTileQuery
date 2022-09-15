@@ -1,40 +1,55 @@
 using UnityEngine;
-using UnityEngine.Events;
 using System;
 using System.Collections.Generic;
 
 /// <summary>
 /// The application log
 /// </summary>
-public static class Logger
+public class Logger : ILogHandler
 {
+    /// <summary>
+    /// Message width
+    /// </summary>
+    public static int MessageWidth { get { return 978; } }
+
     /// <summary>
     /// All the messages in the log
     /// </summary>
-    private static List<ILogMessage> messages = new List<ILogMessage>();
+    private List<ILogMessage> messages;
 
     /// <summary>
     /// Messages that are still to be printed
     /// </summary>
-    private static List<ILogMessage> toPrint = new List<ILogMessage>();
+    private List<ILogMessage> toPrint;
+
+    /// <summary>
+    /// The instance of the log
+    /// </summary>
+    private static readonly Logger instance = new Logger();
 
     /// <summary>
     /// An event that is triggered every time a new message is added to the log
     /// </summary>
-    public static UnityEvent onNewMessage = new UnityEvent();
+    private event EventHandler onNewMessage;
 
     /// <summary>
-    /// Message width
+    /// Constructs a new Logger
     /// </summary>
-    public static int messageWidth = 978;
+    public Logger()
+    {
+        this.messages = new List<ILogMessage>();
+        this.toPrint = new List<ILogMessage>();
+        // Set the Unity log handler to our custom log handler
+        Debug.unityLogger.logHandler = this;
+    }
 
     /// <summary>
     /// Subscribes to the new log message event
     /// </summary>
     /// <param name="callback">The callback method</param>
-    public static void Subscribe(UnityAction callback)
+    public static void Subscribe(EventHandler callback)
     {
-        onNewMessage.AddListener(callback);
+        instance.onNewMessage += callback;
     }
 
     /// <summary>
@@ -43,58 +58,59 @@ public static class Logger
     /// <param name="parent">The parent GameObject</param>
     public static void Render(GameObject parent)
     {
-        foreach (ILogMessage message in toPrint)
+        foreach (ILogMessage message in instance.toPrint)
         {
             message.Render(parent);
         }
-        toPrint.Clear();
+        instance.toPrint.Clear();
     }
 
     /// <summary>
-    /// Adds a message to the log
+    /// Logs a formatted message
     /// </summary>
-    /// <param name="message">String or object to be converted to string representation for display</param>
-    public static void Log(object message)
+    /// <remarks>
+    /// For formatting details, see the MSDN documentation on Composite Formatting. Rich text markup can be used to add emphasis. See the manual page about <see href="https://docs.unity3d.com/Manual/StyledText.html">rich text</see> for details of the different markup tags available.
+    /// </remarks>
+    /// <param name="logType">The type of the log message</param>
+    /// <param name="context">Object to which the message applies</param>
+    /// <param name="format">A composite format string</param>
+    /// <param name="args">Format arguments</param>
+    public void LogFormat(LogType logType, UnityEngine.Object context, string format, params object[] args)
     {
-        ILogMessage logMessage = new InfoMessage(message);
+        ILogMessage logMessage;
+        switch (logType)
+        {
+            case LogType.Error:
+                logMessage = new ErrorMessage(string.Format(format, args), context);
+                break;
+            case LogType.Assert:
+                logMessage = new AssertMessage(string.Format(format, args), context);
+                break;
+            case LogType.Warning:
+                logMessage = new WarningMessage(string.Format(format, args), context);
+                break;
+            case LogType.Log:
+                logMessage = new InfoMessage(string.Format(format, args), context);
+                break;
+            case LogType.Exception:
+                logMessage = new ExceptionMessage(new Exception(string.Format(format, args)), context);
+                break;
+            default:
+                logMessage = new InfoMessage(string.Format(format, args), context);
+                break;
+        }
         messages.Add(logMessage);
         toPrint.Add(logMessage);
-        onNewMessage.Invoke();
+        onNewMessage.Invoke(instance, new EventArgs());
     }
 
     /// <summary>
-    /// Adds a warning to the log
-    /// </summary>
-    /// <param name="message">String or object to be converted to string representation for display</param>
-    public static void LogWarning(object message)
-    {
-        ILogMessage logMessage = new WarningMessage(message);
-        messages.Add(logMessage);
-        toPrint.Add(logMessage);
-        onNewMessage.Invoke();
-    }
-
-    /// <summary>
-    /// Adds an error to the log
-    /// </summary>
-    /// <param name="message">String or object to be converted to string representation for display</param>
-    public static void LogError(object message)
-    {
-        ILogMessage logMessage = new ErrorMessage(message);
-        messages.Add(logMessage);
-        toPrint.Add(logMessage);
-        onNewMessage.Invoke();
-    }
-
-    /// <summary>
-    /// Adds an exception to the log
+    /// A variant of Log that logs an exception message
     /// </summary>
     /// <param name="exception">Runtime Exception</param>
-    public static void LogException(Exception exception)
+    /// <param name="context">Object to which the message applies</param>
+    public void LogException(Exception exception, UnityEngine.Object context)
     {
-        ILogMessage logMessage = new ExceptionMessage(exception);
-        messages.Add(logMessage);
-        toPrint.Add(logMessage);
-        onNewMessage.Invoke();
+        LogFormat(LogType.Exception, context, "{0}", exception.ToString());
     }
 }

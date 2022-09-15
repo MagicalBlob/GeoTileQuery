@@ -15,16 +15,23 @@ public class ExceptionMessage : ILogMessage
     /// <summary>
     /// The message content
     /// </summary>
-    private Exception content;
+    private object content;
+
+    /// <summary>
+    /// The message context
+    /// </summary>
+    private UnityEngine.Object context;
 
     /// <summary>
     /// Creates a new ExceptionMessage
     /// </summary>
-    /// <param name="exception">The message content</param>
-    public ExceptionMessage(Exception exception)
+    /// <param name="message">String or object to be converted to string representation for display</param>
+    /// <param name="context">Object to which the message applies</param>
+    public ExceptionMessage(object message, UnityEngine.Object context)
     {
         this.timestamp = DateTime.Now;
-        this.content = exception;
+        this.content = message;
+        this.context = context;
     }
 
     public void Render(GameObject parent)
@@ -37,12 +44,12 @@ public class ExceptionMessage : ILogMessage
         text.color = Color.magenta;
         text.text = ToString();
 
-        (message.GetComponent<RectTransform>()).sizeDelta = new Vector2(Logger.messageWidth, 0);
+        (message.GetComponent<RectTransform>()).sizeDelta = new Vector2(Logger.MessageWidth, 0);
         message.transform.SetParent(parent.transform, false);
     }
 
     public override string ToString()
     {
-        return $"[{timestamp.ToString("HH:mm:ss")}] [EXCEPTION] {content.ToString()}";
+        return context == null ? $"[{timestamp.ToString("HH:mm:ss")}] [EXCEPTION] {content.ToString()}" : $"[{timestamp.ToString("HH:mm:ss")}] [EXCEPTION] {content.ToString()} | ({context.ToString()})";
     }
 }

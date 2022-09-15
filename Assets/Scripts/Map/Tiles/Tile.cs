@@ -113,7 +113,7 @@ public class Tile
         }
         else
         {
-            Logger.LogError($"Can't load layers for tile {Id} because the heightmap hasn't been loaded yet");
+            Debug.LogError($"Can't load layers for tile {Id} because the heightmap hasn't been loaded yet");
         }
     }
 
@@ -158,7 +158,7 @@ public class Tile
         }
         else
         {
-            Logger.LogError(heightmapReq.error);
+            Debug.LogError(heightmapReq.error);
             State = TileState.TerrainLoadFailed;
         }
     }

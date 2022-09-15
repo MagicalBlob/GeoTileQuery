@@ -32,7 +32,7 @@ public class Polygon : IGeometryObject, IGeoJsonObject
             else
             {
                 // Ring does not have at least four positions
-                //Logger.LogWarning($"Every Polygon ring coordinates must have four or more positions. Found {ring.Length} instead!"); TODO: Do we want to log this?
+                //Debug.LogWarning($"Every Polygon ring coordinates must have four or more positions. Found {ring.Length} instead!"); TODO: Do we want to log this?
                 //throw new InvalidGeoJsonException($"Every Polygon ring coordinates must have four or more positions. Found {ring.Length} instead!");
             }
         }

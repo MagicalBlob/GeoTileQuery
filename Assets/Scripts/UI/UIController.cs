@@ -148,7 +148,7 @@ public class UIController
     private void ToggleLayers()
     {
         LayersScreen.SetActive(!LayersScreen.activeSelf);
-        Logger.Log("Toggled Layers screen");
+        Debug.Log("Toggled Layers screen");
     }
 
     /// <summary>
@@ -167,12 +167,12 @@ public class UIController
         if (arMode)
         {
             Map.SwitchTo2DMode();
-            Logger.Log("Switched to 2D mode");
+            Debug.Log("Switched to 2D mode");
         }
         else
         {
             Map.SwitchToARMode();
-            Logger.Log("Switched to AR mode");
+            Debug.Log("Switched to AR mode");
         }
         arMode = !arMode;
     }
@@ -184,32 +184,32 @@ public class UIController
         {
             case 0:
                 Map.MoveCenter(38.711992, -9.140663);
-                Logger.Log("Moved origin to carmo");
+                Debug.Log("Moved origin to carmo");
                 currentOrigin = 1;
                 break;
             case 1:
                 Map.MoveCenter(38.765514, -9.093839);
-                Logger.Log("Moved origin to expo");
+                Debug.Log("Moved origin to expo");
                 currentOrigin = 2;
                 break;
             case 2:
                 Map.MoveCenter(38.725249, -9.149994);
-                Logger.Log("Moved origin to marques");
+                Debug.Log("Moved origin to marques");
                 currentOrigin = 3;
                 break;
             case 3:
                 Map.MoveCenter(38.773310, -9.153689);
-                Logger.Log("Moved origin to alta");
+                Debug.Log("Moved origin to alta");
                 currentOrigin = 4;
                 break;
             case 4:
                 Map.MoveCenter(38.733744, -9.160745);
-                Logger.Log("Moved origin to campolide");
+                Debug.Log("Moved origin to campolide");
                 currentOrigin = 5;
                 break;
             case 5:
                 Map.MoveCenter(38.706808, -9.136164);
-                Logger.Log("Moved origin to baixa");
+                Debug.Log("Moved origin to baixa");
                 currentOrigin = 0;
                 break;
         }
@@ -218,7 +218,7 @@ public class UIController
     int currentCameraAngle = 0;
     private void TestButtonClicked()
     {
-        Logger.Log("Test button clicked!");
+        Debug.Log("Test button clicked!");
         switch (currentCameraAngle)
         {
             case 0:
@@ -273,7 +273,7 @@ public class UIController
                         tile.Layers[layer.Id].GameObject.SetActive(layer.Visible);
                     }
 
-                    Logger.Log(toggle.isOn ? $"Enabled layer '{layer.Id}'" : $"Disabled layer '{layer.Id}'");
+                    Debug.Log(toggle.isOn ? $"Enabled layer '{layer.Id}'" : $"Disabled layer '{layer.Id}'");
                 });
         }
     }
@@ -281,7 +281,7 @@ public class UIController
     /// <summary>
     /// Updates log to render new messages
     /// </summary>
-    private void UpdateLog()
+    private void UpdateLog(object sender, System.EventArgs e)
     {
         Logger.Render(Log);
     }

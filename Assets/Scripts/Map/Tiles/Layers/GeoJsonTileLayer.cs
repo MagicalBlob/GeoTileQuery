@@ -74,18 +74,10 @@ public class GeoJsonTileLayer : ITileLayer
                 // Check if it's a FeatureCollection
                 if (geoJson.GetType() == typeof(FeatureCollection))
                 {
-                    try
-                    {
-                        // Render the GeoJSON
-                        ((FeatureCollection)geoJson).Render(this);
-                        DateTime afterRender = DateTime.Now;
-                        //Logger.Log($"{FullId} : Semaphore > {(afterSemaphore - loadCalled).TotalSeconds} | Request > {(afterRequest - afterSemaphore).TotalSeconds} | Parse > {(afterParse - afterRequest).TotalSeconds} | Render > {(afterRender - afterParse).TotalSeconds} | TOTAL > {(afterRender - loadCalled).TotalSeconds}"); TODO: Remove this and timers
-                    }
-                    catch (Exception e) // TODO: Should we be catching these exceptions?
-                    {
-                        // An error occurred while rendering the GeoJSON
-                        Logger.LogError($"{FullId}: Failed to render GeoJSON. {e.ToString()} {e.Message}");
-                    }
+                    // Render the GeoJSON
+                    ((FeatureCollection)geoJson).Render(this);
+                    DateTime afterRender = DateTime.Now;
+                    //Debug.Log($"{FullId} : Semaphore > {(afterSemaphore - loadCalled).TotalSeconds} | Request > {(afterRequest - afterSemaphore).TotalSeconds} | Parse > {(afterParse - afterRequest).TotalSeconds} | Render > {(afterRender - afterParse).TotalSeconds} | TOTAL > {(afterRender - loadCalled).TotalSeconds}"); TODO: Remove this and timers
                 }
                 else
                 {
@@ -95,14 +87,14 @@ public class GeoJsonTileLayer : ITileLayer
             }
             catch (InvalidGeoJsonException e)
             {
-                Logger.LogException(e);
+                Debug.LogException(e);
             }
             State = TileLayerState.Rendered;
         }
         catch (HttpRequestException e)
         {
             MainController.networkSemaphore.Release(); // Release the semaphore
-            Logger.LogException(e);
+            Debug.LogException(e);
             State = cancellationToken.IsCancellationRequested ? TileLayerState.Unloaded : TileLayerState.LoadFailed;
         }
         catch (TaskCanceledException)

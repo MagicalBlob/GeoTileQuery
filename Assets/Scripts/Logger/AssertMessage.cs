@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Represents an information message
+/// Represents an assert message
 /// </summary>
-public class InfoMessage : ILogMessage
+public class AssertMessage : ILogMessage
 {
     /// <summary>
     /// The message's timestamp
@@ -23,11 +23,11 @@ public class InfoMessage : ILogMessage
     private UnityEngine.Object context;
 
     /// <summary>
-    /// Creates a new InfoMessage
+    /// Creates a new AssertMessage
     /// </summary>
     /// <param name="message">String or object to be converted to string representation for display</param>
     /// <param name="context">Object to which the message applies</param>
-    public InfoMessage(object message, UnityEngine.Object context)
+    public AssertMessage(object message, UnityEngine.Object context)
     {
         this.timestamp = DateTime.Now;
         this.content = message;
@@ -36,12 +36,12 @@ public class InfoMessage : ILogMessage
 
     public void Render(GameObject parent)
     {
-        GameObject message = new GameObject("InfoMessage");
+        GameObject message = new GameObject("AssertMessage");
 
         Text text = message.AddComponent<Text>();
         text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         text.verticalOverflow = VerticalWrapMode.Overflow;
-        text.color = Color.white;
+        text.color = Color.red;
         text.text = ToString();
 
         (message.GetComponent<RectTransform>()).sizeDelta = new Vector2(Logger.MessageWidth, 0);
@@ -50,6 +50,6 @@ public class InfoMessage : ILogMessage
 
     public override string ToString()
     {
-        return context == null ? $"[{timestamp.ToString("HH:mm:ss")}] [INFO] {content.ToString()}" : $"[{timestamp.ToString("HH:mm:ss")}] [INFO] {content.ToString()} | ({context.ToString()})";
+        return context == null ? $"[{timestamp.ToString("HH:mm:ss")}] [ASSERT] {content.ToString()}" : $"[{timestamp.ToString("HH:mm:ss")}] [ASSERT] {content.ToString()} | ({context.ToString()})";
     }
 }

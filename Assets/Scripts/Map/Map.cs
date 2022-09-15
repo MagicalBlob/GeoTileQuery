@@ -128,7 +128,7 @@ public class Map
             tileCleanup = 0.0f;
             int oldCount = Tiles.Count;
             Unload();
-            Logger.Log($"Auto unloading old tiles. {oldCount - Tiles.Count} tiles unloaded.");
+            Debug.Log($"Auto unloading old tiles. {oldCount - Tiles.Count} tiles unloaded.");
         }
     }
 
@@ -231,12 +231,12 @@ public class Map
         ZoomLevel += amount;
         if (ZoomLevel < 0)
         {
-            Logger.LogWarning("Zoom level cannot be less than 0");
+            Debug.LogWarning("Zoom level cannot be less than 0");
             ZoomLevel = 0;
         }
         if (ZoomLevel > 17)
         {
-            Logger.LogWarning("Zoom level is too high, setting it to 17");
+            Debug.LogWarning("Zoom level is too high, setting it to 17");
             ZoomLevel = 17;
         }
 
@@ -332,7 +332,7 @@ public class Map
 
         foreach (ARTrackedImage trackedImage in args.removed)
         {
-            Logger.LogWarning($"Image `{trackedImage.referenceImage.name}` removed!");
+            Debug.LogWarning($"Image `{trackedImage.referenceImage.name}` removed!");
         }
     }
 
@@ -354,11 +354,11 @@ public class Map
                     // Set the tiles as a child of the tracked image
                     GameObject.transform.parent = trackedImage.transform;
 
-                    Logger.Log($"Setting tracked image `{trackedImage.referenceImage.name}` as the map parent. Tracking state: {trackedImage.trackingState}");
+                    Debug.Log($"Setting tracked image `{trackedImage.referenceImage.name}` as the map parent. Tracking state: {trackedImage.trackingState}");
                     Transform t = GameObject.transform;
                     while (t != null)
                     {
-                        Logger.Log($"{t.name} | {t.gameObject.activeInHierarchy} | {t.gameObject.activeSelf} | {t.gameObject.transform.position} | {t.gameObject.transform.localPosition}  | {t.gameObject.transform.rotation} | {t.gameObject.transform.localRotation} | {t.gameObject.transform.localScale}");
+                        Debug.Log($"{t.name} | {t.gameObject.activeInHierarchy} | {t.gameObject.activeSelf} | {t.gameObject.transform.position} | {t.gameObject.transform.localPosition}  | {t.gameObject.transform.rotation} | {t.gameObject.transform.localRotation} | {t.gameObject.transform.localScale}");
                         t = t.parent;
                     }
                 }
@@ -369,7 +369,7 @@ public class Map
         }
         else
         {
-            Logger.LogWarning($"Detected `{trackedImage.referenceImage.name}` image instead!");
+            Debug.LogWarning($"Detected `{trackedImage.referenceImage.name}` image instead!");
         }
     }
 }

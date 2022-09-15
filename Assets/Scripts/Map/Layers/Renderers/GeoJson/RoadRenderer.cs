@@ -18,7 +18,7 @@ public class RoadRenderer : IGeoJsonRenderer
 
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
-        Logger.LogWarning($"[RoadRenderer] {tileLayer.FullId}: Tried to render a Node!");
+        Debug.LogWarning($"[RoadRenderer] {tileLayer.FullId}: Tried to render a Node!");
     }
 
     public void RenderEdge(GeoJsonTileLayer tileLayer, Feature feature, Position[] coordinates)
@@ -26,7 +26,7 @@ public class RoadRenderer : IGeoJsonRenderer
         // Check for empty coordinates array
         if (coordinates.Length == 0)
         {
-            Logger.LogWarning($"[RoadRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Edge with no coordinates");
+            Debug.LogWarning($"[RoadRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Edge with no coordinates");
             return;
         }
 
@@ -132,6 +132,6 @@ public class RoadRenderer : IGeoJsonRenderer
 
     public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
     {
-        Logger.LogWarning($"[RoadRenderer] {tileLayer.FullId}: Tried to render an Area!");
+        Debug.LogWarning($"[RoadRenderer] {tileLayer.FullId}: Tried to render an Area!");
     }
 }

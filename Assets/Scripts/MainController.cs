@@ -1,5 +1,4 @@
 using UnityEngine;
-using System;
 using System.Net.Http;
 using System.Threading;
 
@@ -46,6 +45,8 @@ public class MainController : MonoBehaviour
 
         // Create the UI
         UI = new UIController(Map);
+
+        Debug.Log($"<b>Debug level:</b> <i>{Debug.unityLogger.filterLogType}</i>");
     }
 
     /// <summary>
@@ -53,14 +54,7 @@ public class MainController : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        try
-        {
-            Map.Start();
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e); // TODO make it so all Unity console output goes through our logger (Debug.unityLogger.logHandler | https://docs.unity3d.com/ScriptReference/ILogHandler.html | https://docs.unity3d.com/ScriptReference/ILogger.html)
-        }
+        Map.Start();
     }
 
     /// <summary>

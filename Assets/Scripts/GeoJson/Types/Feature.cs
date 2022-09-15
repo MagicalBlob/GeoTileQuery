@@ -66,17 +66,17 @@ public class Feature : IGeoJsonObject
                 }
                 else
                 {
-                    Logger.Log($"Property value for {key} is of type {obj.GetType()} and not {typeof(ValueType)}");
+                    Debug.Log($"Property value for {key} is of type {obj.GetType()} and not {typeof(ValueType)}");
                 }
             }
             else
             {
-                Logger.LogWarning($"Property value for {key} is null");
+                Debug.LogWarning($"Property value for {key} is null");
             }
         }
         else
         {
-            Logger.LogWarning($"Unable to get property value for {key}");
+            Debug.LogWarning($"Unable to get property value for {key}");
         }
 
         return value;
@@ -102,12 +102,12 @@ public class Feature : IGeoJsonObject
             }
             else
             {
-                Logger.LogWarning($"Property value for {key} is null");
+                Debug.LogWarning($"Property value for {key} is null");
             }
         }
         else
         {
-            Logger.LogWarning($"Unable to get property value for {key}");
+            Debug.LogWarning($"Unable to get property value for {key}");
         }
 
         return value;
@@ -135,21 +135,21 @@ public class Feature : IGeoJsonObject
                 }
                 catch (FormatException)
                 {
-                    Logger.LogWarning($"The {obj.GetType().Name} value {obj} is not recognized as a valid Double value.");
+                    Debug.LogWarning($"The {obj.GetType().Name} value {obj} is not recognized as a valid Double value.");
                 }
                 catch (InvalidCastException)
                 {
-                    Console.WriteLine($"Conversion of the {obj.GetType().Name} value {obj} to a Double is not supported.");
+                    Debug.LogWarning($"Conversion of the {obj.GetType().Name} value {obj} to a Double is not supported.");
                 }
             }
             else
             {
-                Logger.LogWarning($"Property value for {key} is null");
+                Debug.LogWarning($"Property value for {key} is null");
             }
         }
         else
         {
-            Logger.LogWarning($"Unable to get property value for {key}");
+            Debug.LogWarning($"Unable to get property value for {key}");
         }
 
         return value;
@@ -187,7 +187,7 @@ public class Feature : IGeoJsonObject
         }
         else
         {
-            Logger.LogWarning($"Unable to render the feature {id} as it has no geometry assigned (Unlocated feature)");
+            Debug.LogWarning($"Unable to render the feature {id} as it has no geometry assigned (Unlocated feature)");
         }
     }
 

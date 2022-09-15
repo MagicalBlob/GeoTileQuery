@@ -148,7 +148,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         // Check for empty coordinates array
         if (coordinates.Length == 0)
         {
-            //Logger.LogWarning($"[DefaultGeoJsonRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates"); TODO: Do we want to log this?
+            //Debug.LogWarning($"[DefaultGeoJsonRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates"); TODO: Do we want to log this?
             return;
         }
 
@@ -162,7 +162,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         EarcutLib.Data data = EarcutLib.Flatten(coordinates, tileLayer);
         List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
         /*double deviation = EarcutLib.Deviation(data.Vertices, data.Holes, data.Dimensions, triangles);
-        Logger.Log(deviation == 0 ? "The triangulation is fully correct" : $"Triangulation deviation: {Math.Round(deviation, 6)}"); TODO clear this */
+        Debug.Log(deviation == 0 ? "The triangulation is fully correct" : $"Triangulation deviation: {Math.Round(deviation, 6)}"); TODO clear this */
 
         // Setup the mesh components
         MeshRenderer meshRenderer = area.AddComponent<MeshRenderer>();
@@ -191,6 +191,6 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         meshFilter.mesh = mesh;
 
         // TODO we're getting an extra vertex because GeoJSON polygon's line rings loop around, should we cut it?
-        //Logger.Log($"Mesh>Vertices:{meshFilter.mesh.vertexCount},Triangles:{meshFilter.mesh.triangles.Length / 3},Normals:{meshFilter.mesh.normals.Length}");
+        //Debug.Log($"Mesh>Vertices:{meshFilter.mesh.vertexCount},Triangles:{meshFilter.mesh.triangles.Length / 3},Normals:{meshFilter.mesh.normals.Length}");
     }
 }

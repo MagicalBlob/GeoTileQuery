@@ -13,12 +13,12 @@ public class BuildingRenderer : IGeoJsonRenderer
 
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
-        Logger.LogWarning($"[BuildingRenderer] {tileLayer.FullId}: Tried to render a Node!");
+        Debug.LogWarning($"[BuildingRenderer] {tileLayer.FullId}: Tried to render a Node!");
     }
 
     public void RenderEdge(GeoJsonTileLayer tileLayer, Feature feature, Position[] coordinates)
     {
-        Logger.LogWarning($"[BuildingRenderer] {tileLayer.FullId}: Tried to render an Edge!");
+        Debug.LogWarning($"[BuildingRenderer] {tileLayer.FullId}: Tried to render an Edge!");
     }
 
     public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
@@ -26,7 +26,7 @@ public class BuildingRenderer : IGeoJsonRenderer
         // Check for empty coordinates array
         if (coordinates.Length == 0)
         {
-            //Logger.LogWarning($"[BuildingRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates"); TODO: Do we want to log this?
+            //Debug.LogWarning($"[BuildingRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates"); TODO: Do we want to log this?
             return;
         }
 

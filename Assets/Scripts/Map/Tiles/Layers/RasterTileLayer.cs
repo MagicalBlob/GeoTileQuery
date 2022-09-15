@@ -78,7 +78,7 @@ public class RasterTileLayer : ITileLayer
         }
         else
         {
-            Logger.LogError($"Failed to load `{FullId}`: {rasterReq.error}");
+            Debug.LogError($"Failed to load `{FullId}`: {rasterReq.error}");
             State = TileLayerState.LoadFailed;
         }
     }

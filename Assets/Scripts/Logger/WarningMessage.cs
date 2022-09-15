@@ -18,13 +18,20 @@ public class WarningMessage : ILogMessage
     private object content;
 
     /// <summary>
+    /// The message context
+    /// </summary>
+    private UnityEngine.Object context;
+
+    /// <summary>
     /// Creates a new WarningMessage
     /// </summary>
-    /// <param name="message">The message content</param>
-    public WarningMessage(object message)
+    /// <param name="message">String or object to be converted to string representation for display</param>
+    /// <param name="context">Object to which the message applies</param>
+    public WarningMessage(object message, UnityEngine.Object context)
     {
         this.timestamp = DateTime.Now;
         this.content = message;
+        this.context = context;
     }
 
     public void Render(GameObject parent)
@@ -37,12 +44,12 @@ public class WarningMessage : ILogMessage
         text.color = Color.yellow;
         text.text = ToString();
 
-        (message.GetComponent<RectTransform>()).sizeDelta = new Vector2(Logger.messageWidth, 0);
+        (message.GetComponent<RectTransform>()).sizeDelta = new Vector2(Logger.MessageWidth, 0);
         message.transform.SetParent(parent.transform, false);
     }
 
     public override string ToString()
     {
-        return $"[{timestamp.ToString("HH:mm:ss")}] [WARNING] {content.ToString()}";
+        return context == null ? $"[{timestamp.ToString("HH:mm:ss")}] [WARNING] {content.ToString()}" : $"[{timestamp.ToString("HH:mm:ss")}] [WARNING] {content.ToString()} | ({context.ToString()})";
     }
 }
