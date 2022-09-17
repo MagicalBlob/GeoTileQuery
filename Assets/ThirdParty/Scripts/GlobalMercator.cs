@@ -205,6 +205,17 @@ public class GlobalMercator
     }
 
     /// <summary>
+    /// Converts XY point from Spherical Mercator EPSG:900913 to lat/lon in WGS84 Datum
+    /// </summary>
+    /// <param name="meters">Input XY (meters)</param>
+    /// <returns>Converted latitude/longitude vector</returns>
+    public static Vector2D MetersToLatLon(Vector2D meters)
+    {
+        Vector2D lonLat = MetersToLonLat(meters.X, meters.Y);
+        return new Vector2D(Math.Round(lonLat.Y, 6), Math.Round(lonLat.X, 6));
+    }
+
+    /// <summary>
     /// Converts pixel coordinates in given zoom level of pyramid to EPSG:900913
     /// </summary>
     /// <param name="pixelsX">Input X (pixels)</param>

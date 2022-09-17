@@ -58,6 +58,12 @@ public class Logger : ILogHandler
     /// <param name="parent">The parent GameObject</param>
     public static void Render(GameObject parent)
     {
+        if (parent == null)
+        {
+            // If there is no parent, then we can't render anything
+            return;
+        }
+
         foreach (ILogMessage message in instance.toPrint)
         {
             message.Render(parent);

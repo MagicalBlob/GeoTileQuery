@@ -65,6 +65,7 @@ public class BuildingRenderer : IGeoJsonRenderer
         // Setup the mesh components
         MeshRenderer meshRenderer = walls.AddComponent<MeshRenderer>();
         MeshFilter meshFilter = walls.AddComponent<MeshFilter>();
+        MeshCollider meshCollider = walls.AddComponent<MeshCollider>();
         Mesh mesh = new Mesh();
 
         // Setup vertices/triangles
@@ -112,6 +113,7 @@ public class BuildingRenderer : IGeoJsonRenderer
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Wall"); // TODO use Addressables instead?
         meshFilter.mesh = mesh;
+        meshCollider.sharedMesh = mesh;
     }
 
     /// <summary>
@@ -136,6 +138,7 @@ public class BuildingRenderer : IGeoJsonRenderer
         // Setup the mesh components
         MeshRenderer meshRenderer = roof.AddComponent<MeshRenderer>();
         MeshFilter meshFilter = roof.AddComponent<MeshFilter>();
+        MeshCollider meshCollider = roof.AddComponent<MeshCollider>();
         Mesh mesh = new Mesh();
 
         // Setup vertices
@@ -157,5 +160,6 @@ public class BuildingRenderer : IGeoJsonRenderer
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Roof"); // TODO use Addressables instead?
         meshFilter.mesh = mesh;
+        meshCollider.sharedMesh = mesh;
     }
 }

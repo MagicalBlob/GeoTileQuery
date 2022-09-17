@@ -19,6 +19,7 @@ public class DefaultRasterRenderer : IRasterRenderer
         // Setup the mesh components
         MeshRenderer meshRenderer = tileLayer.GameObject.AddComponent<MeshRenderer>();
         MeshFilter meshFilter = tileLayer.GameObject.AddComponent<MeshFilter>();
+        MeshCollider meshCollider = tileLayer.GameObject.AddComponent<MeshCollider>();
         Mesh mesh = new Mesh();
 
         Vector3[] vertices = new Vector3[divisions * divisions * 4];
@@ -64,5 +65,6 @@ public class DefaultRasterRenderer : IRasterRenderer
         meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
         tileLayer.GameObject.GetComponent<Renderer>().material.mainTexture = texture;
         meshFilter.mesh = mesh;
+        meshCollider.sharedMesh = mesh;
     }
 }

@@ -181,13 +181,14 @@ public class Feature : IGeoJsonObject
         gameObject.transform.localPosition = Vector3.zero;
         gameObject.transform.rotation = tile.GameObject.transform.rotation;
 
+        // Check if the feature has a Geometry object, otherwise it's unlocated and there's nothing to render
         if (geometry != null)
         {
             geometry.Render(tile, this);
         }
         else
         {
-            Debug.LogWarning($"Unable to render the feature {id} as it has no geometry assigned (Unlocated feature)");
+            Debug.LogWarning($"Unable to render the feature {tile.FullId}/{id} as it has no geometry assigned (Unlocated feature)");
         }
     }
 

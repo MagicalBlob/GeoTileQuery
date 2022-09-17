@@ -53,7 +53,15 @@ public class GeoJsonObjectConverter : JsonConverter
                     case "MultiLineString":
                         return jsonObject.ToObject<MultiLineString>(serializer);
                     case "Polygon":
-                        return jsonObject.ToObject<Polygon>(serializer);
+                        try
+                        {
+                            return jsonObject.ToObject<Polygon>(serializer);
+                        }
+                        catch (InvalidGeoJsonException e)
+                        {
+                            UnityEngine.Debug.LogWarning($"Failed to parse Polygon, so will set it to null (turn into an unlocated feature) and try to parse the remaining GeoJSON. Reason: {e.Message}");
+                            return null;
+                        }
                     case "MultiPolygon":
                         return jsonObject.ToObject<MultiPolygon>(serializer);
                     case "GeometryCollection":

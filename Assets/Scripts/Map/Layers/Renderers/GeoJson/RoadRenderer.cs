@@ -39,6 +39,7 @@ public class RoadRenderer : IGeoJsonRenderer
         // Setup the mesh components
         MeshRenderer meshRenderer = edge.AddComponent<MeshRenderer>();
         MeshFilter meshFilter = edge.AddComponent<MeshFilter>();
+        MeshCollider meshCollider = edge.AddComponent<MeshCollider>();
         Mesh mesh = new Mesh();
 
         // Setup vertices and triangles
@@ -128,6 +129,7 @@ public class RoadRenderer : IGeoJsonRenderer
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Road"); // TODO use Addressables instead?
         meshFilter.mesh = mesh;
+        meshCollider.sharedMesh = mesh;
     }
 
     public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)

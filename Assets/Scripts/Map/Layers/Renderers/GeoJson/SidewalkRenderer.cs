@@ -32,6 +32,7 @@ public class SidewalkRenderer : IGeoJsonRenderer
         // Setup the mesh components
         MeshRenderer meshRenderer = edge.AddComponent<MeshRenderer>();
         MeshFilter meshFilter = edge.AddComponent<MeshFilter>();
+        MeshCollider meshCollider = edge.AddComponent<MeshCollider>();
         Mesh mesh = new Mesh();
 
         // Setup vertices
@@ -79,6 +80,7 @@ public class SidewalkRenderer : IGeoJsonRenderer
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Sidewalk"); // TODO use Addressables instead?
         meshFilter.mesh = mesh;
+        meshCollider.sharedMesh = mesh;
     }
 
     public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)

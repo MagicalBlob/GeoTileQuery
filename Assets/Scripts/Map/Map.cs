@@ -274,6 +274,16 @@ public class Map
     }
 
     /// <summary>
+    /// Get the coordinates (lat/lon) of the given point on the map
+    /// </summary>
+    /// <param name="point">The point on the map</param>
+    /// <returns>The coordinates of the given point (lat/lon)</returns>
+    public Vector2D WorldToLatLon(Vector3 point)
+    {
+        return GlobalMercator.MetersToLatLon(Center + new Vector2D(point.x, point.z));
+    }
+
+    /// <summary>
     /// Move the 2D camera to the given position and rotation
     /// </summary>
     /// <param name="position">The position to move the camera to</param>

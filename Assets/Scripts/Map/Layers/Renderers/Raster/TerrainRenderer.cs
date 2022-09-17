@@ -35,6 +35,7 @@ public class TerrainRenderer : IRasterRenderer
                 // Setup the mesh components
                 MeshRenderer meshRenderer = divisionGameObject.AddComponent<MeshRenderer>();
                 MeshFilter meshFilter = divisionGameObject.AddComponent<MeshFilter>();
+                MeshCollider meshCollider = divisionGameObject.AddComponent<MeshCollider>();
                 Mesh mesh = new Mesh();
 
                 Vector3[] vertices = new Vector3[pixelsPerDivision * pixelsPerDivision * 4];
@@ -80,6 +81,7 @@ public class TerrainRenderer : IRasterRenderer
                 meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
                 divisionGameObject.GetComponent<Renderer>().material.mainTexture = texture;
                 meshFilter.mesh = mesh;
+                meshCollider.sharedMesh = mesh;
             }
         }
     }

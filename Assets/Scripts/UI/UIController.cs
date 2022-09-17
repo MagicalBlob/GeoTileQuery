@@ -76,6 +76,7 @@ public class UIController
         GameObject.Find("/UI/Buttons/AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
         GameObject.Find("/UI/Buttons/POI").GetComponent<Button>().onClick.AddListener(TogglePOI);
         GameObject.Find("/UI/Buttons/Test").GetComponent<Button>().onClick.AddListener(TestButtonClicked);
+        GameObject.Find("/UI/Buttons/Ray").GetComponent<Button>().onClick.AddListener(CastScreenCenterRay);
     }
 
     /// <summary>
@@ -237,6 +238,28 @@ public class UIController
                 Map.Test2DCamera(new Vector3(350, 760, -980), new Vector3(35, 330, 0));
                 currentCameraAngle = 0;
                 break;
+        }
+    }
+
+    private void CastScreenCenterRay()
+    {
+        // Get the screen center point
+        Vector2 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
+
+        // Cast a ray from the screen center point
+        Ray ray = Camera.main.ScreenPointToRay(screenCenter);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            // Hit something
+            Vector2D hitLL = Map.WorldToLatLon(hit.point);
+            Debug.Log($"Coordinates of screen center: {hitLL}");
+            Debug.Log($"Raycast hit: {hit.point} | {hit.distance} | {hit.collider.name} | {hit.transform.gameObject.name}");
+        }
+        else
+        {
+            // No collider hit
+            Debug.LogWarning("Raycast hit nothing");
         }
     }
 
