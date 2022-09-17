@@ -1,5 +1,6 @@
 using System.Text;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Profiling;
 using UnityEngine.UI;
 
@@ -76,6 +77,7 @@ public class UIController
         GameObject.Find("/UI/Buttons/AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
         GameObject.Find("/UI/Buttons/POI").GetComponent<Button>().onClick.AddListener(TogglePOI);
         GameObject.Find("/UI/Buttons/Test").GetComponent<Button>().onClick.AddListener(TestButtonClicked);
+        GameObject.Find("/UI/Buttons/Query").GetComponent<Button>().onClick.AddListener(ToggleQuery);
         GameObject.Find("/UI/Buttons/Ray").GetComponent<Button>().onClick.AddListener(CastScreenCenterRay);
     }
 
@@ -86,12 +88,46 @@ public class UIController
     {
         UpdateAverageFps();
 
-        // Only update debug text about once per second
         update += Time.unscaledDeltaTime;
         if (update > 1.0f)
         {
+            // Only update debug text about once per second
             update = 0.0f;
             UpdateDebugTextDisplay();
+        }
+
+        ProcessInput();
+    }
+
+    /// <summary>
+    /// Processes input events
+    /// </summary>
+    public void ProcessInput()
+    {
+        // Query mode input
+        if (queryMode)
+        {
+            // User clicked/tapped
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (Input.touchCount > 0)
+                {
+                    // Touch input
+                    Touch touch = Input.GetTouch(0);
+                    if (touch.phase == TouchPhase.Began && !EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+                    {
+                        CastScreenPointRay(touch.position);
+                    }
+                }
+                else
+                {
+                    // Mouse input
+                    if (!EventSystem.current.IsPointerOverGameObject())
+                    {
+                        CastScreenPointRay(Input.mousePosition);
+                    }
+                }
+            }
         }
     }
 
@@ -216,6 +252,22 @@ public class UIController
         }
     }
 
+    bool queryMode = false;
+    private void ToggleQuery()
+    {
+        if (queryMode)
+        {
+            GameObject.Find("/UI/Buttons/Query/Text").GetComponent<Text>().text = "Start Query";
+            Debug.Log("Stopped query");
+        }
+        else
+        {
+            GameObject.Find("/UI/Buttons/Query/Text").GetComponent<Text>().text = "Stop Query";
+            Debug.Log("Started query");
+        }
+        queryMode = !queryMode;
+    }
+
     int currentCameraAngle = 0;
     private void TestButtonClicked()
     {
@@ -241,24 +293,49 @@ public class UIController
         }
     }
 
+    /// <summary>
+    /// Casts a ray from the center of the screen
+    /// </summary>
     private void CastScreenCenterRay()
     {
         // Get the screen center point
         Vector2 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
 
         // Cast a ray from the screen center point
-        Ray ray = Camera.main.ScreenPointToRay(screenCenter);
+        CastScreenPointRay(screenCenter);
+    }
+
+    /// <summary>
+    /// Casts a ray from the given screen point
+    /// </summary>
+    /// <param name="screenPoint">The screen point to cast the ray from</param>
+    private void CastScreenPointRay(Vector2 screenPoint)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(screenPoint);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit))
         {
             // Hit something
             Vector2D hitLL = Map.WorldToLatLon(hit.point);
-            Debug.Log($"Coordinates of screen center: {hitLL}");
-            Debug.Log($"Raycast hit: {hit.point} | {hit.distance} | {hit.collider.name} | {hit.transform.gameObject.name}");
+            Debug.Log($"Coordinates of raycast hit: {hit.point} | {hitLL}");
+
+            // Check if the hit object is part of a map feature
+            FeatureBehaviour featureBehaviour = hit.transform.GetComponentInParent<FeatureBehaviour>();
+            if (featureBehaviour != null)
+            {
+                // Hit a map feature
+                Feature feature = featureBehaviour.Feature;
+                Debug.Log($"Raycast hit: {feature.FullId} | {feature}");
+            }
+            else
+            {
+                // Hit something else
+                Debug.Log($"Raycast didn't hit a feature: {hit.transform.name}");
+            }
         }
         else
         {
-            // No collider hit
+            // Didn't hit anything
             Debug.LogWarning("Raycast hit nothing");
         }
     }

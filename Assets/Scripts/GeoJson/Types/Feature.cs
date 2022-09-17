@@ -9,6 +9,26 @@ using System;
 public class Feature : IGeoJsonObject
 {
     /// <summary>
+    /// Feature identifier
+    /// </summary>
+    public string Id { get => id; }
+
+    /// <summary>
+    /// Feature identifier (including tile layer)
+    /// </summary>
+    public string FullId { get { return $"{TileLayer.FullId}/{Id}"; } }
+
+    /// <summary>
+    /// The tile layer that this feature belongs to
+    /// </summary>
+    public GeoJsonTileLayer TileLayer { get; private set; }
+
+    /// <summary>
+    /// Reference to the GameObject representation of this feature
+    /// </summary>
+    public GameObject GameObject { get; private set; }
+
+    /// <summary>
     /// The geometry of the feature or NULL if feature is unlocated
     /// </summary>
     private IGeometryObject geometry;
@@ -22,12 +42,6 @@ public class Feature : IGeoJsonObject
     /// Feature identifier
     /// </summary>
     private string id;
-
-    /// <summary>
-    /// Reference to the GameObject representation of this feature
-    /// </summary>
-    public GameObject GameObject { get => gameObject; }
-    private GameObject gameObject;
 
     /// <summary>
     /// Constructs a new Feature with given geometry, properties and id
@@ -158,16 +172,16 @@ public class Feature : IGeoJsonObject
     /// <summary>
     /// Render the Feature
     /// </summary>
-    /// <param name="tile">The Feature's tile</param>
-    public void Render(GeoJsonTileLayer tile)
+    /// <param name="tileLayer">The Feature's tile layer</param>
+    public void Render(GeoJsonTileLayer tileLayer)
     {
         if (id == null || id.Length == 0)
         {
             // There wasn't an ID set on the feature
-            if (((GeoJsonLayer)tile.Layer).IdPropertyName != null)
+            if (((GeoJsonLayer)tileLayer.Layer).IdPropertyName != null)
             {
                 // A property name was given to try to use as an alternative to the Id and there is a value that matches that property name for this feature
-                id = GetPropertyAsString(((GeoJsonLayer)tile.Layer).IdPropertyName);
+                id = GetPropertyAsString(((GeoJsonLayer)tileLayer.Layer).IdPropertyName);
             }
             else
             {
@@ -175,20 +189,23 @@ public class Feature : IGeoJsonObject
             }
         };
 
+        TileLayer = tileLayer;
+
         // Setup the gameobject
-        gameObject = new GameObject(id);
-        gameObject.transform.parent = tile.GameObject.transform;
-        gameObject.transform.localPosition = Vector3.zero;
-        gameObject.transform.rotation = tile.GameObject.transform.rotation;
+        GameObject = new GameObject(id);
+        GameObject.transform.parent = tileLayer.GameObject.transform;
+        GameObject.transform.localPosition = Vector3.zero;
+        GameObject.transform.rotation = tileLayer.GameObject.transform.rotation;
+        GameObject.AddComponent<FeatureBehaviour>().Feature = this;
 
         // Check if the feature has a Geometry object, otherwise it's unlocated and there's nothing to render
         if (geometry != null)
         {
-            geometry.Render(tile, this);
+            geometry.Render(tileLayer, this);
         }
         else
         {
-            Debug.LogWarning($"Unable to render the feature {tile.FullId}/{id} as it has no geometry assigned (Unlocated feature)");
+            Debug.LogWarning($"Unable to render the feature {tileLayer.FullId}/{id} as it has no geometry assigned (Unlocated feature)");
         }
     }
 
