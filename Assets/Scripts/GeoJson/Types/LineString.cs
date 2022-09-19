@@ -19,6 +19,15 @@ public class LineString : IGeometryObject, IGeoJsonObject
     {
         if (coordinates.Length >= 2)
         {
+            if (coordinates.Length == 2)
+            {
+                // LineString has two positions, so check if they are the same
+                if (coordinates[0].Equals(coordinates[1]))
+                {
+                    // LineString has two positions that are the same, so this is not a valid LineString
+                    throw new InvalidGeoJsonException("(Not part of GeoJSON spec) A LineString should have at least two unique positions, but this LineString only has one");
+                }
+            }
             this.coordinates = coordinates;
         }
         else

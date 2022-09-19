@@ -24,6 +24,18 @@ public class MultiLineString : IGeometryObject, IGeoJsonObject
             {
                 throw new InvalidGeoJsonException("Every MultiLine Line coordinates must have two or more positions");
             }
+            else
+            {
+                if (line.Length == 2)
+                {
+                    // MultiLine Line has two positions, so check if they are the same
+                    if (line[0].Equals(line[1]))
+                    {
+                        // MultiLine Line has two positions that are the same, so this is not a valid MultiLineString
+                        throw new InvalidGeoJsonException("(Not part of GeoJSON spec) A MultiLineString Line should have at least two unique positions, but this Line only has one");
+                    }
+                }
+            }
         }
         this.coordinates = coordinates;
     }

@@ -215,6 +215,9 @@ public class UIController
     }
 
     int currentOrigin = 0;
+    /// <summary>
+    /// Toggles the POI that is used as the origin for the map
+    /// </summary>
     private void TogglePOI()
     {
         switch (currentOrigin)
@@ -225,26 +228,31 @@ public class UIController
                 currentOrigin = 1;
                 break;
             case 1:
-                Map.MoveCenter(38.765514, -9.093839);
-                Debug.Log("Moved origin to expo");
+                Map.MoveCenter(38.744169, -9.149994);
+                Debug.Log("Moved origin to entrecampos");
                 currentOrigin = 2;
                 break;
             case 2:
-                Map.MoveCenter(38.725249, -9.149994);
-                Debug.Log("Moved origin to marques");
+                Map.MoveCenter(38.765514, -9.093839);
+                Debug.Log("Moved origin to expo");
                 currentOrigin = 3;
                 break;
             case 3:
-                Map.MoveCenter(38.773310, -9.153689);
-                Debug.Log("Moved origin to alta");
+                Map.MoveCenter(38.725249, -9.149994);
+                Debug.Log("Moved origin to marques");
                 currentOrigin = 4;
                 break;
             case 4:
-                Map.MoveCenter(38.733744, -9.160745);
-                Debug.Log("Moved origin to campolide");
+                Map.MoveCenter(38.773310, -9.153689);
+                Debug.Log("Moved origin to alta");
                 currentOrigin = 5;
                 break;
             case 5:
+                Map.MoveCenter(38.733744, -9.160745);
+                Debug.Log("Moved origin to campolide");
+                currentOrigin = 6;
+                break;
+            case 6:
                 Map.MoveCenter(38.706808, -9.136164);
                 Debug.Log("Moved origin to baixa");
                 currentOrigin = 0;
@@ -253,6 +261,9 @@ public class UIController
     }
 
     bool queryMode = false;
+    /// <summary>
+    /// Toggles query mode
+    /// </summary>
     private void ToggleQuery()
     {
         if (queryMode)
@@ -316,8 +327,8 @@ public class UIController
         if (Physics.Raycast(ray, out hit))
         {
             // Hit something
-            Vector2D hitLL = Map.WorldToLatLon(hit.point);
-            Debug.Log($"Coordinates of raycast hit: {hit.point} | {hitLL}");
+            Vector2D hitLatLon = Map.WorldToLatLon(hit.point);
+            Debug.Log($"Coordinates of raycast hit: {hitLatLon}");
 
             // Check if the hit object is part of a map feature
             FeatureBehaviour featureBehaviour = hit.transform.GetComponentInParent<FeatureBehaviour>();
@@ -325,18 +336,34 @@ public class UIController
             {
                 // Hit a map feature
                 Feature feature = featureBehaviour.Feature;
-                Debug.Log($"Raycast hit: {feature.FullId} | {feature}");
-            }
-            else
-            {
-                // Hit something else
-                Debug.Log($"Raycast didn't hit a feature: {hit.transform.name}");
+                Debug.Log($"Raycast hit: {feature.FullId}");
+                foreach (FeatureProperty property in ((GeoJsonLayer)feature.TileLayer.Layer).Properties)
+                {
+                    switch (property.Type)
+                    {
+                        case FeaturePropertyType.String:
+                            Debug.LogFormat(property.FormatString, feature.GetPropertyAsString(property.Key), property.DisplayName);
+                            break;
+                        case FeaturePropertyType.Double:
+                            Debug.LogFormat(property.FormatString, System.Math.Round(feature.GetPropertyAsDouble(property.Key), 2), property.DisplayName);
+                            break;
+                        case FeaturePropertyType.Int:
+                            Debug.LogFormat(property.FormatString, feature.GetPropertyAsInt(property.Key), property.DisplayName);
+                            break;
+                        case FeaturePropertyType.Bool:
+                            Debug.LogFormat(property.FormatString, feature.GetPropertyAsBool(property.Key), property.DisplayName);
+                            break;
+                        case FeaturePropertyType.Date:
+                            Debug.LogFormat(property.FormatString, feature.GetPropertyAsDateTime(property.Key).ToString("yyyy-MM-ddTHH:mm:sszzz", System.Globalization.CultureInfo.InvariantCulture), property.DisplayName);
+                            break;
+                    }
+                }
             }
         }
         else
         {
             // Didn't hit anything
-            Debug.LogWarning("Raycast hit nothing");
+            Debug.LogWarning("Raycast didn't hit anything");
         }
     }
 

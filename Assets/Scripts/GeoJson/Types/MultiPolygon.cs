@@ -30,6 +30,46 @@ public class MultiPolygon : IGeometryObject, IGeoJsonObject
                         // Ring is not a closed loop
                         throw new InvalidGeoJsonException("The first and last positions of a MultiPolygon's polygon ring must be equivalent");
                     }
+                    else
+                    {
+                        // Ring is a closed loop
+                        Position firstUniquePosition = ring[0];
+                        Position? secondUniquePosition = null;
+                        bool foundThreeUniquePositions = false;
+                        for (int i = 1; i < ring.Length - 1; i++)
+                        {
+                            if (secondUniquePosition == null)
+                            {
+                                // We haven't found it yet, so check if this position is the second unique one
+                                if (!ring[i].Equals(firstUniquePosition))
+                                {
+                                    secondUniquePosition = ring[i];
+                                }
+                            }
+                            else
+                            {
+                                // We've found the second unique position, check if this position is the third unique one
+                                if (!ring[i].Equals(firstUniquePosition) && !ring[i].Equals(secondUniquePosition))
+                                {
+                                    // We found at least three unique positions, so this is a valid polygon
+                                    foundThreeUniquePositions = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!foundThreeUniquePositions)
+                        {
+                            // We didn't find at least three unique positions, so this is not a valid polygon
+                            if (secondUniquePosition == null)
+                            {
+                                throw new InvalidGeoJsonException("(Not part of GeoJSON spec) A MultiPolygon Polygon ring should have at least three unique positions, but this ring only has one");
+                            }
+                            else
+                            {
+                                throw new InvalidGeoJsonException("(Not part of GeoJSON spec) A MultiPolygon Polygon ring should have at least three unique positions, but this ring only has two");
+                            }
+                        }
+                    }
                 }
                 else
                 {

@@ -170,6 +170,132 @@ public class Feature : IGeoJsonObject
     }
 
     /// <summary>
+    /// Get the value for the Feature's property with given key as an integer
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as an integer, 0 otherwise</returns>
+    public int GetPropertyAsInt(string key)
+    {
+        int value = 0;
+
+        object obj;
+        // Check if we have properties and if there's an entry with given key
+        if (properties != null && properties.TryGetValue(key, out obj))
+        {
+            // Check if value isn't null
+            if (obj != null)
+            {
+                try
+                {
+                    value = Convert.ToInt32(obj);
+                }
+                catch (FormatException)
+                {
+                    Debug.LogWarning($"The {obj.GetType().Name} value {obj} is not recognized as a valid Integer value.");
+                }
+                catch (InvalidCastException)
+                {
+                    Debug.LogWarning($"Conversion of the {obj.GetType().Name} value {obj} to an Integer is not supported.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Property value for {key} is null");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Unable to get property value for {key}");
+        }
+
+        return value;
+    }
+
+    /// <summary>
+    /// Get the value for the Feature's property with given key as a boolean
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as a boolean, false otherwise</returns>
+    public bool GetPropertyAsBool(string key)
+    {
+        bool value = false;
+
+        object obj;
+        // Check if we have properties and if there's an entry with given key
+        if (properties != null && properties.TryGetValue(key, out obj))
+        {
+            // Check if value isn't null
+            if (obj != null)
+            {
+                try
+                {
+                    value = Convert.ToBoolean(obj);
+                }
+                catch (FormatException)
+                {
+                    Debug.LogWarning($"The {obj.GetType().Name} value {obj} is not recognized as a valid Boolean value.");
+                }
+                catch (InvalidCastException)
+                {
+                    Debug.LogWarning($"Conversion of the {obj.GetType().Name} value {obj} to a Boolean is not supported.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Property value for {key} is null");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Unable to get property value for {key}");
+        }
+
+        return value;
+    }
+
+    /// <summary>
+    /// Get the value for the Feature's property with given key as a datetime
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as a datetime, DateTime.MinValue otherwise</returns>
+    public DateTime GetPropertyAsDateTime(string key)
+    {
+        DateTime value = DateTime.MinValue;
+
+        object obj;
+        // Check if we have properties and if there's an entry with given key
+        if (properties != null && properties.TryGetValue(key, out obj))
+        {
+            // Check if value isn't null
+            if (obj != null)
+            {
+                try
+                {
+                    value = Convert.ToDateTime(obj);
+                }
+                catch (FormatException)
+                {
+                    Debug.LogWarning($"The {obj.GetType().Name} value {obj} is not recognized as a valid DateTime value.");
+                }
+                catch (InvalidCastException)
+                {
+                    Debug.LogWarning($"Conversion of the {obj.GetType().Name} value {obj} to a DateTime is not supported.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Property value for {key} is null");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Unable to get property value for {key}");
+        }
+
+        return value;
+    }
+
+    /// <summary>
     /// Render the Feature
     /// </summary>
     /// <param name="tileLayer">The Feature's tile layer</param>
