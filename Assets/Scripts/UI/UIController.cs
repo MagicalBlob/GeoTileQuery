@@ -14,6 +14,9 @@ public class UIController
     /// </summary>
     private Map Map { get; }
 
+    private Transform buttons;
+    private Transform screens;
+
     /// <summary>
     /// Layers screen
     /// </summary>
@@ -49,36 +52,37 @@ public class UIController
     {
         this.Map = map;
 
+        buttons = GameObject.Find("/UI/Buttons").transform;
+        screens = GameObject.Find("/UI/Screens").transform;
+
         // Layers screen
-        LayersScreen = GameObject.Find("/UI/Screens/Layers");
-        LayersScreen.SetActive(false); // Disabled by default, but we needed it active first to be able to find it
-        GameObject.Find("/UI/Buttons/Layers").GetComponent<Button>().onClick.AddListener(ToggleLayers);
+        LayersScreen = screens.Find("Layers").gameObject;
+        buttons.Find("Layers").GetComponent<Button>().onClick.AddListener(ToggleLayers);
         UpdateMapLayersList();
 
         // Debug screen
-        DebugTextDisplay = GameObject.Find("/UI/Screens/Debug/Panel/Debug Text Display").GetComponent<Text>();
-        Log = GameObject.Find("/UI/Screens/Debug/Scroll View/Viewport/Log");
+        DebugScreen = screens.Find("Debug").gameObject;
+        buttons.Find("Debug").GetComponent<Button>().onClick.AddListener(ToggleDebug);
+        DebugTextDisplay = screens.Find("Debug/Panel/Debug Text Display").GetComponent<Text>();
+        Log = screens.Find("Debug/Scroll View/Viewport/Log").gameObject;
         Logger.Subscribe(UpdateLog); // Listen for new log messages to display
-        DebugScreen = GameObject.Find("/UI/Screens/Debug");
-        DebugScreen.SetActive(false); // Disabled by default, but we needed it active first to be able to find it
-        GameObject.Find("/UI/Buttons/Debug").GetComponent<Button>().onClick.AddListener(ToggleDebug);
 
         // Navigation buttons
-        GameObject.Find("/UI/Buttons/Navigation/Up").GetComponent<Button>().onClick.AddListener(MoveUp);
-        GameObject.Find("/UI/Buttons/Navigation/Down").GetComponent<Button>().onClick.AddListener(MoveDown);
-        GameObject.Find("/UI/Buttons/Navigation/Left").GetComponent<Button>().onClick.AddListener(MoveLeft);
-        GameObject.Find("/UI/Buttons/Navigation/Right").GetComponent<Button>().onClick.AddListener(MoveRight);
+        buttons.Find("Navigation/Up").GetComponent<Button>().onClick.AddListener(MoveUp);
+        buttons.Find("Navigation/Down").GetComponent<Button>().onClick.AddListener(MoveDown);
+        buttons.Find("Navigation/Left").GetComponent<Button>().onClick.AddListener(MoveLeft);
+        buttons.Find("Navigation/Right").GetComponent<Button>().onClick.AddListener(MoveRight);
 
         // Zoom buttons
-        GameObject.Find("/UI/Buttons/Zoom/In").GetComponent<Button>().onClick.AddListener(ZoomIn);
-        GameObject.Find("/UI/Buttons/Zoom/Out").GetComponent<Button>().onClick.AddListener(ZoomOut);
+        buttons.Find("Zoom/In").GetComponent<Button>().onClick.AddListener(ZoomIn);
+        buttons.Find("Zoom/Out").GetComponent<Button>().onClick.AddListener(ZoomOut);
 
         // Other buttons
-        GameObject.Find("/UI/Buttons/AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
-        GameObject.Find("/UI/Buttons/POI").GetComponent<Button>().onClick.AddListener(TogglePOI);
-        GameObject.Find("/UI/Buttons/Test").GetComponent<Button>().onClick.AddListener(TestButtonClicked);
-        GameObject.Find("/UI/Buttons/Query").GetComponent<Button>().onClick.AddListener(ToggleQuery);
-        GameObject.Find("/UI/Buttons/Ray").GetComponent<Button>().onClick.AddListener(CastScreenCenterRay);
+        buttons.Find("AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
+        buttons.Find("POI").GetComponent<Button>().onClick.AddListener(TogglePOI);
+        buttons.Find("Test").GetComponent<Button>().onClick.AddListener(TestButtonClicked);
+        buttons.Find("Query").GetComponent<Button>().onClick.AddListener(ToggleQuery);
+        buttons.Find("Ray").GetComponent<Button>().onClick.AddListener(CastScreenCenterRay);
     }
 
     /// <summary>
@@ -268,12 +272,12 @@ public class UIController
     {
         if (queryMode)
         {
-            GameObject.Find("/UI/Buttons/Query/Text").GetComponent<Text>().text = "Start Query";
+            buttons.Find("Query/Text").GetComponent<Text>().text = "Start Query";
             Debug.Log("Stopped query");
         }
         else
         {
-            GameObject.Find("/UI/Buttons/Query/Text").GetComponent<Text>().text = "Stop Query";
+            buttons.Find("Query/Text").GetComponent<Text>().text = "Stop Query";
             Debug.Log("Started query");
         }
         queryMode = !queryMode;

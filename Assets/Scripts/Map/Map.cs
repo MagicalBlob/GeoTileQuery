@@ -49,12 +49,12 @@ public class Map
     /// <summary>
     /// The root GameObject for 2D mode
     /// </summary>
-    private GameObject Root2D { get; }
+    private GameObject Map2D { get; }
 
     /// <summary>
     /// The root GameObject for AR mode
     /// </summary>
-    private GameObject RootAR { get; }
+    private GameObject MapAR { get; }
 
     /// <summary>
     /// AR Manager for 2D images tracking
@@ -69,9 +69,10 @@ public class Map
         GameObject = new GameObject("Tiles");
         Layers = new Dictionary<string, ILayer>();
         Tiles = new Dictionary<string, Tile>();
-        Root2D = GameObject.Find("/Map/Root 2D");
-        RootAR = GameObject.Find("/Map/Root AR");
-        ARTrackedImageManager = GameObject.Find("/Map/Root AR/AR Session Origin").GetComponent<ARTrackedImageManager>();
+        Transform mapTransform = GameObject.Find("/Map").transform;
+        Map2D = mapTransform.Find("2D").gameObject;
+        MapAR = mapTransform.Find("AR").gameObject;
+        ARTrackedImageManager = MapAR.transform.Find("AR Session Origin").GetComponent<ARTrackedImageManager>();
 
         // Add the data layers        
         IRasterRenderer defaultRasterRenderer = new DefaultRasterRenderer();
@@ -112,7 +113,6 @@ public class Map
     public void Start()
     {
         SwitchTo2DMode();
-        Update2DCameraHeight();
         Load();
     }
 
@@ -248,7 +248,7 @@ public class Map
     private void Update2DCameraHeight()
     {
         // Grab the camera
-        Transform cameraTransform = Root2D.transform.GetChild(0);
+        Transform cameraTransform = Map2D.transform.GetChild(0);
         Camera camera = cameraTransform.GetComponent<Camera>();
         // Calculate the bounds of the origin tile
         Vector2Int originTile = GlobalMercator.MetersToGoogleTile(Center, ZoomLevel);
@@ -282,8 +282,8 @@ public class Map
     /// <param name="eulerAngles">The rotation to move the camera to</param>
     public void Test2DCamera(Vector3 position, Vector3 eulerAngles)
     {
-        Root2D.transform.GetChild(0).position = position;
-        Root2D.transform.GetChild(0).eulerAngles = eulerAngles;
+        Map2D.transform.GetChild(0).position = position;
+        Map2D.transform.GetChild(0).eulerAngles = eulerAngles;
     }
 
     /// <summary>
@@ -295,12 +295,15 @@ public class Map
         ARTrackedImageManager.trackedImagesChanged -= OnARTrackedImagesChanged;
 
         // Update the currently active root
-        RootAR.SetActive(false);
-        Root2D.SetActive(true);
+        MapAR.SetActive(false);
+        Map2D.SetActive(true);
 
         // Set the tiles as a child of the 2D root and match their scale and position with it
-        GameObject.transform.parent = Root2D.transform;
-        GameObject.transform.SetPositionAndRotation(Root2D.transform.position, Root2D.transform.rotation);
+        GameObject.transform.parent = Map2D.transform;
+        GameObject.transform.SetPositionAndRotation(Map2D.transform.position, Map2D.transform.rotation);
+
+        // Update the 2D camera
+        Update2DCameraHeight();
     }
 
     /// <summary>
@@ -309,8 +312,8 @@ public class Map
     public void SwitchToARMode()
     {
         // Update the currently active root
-        Root2D.SetActive(false);
-        RootAR.SetActive(true);
+        Map2D.SetActive(false);
+        MapAR.SetActive(true);
 
         // Start listening to the changed tracked images event so we can place the tiles
         ARTrackedImageManager.trackedImagesChanged += OnARTrackedImagesChanged;
