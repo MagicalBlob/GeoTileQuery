@@ -1,4 +1,3 @@
-using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +6,7 @@ using UnityEngine;
 /// <summary>
 /// Represents a tile's GeoJson layer
 /// </summary>
-public class GeoJsonTileLayer : ITileLayer
+public class GeoJsonTileLayer : IFilterableTileLayer
 {
     public Tile Tile { get; }
 
@@ -45,14 +44,11 @@ public class GeoJsonTileLayer : ITileLayer
 
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
-        DateTime loadCalled = DateTime.Now;
         await MainController.networkSemaphore.WaitAsync(cancellationToken); // Wait for the semaphore so we don't overload the client with too many requests
         try
         {
-            DateTime afterSemaphore = DateTime.Now;
             string geoJsonText = await Task<string>.Run(async () => await MainController.client.GetStringAsync(string.Format(Layer.Url, Tile.Id)), cancellationToken);
             MainController.networkSemaphore.Release(); // Release the semaphore
-            DateTime afterRequest = DateTime.Now;
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -69,15 +65,16 @@ public class GeoJsonTileLayer : ITileLayer
             {
                 // Parse the GeoJSON text
                 geoJson = GeoJson.Parse(geoJsonText);
-                DateTime afterParse = DateTime.Now;
 
                 // Check if it's a FeatureCollection
                 if (geoJson.GetType() == typeof(FeatureCollection))
                 {
                     // Render the GeoJSON
                     ((FeatureCollection)geoJson).Render(this);
-                    DateTime afterRender = DateTime.Now;
-                    //Debug.Log($"{FullId} : Semaphore > {(afterSemaphore - loadCalled).TotalSeconds} | Request > {(afterRequest - afterSemaphore).TotalSeconds} | Parse > {(afterParse - afterRequest).TotalSeconds} | Render > {(afterRender - afterParse).TotalSeconds} | TOTAL > {(afterRender - loadCalled).TotalSeconds}"); TODO: Remove this and timers
+                    State = TileLayerState.Rendered;
+
+                    // Apply the filters
+                    ApplyFilters();
                 }
                 else
                 {
@@ -112,5 +109,39 @@ public class GeoJsonTileLayer : ITileLayer
 
         // Destroy the gameobject
         GameObject.Destroy(GameObject);
+    }
+
+    public void ApplyFilters()
+    {
+        if (State != TileLayerState.Rendered) { return; } // Can't apply filters if the layer isn't rendered
+
+        foreach (Feature feature in ((FeatureCollection)geoJson).Features)
+        {
+            // Can't apply filters to a feature that doesn't have a GameObject
+            if (feature.GameObject == null) { continue; }
+
+            // Check if the feature's properties match the filters
+            bool hideFeature = false;
+            foreach (IFeatureProperty property in ((IFilterableLayer)Layer).FeatureProperties)
+            {
+                if (property.Filtered && !property.MatchesFilter(feature))
+                {
+                    // The feature doesn't match the filter
+                    hideFeature = true;
+                    break;
+                }
+            }
+
+            if (hideFeature)
+            {
+                // The feature doesn't match the filters, toggle its visibility according to the layer's filter setting
+                feature.GameObject.SetActive(!((IFilterableLayer)Layer).Filtered);
+            }
+            else
+            {
+                // The feature matches the filters, it should be visible regardless of the layer's filter setting
+                feature.GameObject.SetActive(true);
+            }
+        }
     }
 }

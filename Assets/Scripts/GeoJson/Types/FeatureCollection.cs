@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Text;
+using System.Collections.ObjectModel;
+using System;
 
 /// <summary>
 /// Represents a GeoJSON FeatureCollection
@@ -10,6 +11,7 @@ public class FeatureCollection : IGeoJsonObject
     /// The features in the collection
     /// </summary>
     private Feature[] features;
+    public ReadOnlyCollection<Feature> Features { get { return Array.AsReadOnly<Feature>(features); } }
 
     /// <summary>
     /// Constructs a new FeatureCollection with the given features

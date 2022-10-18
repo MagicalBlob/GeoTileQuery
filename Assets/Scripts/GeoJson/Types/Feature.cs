@@ -57,53 +57,13 @@ public class Feature : IGeoJsonObject
     }
 
     /// <summary>
-    /// Get the value for the Feature's property with given key
-    /// </summary>
-    /// <typeparam name="ValueType">Type of the value</typeparam>
-    /// <param name="key">Property key</param>
-    /// <returns>The value for the feature's property if it exists, default value otherwise</returns>
-    public ValueType GetProperty<ValueType>(string key)
-    {
-        ValueType value = default(ValueType);
-
-        object obj;
-        // Check if we have properties and if there's an entry with given key
-        if (properties != null && properties.TryGetValue(key, out obj))
-        {
-            // Check if value isn't null
-            if (obj != null)
-            {
-                // Check if value is of the requested type
-                if (obj.GetType() == typeof(ValueType))
-                {
-                    value = (ValueType)obj;
-                }
-                else
-                {
-                    Debug.Log($"Property value for {key} is of type {obj.GetType()} and not {typeof(ValueType)}");
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"Property value for {key} is null");
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"Unable to get property value for {key}");
-        }
-
-        return value;
-    }
-
-    /// <summary>
-    /// Get the value for the Feature's property with given key as a string
+    /// Get the value for the Feature's property with given key as a nullable string
     /// </summary>
     /// <param name="key">Property key</param>
-    /// <returns>The value for the feature's property if it exists as a string, empty string otherwise</returns>
-    public string GetPropertyAsString(string key)
+    /// <returns>The value for the feature's property if it exists as a string, null otherwise</returns>
+    public string GetPropertyAsNullableString(string key)
     {
-        string value = string.Empty;
+        string value = null;
 
         object obj;
         // Check if we have properties and if there's an entry with given key
@@ -114,10 +74,6 @@ public class Feature : IGeoJsonObject
             {
                 value = obj.ToString();
             }
-            else
-            {
-                Debug.LogWarning($"Property value for {key} is null");
-            }
         }
         else
         {
@@ -127,14 +83,26 @@ public class Feature : IGeoJsonObject
         return value;
     }
 
+
     /// <summary>
-    /// Get the value for the Feature's property with given key as a double
+    /// Get the value for the Feature's property with given key as a string
     /// </summary>
     /// <param name="key">Property key</param>
-    /// <returns>The value for the feature's property if it exists as a double, 0 otherwise</returns>
-    public double GetPropertyAsDouble(string key)
+    /// <returns>The value for the feature's property if it exists as a string, empty string otherwise</returns>
+    public string GetPropertyAsString(string key)
     {
-        double value = 0;
+        string value = GetPropertyAsNullableString(key);
+        return value == null ? string.Empty : value;
+    }
+
+    /// <summary>
+    /// Get the value for the Feature's property with given key as a nullable double
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as a double, null otherwise</returns>
+    public double? GetPropertyAsNullableDouble(string key)
+    {
+        double? value = null;
 
         object obj;
         // Check if we have properties and if there's an entry with given key
@@ -156,10 +124,6 @@ public class Feature : IGeoJsonObject
                     Debug.LogWarning($"Conversion of the {obj.GetType().Name} value {obj} to a Double is not supported.");
                 }
             }
-            else
-            {
-                Debug.LogWarning($"Property value for {key} is null");
-            }
         }
         else
         {
@@ -170,13 +134,24 @@ public class Feature : IGeoJsonObject
     }
 
     /// <summary>
-    /// Get the value for the Feature's property with given key as an integer
+    /// Get the value for the Feature's property with given key as a double
     /// </summary>
     /// <param name="key">Property key</param>
-    /// <returns>The value for the feature's property if it exists as an integer, 0 otherwise</returns>
-    public int GetPropertyAsInt(string key)
+    /// <returns>The value for the feature's property if it exists as a double, 0 otherwise</returns>
+    public double GetPropertyAsDouble(string key)
     {
-        int value = 0;
+        double? value = GetPropertyAsNullableDouble(key);
+        return value == null ? 0 : value.Value;
+    }
+
+    /// <summary>
+    /// Get the value for the Feature's property with given key as a nullable integer
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as an integer, null otherwise</returns>
+    public int? GetPropertyAsNullableInt(string key)
+    {
+        int? value = null;
 
         object obj;
         // Check if we have properties and if there's an entry with given key
@@ -198,10 +173,6 @@ public class Feature : IGeoJsonObject
                     Debug.LogWarning($"Conversion of the {obj.GetType().Name} value {obj} to an Integer is not supported.");
                 }
             }
-            else
-            {
-                Debug.LogWarning($"Property value for {key} is null");
-            }
         }
         else
         {
@@ -212,13 +183,24 @@ public class Feature : IGeoJsonObject
     }
 
     /// <summary>
-    /// Get the value for the Feature's property with given key as a boolean
+    /// Get the value for the Feature's property with given key as an integer
     /// </summary>
     /// <param name="key">Property key</param>
-    /// <returns>The value for the feature's property if it exists as a boolean, false otherwise</returns>
-    public bool GetPropertyAsBool(string key)
+    /// <returns>The value for the feature's property if it exists as an integer, 0 otherwise</returns>
+    public int GetPropertyAsInt(string key)
     {
-        bool value = false;
+        int? value = GetPropertyAsNullableInt(key);
+        return value == null ? 0 : value.Value;
+    }
+
+    /// <summary>
+    /// Get the value for the Feature's property with given key as a nullable boolean
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as a boolean, null otherwise</returns>
+    public bool? GetPropertyAsNullableBool(string key)
+    {
+        bool? value = null;
 
         object obj;
         // Check if we have properties and if there's an entry with given key
@@ -240,10 +222,6 @@ public class Feature : IGeoJsonObject
                     Debug.LogWarning($"Conversion of the {obj.GetType().Name} value {obj} to a Boolean is not supported.");
                 }
             }
-            else
-            {
-                Debug.LogWarning($"Property value for {key} is null");
-            }
         }
         else
         {
@@ -254,13 +232,24 @@ public class Feature : IGeoJsonObject
     }
 
     /// <summary>
-    /// Get the value for the Feature's property with given key as a datetime
+    /// Get the value for the Feature's property with given key as a boolean
     /// </summary>
     /// <param name="key">Property key</param>
-    /// <returns>The value for the feature's property if it exists as a datetime, DateTime.MinValue otherwise</returns>
-    public DateTime GetPropertyAsDateTime(string key)
+    /// <returns>The value for the feature's property if it exists as a boolean, false otherwise</returns>
+    public bool GetPropertyAsBool(string key)
     {
-        DateTime value = DateTime.MinValue;
+        bool? value = GetPropertyAsNullableBool(key);
+        return value == null ? false : value.Value;
+    }
+
+    /// <summary>
+    /// Get the value for the Feature's property with given key as a nullable datetime
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as a datetime, null otherwise</returns>
+    public DateTime? GetPropertyAsNullableDateTime(string key)
+    {
+        DateTime? value = null;
 
         object obj;
         // Check if we have properties and if there's an entry with given key
@@ -282,10 +271,6 @@ public class Feature : IGeoJsonObject
                     Debug.LogWarning($"Conversion of the {obj.GetType().Name} value {obj} to a DateTime is not supported.");
                 }
             }
-            else
-            {
-                Debug.LogWarning($"Property value for {key} is null");
-            }
         }
         else
         {
@@ -293,6 +278,17 @@ public class Feature : IGeoJsonObject
         }
 
         return value;
+    }
+
+    /// <summary>
+    /// Get the value for the Feature's property with given key as a datetime
+    /// </summary>
+    /// <param name="key">Property key</param>
+    /// <returns>The value for the feature's property if it exists as a datetime, DateTime.MinValue otherwise</returns>
+    public DateTime GetPropertyAsDateTime(string key)
+    {
+        DateTime? value = GetPropertyAsNullableDateTime(key);
+        return value == null ? DateTime.MinValue : value.Value;
     }
 
     /// <summary>
@@ -307,7 +303,12 @@ public class Feature : IGeoJsonObject
             if (((GeoJsonLayer)tileLayer.Layer).IdPropertyName != null)
             {
                 // A property name was given to try to use as an alternative to the Id and there is a value that matches that property name for this feature
-                id = GetPropertyAsString(((GeoJsonLayer)tileLayer.Layer).IdPropertyName);
+                id = GetPropertyAsNullableString(((GeoJsonLayer)tileLayer.Layer).IdPropertyName);
+                if (id == null)
+                {
+                    // There wasn't a value for the given property
+                    id = $"UnknownID_{System.Guid.NewGuid()}";
+                }
             }
             else
             {

@@ -1,3 +1,5 @@
+using System;
+
 /// <summary>
 /// Represents a map layer
 /// </summary>
@@ -7,6 +9,26 @@ public interface ILayer
     /// The layer's id
     /// </summary>
     string Id { get; }
+
+    /// <summary>
+    /// The layer's display name
+    /// </summary>
+    string DisplayName { get; }
+
+    /// <summary>
+    /// The layer's description
+    /// </summary>
+    string Description { get; }
+
+    /// <summary>
+    /// The layer's data source
+    /// </summary>
+    string Source { get; }
+
+    /// <summary>
+    /// The layer's latest update date
+    /// </summary>
+    DateTime LastUpdate { get; }
 
     /// <summary>
     /// Whether the layer is visible

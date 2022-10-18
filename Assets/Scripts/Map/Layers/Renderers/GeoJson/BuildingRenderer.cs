@@ -37,7 +37,7 @@ public class BuildingRenderer : IGeoJsonRenderer
         building.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
 
         // Get building height
-        double height = feature.GetPropertyAsDouble("EXTRUDE");
+        double height = (double)feature.GetPropertyAsDouble("EXTRUDE");
         if (height == 0)
         {
             height = defaultHeight;
