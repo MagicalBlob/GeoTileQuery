@@ -17,27 +17,23 @@ public class UIController
     private Map Map { get; }
 
     private Transform buttons;
-    private Transform screens;
+    private Transform modal;
+    private Transform currentModalContent;
 
-    /// <summary>
-    /// Layers screen
-    /// </summary>
-    private GameObject LayersScreen { get; }
-
-    /// <summary>
-    /// Debug screen
-    /// </summary>
-    private GameObject DebugScreen { get; }
+    private Transform locationModal;
+    private Transform layersModal;
+    private Transform debugModal;
+    private Transform aboutModal;
 
     /// <summary>
     /// Debug text display
     /// </summary>
-    private Text DebugTextDisplay { get; }
+    private Text debugTextDisplay;
 
     /// <summary>
     /// Log display
     /// </summary>
-    private GameObject Log { get; }
+    private GameObject log;
 
     private float update = 0.0f;
 
@@ -54,38 +50,116 @@ public class UIController
     {
         this.Map = map;
 
-        buttons = GameObject.Find("/UI/Buttons").transform;
-        screens = GameObject.Find("/UI/Screens").transform;
+        Transform UI = GameObject.Find("UI").transform;
+        buttons = UI.Find("Buttons").transform;
+        modal = UI.Find("Modal").transform;
+        modal.Find("Overlay").GetComponent<Button>().onClick.AddListener(() => CloseModal());
+        modal.Find("Content/Close").GetComponent<Button>().onClick.AddListener(() => CloseModal());
 
-        // Layers screen
-        LayersScreen = screens.Find("Layers").gameObject;
-        buttons.Find("Layers").GetComponent<Button>().onClick.AddListener(ToggleLayers);
+        // Location modal
+        SetupLocationModal();
+
+        // Layers modal
+        layersModal = modal.Find("Content/Layers");
+        buttons.Find("Layers").GetComponent<Button>().onClick.AddListener(() => { ShowModal(layersModal); });
         PopulateMapLayersList();
 
-        // Debug screen
-        DebugScreen = screens.Find("Debug").gameObject;
-        buttons.Find("Debug").GetComponent<Button>().onClick.AddListener(ToggleDebug);
-        DebugTextDisplay = screens.Find("Debug/Panel/Text Display").GetComponent<Text>();
-        Log = screens.Find("Debug/Log/Viewport/Content").gameObject;
+        // Debug modal
+        debugModal = modal.Find("Content/Debug");
+        buttons.Find("Debug").GetComponent<Button>().onClick.AddListener(() => { ShowModal(debugModal); });
+        debugTextDisplay = debugModal.transform.Find("Text Display").GetComponent<Text>();
+        log = debugModal.transform.Find("Log/Viewport/Content").gameObject;
         Logger.Subscribe(UpdateLog); // Listen for new log messages to display
 
+        // About modal
+        aboutModal = modal.Find("Content/About");
+        buttons.Find("About").GetComponent<Button>().onClick.AddListener(() => { ShowModal(aboutModal, 500, 500); });
+
         // Navigation buttons
-        buttons.Find("Navigation/Up").GetComponent<Button>().onClick.AddListener(MoveUp);
-        buttons.Find("Navigation/Down").GetComponent<Button>().onClick.AddListener(MoveDown);
-        buttons.Find("Navigation/Left").GetComponent<Button>().onClick.AddListener(MoveLeft);
-        buttons.Find("Navigation/Right").GetComponent<Button>().onClick.AddListener(MoveRight);
+        buttons.Find("Navigation/Up").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter(new Vector2D(0, 100)));
+        buttons.Find("Navigation/Down").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter(new Vector2D(0, -100)));
+        buttons.Find("Navigation/Left").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter(new Vector2D(-100, 0)));
+        buttons.Find("Navigation/Right").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter(new Vector2D(100, 0)));
 
         // Zoom buttons
-        buttons.Find("Zoom/In").GetComponent<Button>().onClick.AddListener(ZoomIn);
-        buttons.Find("Zoom/Out").GetComponent<Button>().onClick.AddListener(ZoomOut);
+        buttons.Find("Zoom/In").GetComponent<Button>().onClick.AddListener(() => Map.Zoom(1));
+        buttons.Find("Zoom/Out").GetComponent<Button>().onClick.AddListener(() => Map.Zoom(-1));
 
         // Other buttons
         buttons.Find("AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
-        buttons.Find("POI").GetComponent<Button>().onClick.AddListener(TogglePOI);
         buttons.Find("Test").GetComponent<Button>().onClick.AddListener(TestButtonClicked);
         buttons.Find("Query").GetComponent<Button>().onClick.AddListener(ToggleQuery);
-        buttons.Find("Ray").GetComponent<Button>().onClick.AddListener(CastScreenCenterRay);
         buttons.Find("Filter").GetComponent<Button>().onClick.AddListener(ToggleFilters);
+        buttons.Find("Ruler").GetComponent<Button>().onClick.AddListener(() => Debug.Log("//TODO: Ruler"));
+        buttons.Find("Terrain").GetComponent<Button>().onClick.AddListener(() => Debug.Log("//TODO: Terrain"));
+    }
+
+    Vector2D position;
+    /// <summary>
+    /// Sets up the location modal
+    /// </summary>
+    private void SetupLocationModal()
+    {
+        // Get the modal
+        locationModal = modal.Find("Content/Location");
+
+        // Show modal button
+        buttons.Find("Location").GetComponent<Button>().onClick.AddListener(() => { ShowModal(locationModal, 500, 205); });
+
+        // Latitude/Longitude input fields
+        InputField latitudeInput = locationModal.Find("Position/Latitude").GetComponent<InputField>();
+        latitudeInput.onEndEdit.AddListener((string value) =>
+        {
+            try
+            {
+                position.X = Convert.ToDouble(value);
+            }
+            catch
+            {
+                position.X = 0;
+            }
+            latitudeInput.text = $"{position.X}";
+        });
+        InputField longitudeInput = locationModal.Find("Position/Longitude").GetComponent<InputField>();
+        longitudeInput.onEndEdit.AddListener((string value) =>
+        {
+            try
+            {
+                position.Y = Convert.ToDouble(value);
+            }
+            catch
+            {
+                position.Y = 0;
+            }
+            longitudeInput.text = $"{position.Y}";
+        });
+
+        // Point of Interest dropdown
+        Dropdown poiDropdown = locationModal.Find("Point of Interest").GetComponent<Dropdown>();
+        List<Dropdown.OptionData> poiOptions = new List<Dropdown.OptionData>();
+        foreach (Map.PointOfInterest poi in Map.POIs)
+        {
+            poiOptions.Add(new Dropdown.OptionData(poi.Name));
+        }
+        poiOptions.Add(new Dropdown.OptionData(""));
+        poiDropdown.options = poiOptions;
+        poiDropdown.value = poiOptions.Count - 1;
+        poiDropdown.onValueChanged.AddListener((int value) =>
+        {
+            if (value == poiDropdown.options.Count - 1)
+            {
+                position = Vector2D.Zero;
+            }
+            else
+            {
+                position = Map.POIs[value].Coordinates;
+            }
+            latitudeInput.text = $"{position.X}";
+            longitudeInput.text = $"{position.Y}";
+        });
+
+        // Go button
+        locationModal.Find("Go").GetComponent<Button>().onClick.AddListener(() => { Map.MoveCenter(position.X, position.Y); });
     }
 
     /// <summary>
@@ -123,7 +197,7 @@ public class UIController
                     Touch touch = Input.GetTouch(0);
                     if (touch.phase == TouchPhase.Began && !EventSystem.current.IsPointerOverGameObject(touch.fingerId))
                     {
-                        CastScreenPointRay(touch.position);
+                        QueryMap(touch.position);
                     }
                 }
                 else
@@ -131,7 +205,7 @@ public class UIController
                     // Mouse input
                     if (!EventSystem.current.IsPointerOverGameObject())
                     {
-                        CastScreenPointRay(Input.mousePosition);
+                        QueryMap(Input.mousePosition);
                     }
                 }
             }
@@ -139,68 +213,39 @@ public class UIController
     }
 
     /// <summary>
-    /// Moves the map up
+    /// Shows the current modal
     /// </summary>
-    private void MoveUp()
+    /// <param name="modalContent">The modal content</param>
+    private void ShowModal(Transform modalContent)
     {
-        Map.MoveCenter(new Vector2D(0, 100));
+        ShowModal(modalContent, 1250, 1000);
     }
 
     /// <summary>
-    /// Moves the map down
+    /// Shows the current modal with a specific width and height
     /// </summary>
-    private void MoveDown()
+    /// <param name="modalContent">The modal content</param>
+    /// <param name="width">The width</param>
+    /// <param name="height">The height</param>
+    private void ShowModal(Transform modalContent, float width, float height)
     {
-        Map.MoveCenter(new Vector2D(0, -100));
+        modal.Find("Content").GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
+        currentModalContent = modalContent;
+        modal.Find("Content/Header").GetComponent<Text>().text = currentModalContent.name;
+        currentModalContent.gameObject.SetActive(true);
+        modal.gameObject.SetActive(true);
     }
 
     /// <summary>
-    /// Moves the map left
+    /// Closes the current modal
     /// </summary>
-    private void MoveLeft()
+    private void CloseModal()
     {
-        Map.MoveCenter(new Vector2D(-100, 0));
-    }
-
-    /// <summary>
-    /// Moves the map right
-    /// </summary>
-    private void MoveRight()
-    {
-        Map.MoveCenter(new Vector2D(100, 0));
-    }
-
-    /// <summary>
-    /// Zooms the map in
-    /// </summary>
-    private void ZoomIn()
-    {
-        Map.Zoom(1);
-    }
-
-    /// <summary>
-    /// Zooms the map out
-    /// </summary>
-    private void ZoomOut()
-    {
-        Map.Zoom(-1);
-    }
-
-    /// <summary>
-    /// Toggles the display of the layers screen
-    /// </summary>
-    private void ToggleLayers()
-    {
-        LayersScreen.SetActive(!LayersScreen.activeSelf);
-        Debug.Log("Toggled Layers screen");
-    }
-
-    /// <summary>
-    /// Toggles the display of the debug screen
-    /// </summary>
-    private void ToggleDebug()
-    {
-        DebugScreen.SetActive(!DebugScreen.activeSelf);
+        modal.gameObject.SetActive(false);
+        if (currentModalContent != null)
+        {
+            currentModalContent.gameObject.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -221,68 +266,13 @@ public class UIController
         arMode = !arMode;
     }
 
-    int currentOrigin = 0;
-    /// <summary>
-    /// Toggles the POI that is used as the origin for the map
-    /// </summary>
-    private void TogglePOI()
-    {
-        switch (currentOrigin)
-        {
-            case 0:
-                Map.MoveCenter(38.711992, -9.140663);
-                Debug.Log("Moved origin to carmo");
-                currentOrigin = 1;
-                break;
-            case 1:
-                Map.MoveCenter(38.744169, -9.149994);
-                Debug.Log("Moved origin to entrecampos");
-                currentOrigin = 2;
-                break;
-            case 2:
-                Map.MoveCenter(38.765514, -9.093839);
-                Debug.Log("Moved origin to expo");
-                currentOrigin = 3;
-                break;
-            case 3:
-                Map.MoveCenter(38.725249, -9.149994);
-                Debug.Log("Moved origin to marques");
-                currentOrigin = 4;
-                break;
-            case 4:
-                Map.MoveCenter(38.773310, -9.153689);
-                Debug.Log("Moved origin to alta");
-                currentOrigin = 5;
-                break;
-            case 5:
-                Map.MoveCenter(38.733744, -9.160745);
-                Debug.Log("Moved origin to campolide");
-                currentOrigin = 6;
-                break;
-            case 6:
-                Map.MoveCenter(38.706808, -9.136164);
-                Debug.Log("Moved origin to baixa");
-                currentOrigin = 0;
-                break;
-        }
-    }
-
     bool queryMode = false;
     /// <summary>
     /// Toggles query mode
     /// </summary>
     private void ToggleQuery()
     {
-        if (queryMode)
-        {
-            buttons.Find("Query/Text").GetComponent<Text>().text = "Start Query";
-            Debug.Log("Stopped query");
-        }
-        else
-        {
-            buttons.Find("Query/Text").GetComponent<Text>().text = "Stop Query";
-            Debug.Log("Started query");
-        }
+        buttons.Find("Query/Text").GetComponent<Text>().text = queryMode ? "Query: Off" : "Query: On";
         queryMode = !queryMode;
     }
 
@@ -344,40 +334,46 @@ public class UIController
     }
 
     /// <summary>
-    /// Casts a ray from the center of the screen
+    /// Queries the map from the a given screen point and 
     /// </summary>
-    private void CastScreenCenterRay()
+    /// <param name="screenPoint">The screen point to cast the query ray from</param>
+    private void QueryMap(Vector2 screenPoint)
     {
-        // Get the screen center point
-        Vector2 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
+        // Get the query model
+        Transform queryModal = modal.Find("Content/Query");
 
-        // Cast a ray from the screen center point
-        CastScreenPointRay(screenCenter);
-    }
-
-    /// <summary>
-    /// Casts a ray from the given screen point
-    /// </summary>
-    /// <param name="screenPoint">The screen point to cast the ray from</param>
-    private void CastScreenPointRay(Vector2 screenPoint)
-    {
+        // Cast the ray at the screen point
         Ray ray = Camera.main.ScreenPointToRay(screenPoint);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit))
         {
             // Hit something
             Vector2D hitLatLon = Map.WorldToLatLon(hit.point);
-            Debug.Log($"Coordinates of raycast hit: {hitLatLon}");
+            string queryInfo = $"<b>Coordinates:</b>\n\t<b>- Latitude:</b> {hitLatLon.X}\n\t<b>- Longitude:</b> {hitLatLon.Y}\n\t<b>- Height:</b> {Map.GetHeight(hit.point).ToString("0.00")} m";
 
             // Check if the hit object is part of a map feature
             FeatureBehaviour featureBehaviour = hit.transform.GetComponentInParent<FeatureBehaviour>();
-            if (featureBehaviour != null)
+            if (featureBehaviour == null)
+            {
+                // Not a map feature
+                queryModal.Find("Info").GetComponent<Text>().text = queryInfo;
+                queryModal.Find("Feature Properties").gameObject.SetActive(false);
+
+                // Show the query modal
+                ShowModal(queryModal, 750, 195);
+            }
+            else
             {
                 // Hit a map feature
                 Feature feature = featureBehaviour.Feature;
-                Debug.Log($"Raycast hit: {feature.FullId}");
-                foreach (IFeatureProperty property in ((IFilterableLayer)feature.TileLayer.Layer).FeatureProperties)
+                queryInfo = $"{queryInfo}\n<b>Feature ID:</b> {feature.Id}\n<b>Layer:</b> {feature.TileLayer.Layer.Id}\n<b>Tile:</b> {feature.TileLayer.Tile.Id}";
+                queryModal.Find("Info").GetComponent<Text>().text = queryInfo;
+
+                // Feature properties
+                string featureProperties = "";
+                for (int i = 0; i < ((IFilterableLayer)feature.TileLayer.Layer).FeatureProperties.Length; i++)
                 {
+                    IFeatureProperty property = ((IFilterableLayer)feature.TileLayer.Layer).FeatureProperties[i];
                     string valueString;
                     switch (property)
                     {
@@ -391,7 +387,6 @@ public class UIController
                             {
                                 valueString = valueStr;
                             }
-                            Debug.LogFormat(stringP.FormatString, valueStr, stringP.DisplayName);
                             break;
                         case NumberFeatureProperty numberP:
                             double? valueNum = feature.GetPropertyAsNullableDouble(numberP.Key);
@@ -403,7 +398,6 @@ public class UIController
                             {
                                 valueString = $"{System.Math.Round(valueNum.Value, 2)}";
                             }
-                            Debug.LogFormat(numberP.FormatString, valueString, numberP.DisplayName);
                             break;
                         case BooleanFeatureProperty booleanP:
                             bool? valueBool = feature.GetPropertyAsNullableBool(booleanP.Key);
@@ -415,7 +409,6 @@ public class UIController
                             {
                                 valueString = $"{valueBool.Value}";
                             }
-                            Debug.LogFormat(booleanP.FormatString, valueString, booleanP.DisplayName);
                             break;
                         case DateFeatureProperty dateP:
                             DateTime? valueDate = feature.GetPropertyAsNullableDateTime(dateP.Key);
@@ -427,7 +420,6 @@ public class UIController
                             {
                                 valueString = $"{valueDate.Value.ToString("yyyy-MM-ddTHH:mm:sszzz", System.Globalization.CultureInfo.InvariantCulture)}";
                             }
-                            Debug.LogFormat(dateP.FormatString, valueString, dateP.DisplayName);
                             break;
                         case CategoryFeatureProperty categoryP:
                             string valueCat = feature.GetPropertyAsNullableString(categoryP.Key);
@@ -439,16 +431,37 @@ public class UIController
                             {
                                 valueString = valueCat;
                             }
-                            Debug.LogFormat(categoryP.FormatString, valueString, categoryP.DisplayName);
+                            break;
+                        default:
+                            valueString = "<i>Unknown property type</i>";
                             break;
                     }
+                    featureProperties = $"{featureProperties}{(i > 0 ? "\n" : "")}<b>{property.DisplayName}:</b> {String.Format(property.FormatString, valueString)}";
                 }
+
+                queryModal.Find("Feature Properties").gameObject.SetActive(true);
+                queryModal.Find("Feature Properties/Viewport/Content").GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                if (((IFilterableLayer)feature.TileLayer.Layer).FeatureProperties.Length > 0)
+                {
+                    queryModal.Find("Feature Properties/Viewport/Content/Text").GetComponent<Text>().text = featureProperties;
+                }
+                else
+                {
+                    queryModal.Find("Feature Properties/Viewport/Content/Text").GetComponent<Text>().text = "<i>Feature has no properties</i>";
+                }
+
+                // Show the query modal
+                ShowModal(queryModal, 750, 500);
             }
         }
         else
         {
             // Didn't hit anything
-            Debug.LogWarning("Raycast didn't hit anything");
+            queryModal.Find("Info").GetComponent<Text>().text = "<b>Here be dragons!</b>\n\n<i>Nothing was hit by the raycast</i>";
+            queryModal.Find("Feature Properties").gameObject.SetActive(false);
+
+            // Show the query modal
+            ShowModal(queryModal, 750, 170);
         }
     }
 
@@ -458,7 +471,7 @@ public class UIController
     private void PopulateMapLayersList()
     {
         // Get the layer list entry prefab
-        GameObject list = screens.Find("Layers/Modal/List/Viewport/Content").gameObject;
+        GameObject list = layersModal.transform.Find("List/Viewport/Content").gameObject;
         GameObject listEntryPrefab = Resources.Load<GameObject>("UI/Layers List Entry");
 
         foreach (ILayer layer in Map.Layers.Values)
@@ -505,9 +518,10 @@ public class UIController
     private void ViewLayerInfo(ILayer layer)
     {
         // Get the layer view
-        GameObject layerView = screens.Find("Layers/Modal/Layer").gameObject;
+        GameObject layerView = layersModal.transform.Find("Layer").gameObject;
         layerView.SetActive(true);
-        layerView.transform.Find("Info").GetComponent<Text>().text = $"<b>{layer.DisplayName.ToUpper()}</b>\nDescription: {layer.Description}\nSource: {layer.Source}\nLast update: {layer.LastUpdate}";
+        string lastUpdate = layer.LastUpdate == DateTime.MinValue ? "Unknown" : layer.LastUpdate.ToString("yyyy-MM-ddTHH:mm:sszzz", System.Globalization.CultureInfo.InvariantCulture);
+        layerView.transform.Find("Info").GetComponent<Text>().text = $"<b>{layer.DisplayName.ToUpper()}</b>\n<b>Description:</b> {layer.Description}\n<b>Source:</b> {layer.Source}\n<b>Last update:</b> {lastUpdate}";
 
         GameObject layerPropertiesView = layerView.transform.Find("Properties").gameObject;
         if (layer is IFilterableLayer)
@@ -744,7 +758,7 @@ public class UIController
     /// </summary>
     private void UpdateLog(object sender, System.EventArgs e)
     {
-        Logger.Render(Log);
+        Logger.Render(log);
     }
 
     /// <summary>
@@ -810,7 +824,7 @@ public class UIController
         debugText.Append("\nTiles: ");
         debugText.Append(Map.Tiles.Count);
 
-        DebugTextDisplay.text = debugText.ToString();
+        debugTextDisplay.text = debugText.ToString();
     }
 
     /// <summary>

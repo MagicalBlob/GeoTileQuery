@@ -1,3 +1,6 @@
+/// <summary>
+/// Represents a rectangular area with Min and Max as its two opposite corners
+/// </summary>
 public struct Bounds
 {
     public Vector2D Min { get; }
@@ -29,6 +32,17 @@ public struct Bounds
     {
         this.Min = min;
         this.Max = max;
+    }
+
+    /// <summary>
+    /// Check if the given point is inside the bounds
+    /// </summary>
+    /// <param name="point">Point to check</param>
+    /// <returns>True if the point is inside the bounds</returns>
+    /// <remarks>Point is considered to be inside the bounds if it is on the bounds' edge</remarks>
+    public bool Contains(Vector2D point)
+    {
+        return point.X >= Min.X && point.X <= Max.X && point.Y >= Min.Y && point.Y <= Max.Y;
     }
 
     /// <summary>

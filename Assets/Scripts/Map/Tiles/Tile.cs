@@ -221,9 +221,45 @@ public class Tile
     /// <param name="pixelX">The pixel X coordinate</param>
     /// <param name="pixelY">The pixel Y coordinate</param>
     /// <returns>Height at given location (meters)</returns>
+    /// <remarks>
+    /// Returns 0 if the tile terrain isn't loaded
+    /// </remarks>
     public double GetHeight(int pixelX, int pixelY)
     {
+        if (State == TileState.Initial || State == TileState.TerrainLoadFailed || State == TileState.Unloaded)
+        {
+            Debug.LogWarning($"Can't get height for tile {Id} because the terrain isn't loaded");
+            return 0;
+        }
         return MapboxHeightFromColor(_tmpHeighmapThing.GetPixel(pixelX, pixelY));
+    }
+
+    /// <summary>
+    /// Get height at given location
+    /// </summary>
+    /// <param name="point">The point on the map (WGS84)</param>
+    /// <returns>Height at given location (meters)</returns>
+    /// <remarks>
+    /// Returns 0 if the point is outside the tile
+    /// </remarks>
+    public double GetHeight(Vector2D point)
+    {
+        // Check if the point is outside the tile
+        if (!Bounds.Contains(point))
+        {
+            Debug.LogWarning($"Attempted to get height at point {point} which is outside the tile bounds {Bounds} for tile {Id}");
+            return 0;
+        }
+
+        // Get the point relative to the tile origin
+        Vector2D tilePoint = point - Bounds.Min;
+
+        // Get the pixel coordinates
+        int pixelX = (int)((tilePoint.X * GlobalMercator.TileSize) / Bounds.Width);
+        int pixelY = (int)((tilePoint.Y * GlobalMercator.TileSize) / Bounds.Height);
+
+        // Get the height
+        return GetHeight(pixelX, pixelY);
     }
 
     /// <summary>
