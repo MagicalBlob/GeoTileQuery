@@ -244,13 +244,6 @@ public class Tile
     /// </remarks>
     public double GetHeight(Vector2D point)
     {
-        // Check if the point is outside the tile
-        if (!Bounds.Contains(point))
-        {
-            Debug.LogWarning($"Attempted to get height at point {point} which is outside the tile bounds {Bounds} for tile {Id}");
-            return 0;
-        }
-
         // Get the point relative to the tile origin
         Vector2D tilePoint = point - Bounds.Min;
 

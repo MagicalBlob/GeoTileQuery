@@ -29,6 +29,13 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
+        double terrainHeightOffset = 0;
+        if (tileLayer.Tile.Map.ElevatedTerrain)
+        {
+            // If we're using the elevation data, get the height at the position to offset it (assumes position's at sea level in dataset)
+            terrainHeightOffset = tileLayer.Tile.GetHeight(GlobalMercator.LatLonToMeters(coordinates.y, coordinates.x));
+        }
+
         // Setup the gameobject
         GameObject node = new GameObject("Node"); // Create Node gameobject
         node.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
@@ -43,7 +50,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 
         // Setup vertices
         double x = coordinates.GetRelativeX(tileLayer.Tile.Bounds.Min.X);
-        double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+        double y = terrainHeightOffset + coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
         double z = coordinates.GetRelativeY(tileLayer.Tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
         Vector3[] vertices = new Vector3[16]
         {
@@ -106,11 +113,23 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         {
             // Start point of segment AB
             Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
-            double ay = coordinates[segment].GetRelativeZ() + edgeHeightOffset; // GeoJSON uses z for height, while Unity uses y
+            double ayTerrainHeightOffset = 0;
+            if (tileLayer.Tile.Map.ElevatedTerrain)
+            {
+                // If we're using the elevation data, get the height at the position to offset it (assumes position's at sea level in dataset)
+                ayTerrainHeightOffset = tileLayer.Tile.GetHeight(GlobalMercator.LatLonToMeters(coordinates[segment].y, coordinates[segment].x));
+            }
+            double ay = coordinates[segment].GetRelativeZ() + ayTerrainHeightOffset + edgeHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
             Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
-            double by = coordinates[segment + 1].GetRelativeZ() + edgeHeightOffset; // GeoJSON uses z for height, while Unity uses y
+            double byTerrainHeightOffset = 0;
+            if (tileLayer.Tile.Map.ElevatedTerrain)
+            {
+                // If we're using the elevation data, get the height at the position to offset it (assumes position's at sea level in dataset)
+                byTerrainHeightOffset = tileLayer.Tile.GetHeight(GlobalMercator.LatLonToMeters(coordinates[segment + 1].y, coordinates[segment + 1].x));
+            }
+            double by = coordinates[segment + 1].GetRelativeZ() + byTerrainHeightOffset + edgeHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB and AB⟂ with given width
             Vector2D ab = b - a;
@@ -152,7 +171,6 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         // Check for empty coordinates array
         if (coordinates.Length == 0)
         {
-            //Debug.LogWarning($"[DefaultGeoJsonRenderer] {tileLayer.FullId}/{feature.GameObject.name}: Tried to render an Area with no coordinates"); TODO: Do we want to log this?
             return;
         }
 
@@ -163,7 +181,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         area.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
 
         // Triangulate the polygon coordinates using Earcut
-        EarcutLib.Data data = EarcutLib.Flatten(coordinates, tileLayer);
+        EarcutLib.Data data = EarcutLib.Flatten(coordinates, tileLayer, tileLayer.Tile.Map.ElevatedTerrain);
         List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
         /*double deviation = EarcutLib.Deviation(data.Vertices, data.Holes, data.Dimensions, triangles);
         Debug.Log(deviation == 0 ? "The triangulation is fully correct" : $"Triangulation deviation: {Math.Round(deviation, 6)}"); TODO clear this */

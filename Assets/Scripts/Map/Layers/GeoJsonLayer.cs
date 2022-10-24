@@ -5,6 +5,8 @@ using System;
 /// </summary>
 public class GeoJsonLayer : IFilterableLayer
 {
+    public Map Map { get; }
+
     public string Id { get; }
 
     public string DisplayName { get; }
@@ -15,7 +17,25 @@ public class GeoJsonLayer : IFilterableLayer
 
     public DateTime LastUpdate { get; }
 
-    public bool Visible { get; set; }
+    private bool _visible;
+    public bool Visible
+    {
+        get
+        {
+            return _visible;
+        }
+        set
+        {
+            // Set the backing field
+            _visible = value;
+
+            // Update the layer visibility for all the tiles already in the map
+            foreach (Tile tile in Map.Tiles.Values)
+            {
+                tile.Layers[Id].GameObject.SetActive(Visible);
+            }
+        }
+    }
 
     public ILayerRenderer Renderer { get; }
 
@@ -33,6 +53,7 @@ public class GeoJsonLayer : IFilterableLayer
     /// <summary>
     /// Construct a new GeoJSONLayer
     /// </summary>
+    /// <param name="map">The map</param>
     /// <param name="id">The layer id</param>
     /// <param name="displayName">The layer display name</param>
     /// <param name="description">The layer description</param>
@@ -43,8 +64,9 @@ public class GeoJsonLayer : IFilterableLayer
     /// <param name="url">Url to fetch the tile data</param>
     /// <param name="idPropertyName">Name of the Feature's property that may be used as an Id as an alternative to the actual Feature Id if it doesn't exist</param>
     /// <param name="featureProperties">The GeoJSON layer's features' properties</param>
-    public GeoJsonLayer(string id, string displayName, string description, string source, DateTime lastUpdate, bool visible, IGeoJsonRenderer renderer, string url, string idPropertyName, IFeatureProperty[] featureProperties)
+    public GeoJsonLayer(Map map, string id, string displayName, string description, string source, DateTime lastUpdate, bool visible, IGeoJsonRenderer renderer, string url, string idPropertyName, IFeatureProperty[] featureProperties)
     {
+        this.Map = map;
         this.Id = id;
         this.DisplayName = displayName;
         this.Description = description;

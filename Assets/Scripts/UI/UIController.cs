@@ -86,12 +86,12 @@ public class UIController
         buttons.Find("Zoom/Out").GetComponent<Button>().onClick.AddListener(() => Map.Zoom(-1));
 
         // Other buttons
+        buttons.Find("Filter").GetComponent<Button>().onClick.AddListener(ToggleFilters);
+        buttons.Find("Query").GetComponent<Button>().onClick.AddListener(ToggleQuery);
+        buttons.Find("Ruler").GetComponent<Button>().onClick.AddListener(() => Debug.Log("//TODO: Ruler"));
+        buttons.Find("Terrain").GetComponent<Button>().onClick.AddListener(ToggleTerrain);
         buttons.Find("AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
         buttons.Find("Test").GetComponent<Button>().onClick.AddListener(TestButtonClicked);
-        buttons.Find("Query").GetComponent<Button>().onClick.AddListener(ToggleQuery);
-        buttons.Find("Filter").GetComponent<Button>().onClick.AddListener(ToggleFilters);
-        buttons.Find("Ruler").GetComponent<Button>().onClick.AddListener(() => Debug.Log("//TODO: Ruler"));
-        buttons.Find("Terrain").GetComponent<Button>().onClick.AddListener(() => Debug.Log("//TODO: Terrain"));
     }
 
     Vector2D position;
@@ -301,36 +301,22 @@ public class UIController
         }
     }
 
-    bool filterMode = false;
     /// <summary>
     /// Toggle filters
     /// </summary>
     private void ToggleFilters()
     {
-        filterMode = !filterMode;
+        Map.Filtered = !Map.Filtered;
+        buttons.Find("Filter/Text").GetComponent<Text>().text = $"Filters: {(Map.Filtered ? "On" : "Off")}";
+    }
 
-        // Make the layers filter settings match the current state
-        foreach (ILayer layer in Map.Layers.Values)
-        {
-            if (layer is IFilterableLayer)
-            {
-                IFilterableLayer filterableLayer = layer as IFilterableLayer;
-                filterableLayer.Filtered = filterMode;
-            }
-        }
-
-        // Apply the filters
-        Map.ApplyFilters();
-
-        // Update the button
-        if (filterMode)
-        {
-            buttons.Find("Filter/Text").GetComponent<Text>().text = "Filters: On";
-        }
-        else
-        {
-            buttons.Find("Filter/Text").GetComponent<Text>().text = "Filters: Off";
-        }
+    /// <summary>
+    /// Toggle the terrain
+    /// </summary>
+    private void ToggleTerrain()
+    {
+        Map.ElevatedTerrain = !Map.ElevatedTerrain;
+        buttons.Find("Terrain/Text").GetComponent<Text>().text = $"Terrain: {(Map.ElevatedTerrain ? "On" : "Off")}";
     }
 
     /// <summary>
@@ -484,31 +470,12 @@ public class UIController
             // Setup the visibility toggle
             Toggle toggle = listEntryObj.transform.Find("Visibility").GetComponent<Toggle>();
             toggle.isOn = layer.Visible; // Set the initial state of the toggle to the layer's visibility
-            toggle.onValueChanged.AddListener((bool value) => ToggleLayerVisibility(layer, value));
+            toggle.onValueChanged.AddListener((bool value) => layer.Visible = value); // Set the layer's visibility when the toggle is changed
 
             // Setup the view info button
             Button viewInfoButton = listEntryObj.transform.Find("View Info").GetComponent<Button>();
             viewInfoButton.onClick.AddListener(() => ViewLayerInfo(layer));
         }
-    }
-
-    /// <summary>
-    /// Toggles the visibility of the given layer
-    /// </summary>
-    /// <param name="layer">The layer to toggle the visibility of</param>
-    /// <param name="toggleIsOn">Whether the toggle is on or off</param>
-    private void ToggleLayerVisibility(ILayer layer, bool toggleIsOn)
-    {
-        // When the toggle is toggled, set the layer's visibility to the new state
-        layer.Visible = toggleIsOn;
-
-        // Update the layer visibility for all the tiles already in the map
-        foreach (Tile tile in Map.Tiles.Values)
-        {
-            tile.Layers[layer.Id].GameObject.SetActive(layer.Visible);
-        }
-
-        Debug.Log(toggleIsOn ? $"Enabled layer '{layer.Id}'" : $"Disabled layer '{layer.Id}'");
     }
 
     /// <summary>
@@ -819,6 +786,8 @@ public class UIController
         debugText.Append(SystemInfo.batteryStatus);
         debugText.Append(")");
 
+        debugText.Append("\nDebug level: ");
+        debugText.Append(Debug.unityLogger.filterLogType);
         debugText.Append("\n\nAvailable semaphore threads: ");
         debugText.Append(MainController.networkSemaphore.CurrentCount);
         debugText.Append("\nTiles: ");

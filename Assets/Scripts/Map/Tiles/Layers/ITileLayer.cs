@@ -42,4 +42,9 @@ public interface ITileLayer
     /// Unload the tile layer
     /// </summary>
     void Unload();
+
+    /// <summary>
+    /// Applies the terrain elevation to the tile layer
+    /// </summary>
+    void ApplyTerrain();
 }

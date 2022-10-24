@@ -14,7 +14,7 @@ public class GeoJsonTileLayer : IFilterableTileLayer
 
     public string FullId { get { return $"{Tile.Id}/{Layer.Id}"; } }
 
-    public GameObject GameObject { get; }
+    public GameObject GameObject { get; private set; }
 
     public TileLayerState State { get; private set; }
 
@@ -34,12 +34,20 @@ public class GeoJsonTileLayer : IFilterableTileLayer
         this.Layer = layer;
 
         // Setup the gameobject
+        SetupGameObject();
+
+        this.State = TileLayerState.Initial;
+    }
+
+    /// <summary>
+    /// Sets up the tile layer's GameObject
+    /// </summary>
+    private void SetupGameObject()
+    {
         GameObject = new GameObject(Layer.Id);
         GameObject.SetActive(Layer.Visible);
         GameObject.transform.parent = Tile.GameObject.transform; // Set it as a child of the tile gameobject
         GameObject.transform.localPosition = Vector3.zero;
-
-        this.State = TileLayerState.Initial;
     }
 
     public async Task LoadAsync(CancellationToken cancellationToken)
@@ -79,7 +87,7 @@ public class GeoJsonTileLayer : IFilterableTileLayer
                 else
                 {
                     // Can't render the tile. GeoJSON root isn't a FeatureCollection
-                    throw new InvalidGeoJsonException("Can't render the tile. GeoJSON root isn't a FeatureCollection");
+                    throw new InvalidGeoJsonException($"Can't render the tile {FullId}. GeoJSON root isn't a FeatureCollection");
                 }
             }
             catch (InvalidGeoJsonException e)
@@ -109,6 +117,35 @@ public class GeoJsonTileLayer : IFilterableTileLayer
 
         // Destroy the gameobject
         GameObject.Destroy(GameObject);
+    }
+
+    public void ApplyTerrain()
+    {
+        if (State != TileLayerState.Rendered) { return; } // Can't apply terrain if the layer isn't rendered
+
+        // Update the state
+        State = TileLayerState.Loaded;
+
+        // Destroy the gameobject
+        if (GameObject != null) { GameObject.Destroy(GameObject); }
+
+        // Re-render the GeoJSON
+        SetupGameObject();
+        if (geoJson.GetType() == typeof(FeatureCollection))
+        {
+            // Render the GeoJSON
+            ((FeatureCollection)geoJson).Render(this);
+            State = TileLayerState.Rendered;
+
+            // Apply the filters
+            ApplyFilters();
+        }
+        else
+        {
+            // Can't render the tile. GeoJSON root isn't a FeatureCollection
+            Debug.LogException(new InvalidGeoJsonException($"Can't render the tile {FullId}. GeoJSON root isn't a FeatureCollection"));
+            State = TileLayerState.Rendered;
+        }
     }
 
     public void ApplyFilters()

@@ -36,15 +36,43 @@ public class BuildingRenderer : IGeoJsonRenderer
         building.transform.localPosition = Vector3.zero; // Set origin
         building.transform.rotation = feature.GameObject.transform.rotation; // Match rotation
 
+        double terrainHeightOffset = 0;
+        if (tileLayer.Tile.Map.ElevatedTerrain)
+        {
+            // Use the Altiude property if it exists
+            terrainHeightOffset = feature.GetPropertyAsDouble("Altiude");
+
+            /* This would have been nice, but if a feature is across multiple tiles, the multiple parts will have different centroids and therefore different heights
+            // If terrain's enabled, get the height at the building's centroid (ignoring holes). Based on https://en.wikipedia.org/wiki/Centroid#Of_a_polygon
+            double centroidXSum = 0;
+            double centroidYSum = 0;
+            double areaSum = 0;
+            for (int i = 0; i < coordinates[0].Length - 1; i++)
+            {
+                double xCurr = coordinates[0][i].GetRelativeX(tileLayer.Tile.Bounds.Min.X);
+                double xNext = coordinates[0][i + 1].GetRelativeX(tileLayer.Tile.Bounds.Min.X);
+                double yCurr = coordinates[0][i].GetRelativeY(tileLayer.Tile.Bounds.Min.Y);
+                double yNext = coordinates[0][i + 1].GetRelativeY(tileLayer.Tile.Bounds.Min.Y);
+                double areaCurr = (xCurr * yNext) - (xNext * yCurr);
+                areaSum += areaCurr;
+                centroidXSum += (xCurr + xNext) * areaCurr;
+                centroidYSum += (yCurr + yNext) * areaCurr;
+            }
+            double area = areaSum / 2;
+            double centroidX = centroidXSum / (6 * area);
+            double centroidY = centroidYSum / (6 * area);
+            centroidTerrainHeightOffset = tileLayer.Tile.GetHeight(GlobalMercator.LatLonToMeters(centroidY, centroidX)); */
+        }
+
         // Get building height
-        double height = (double)feature.GetPropertyAsDouble("EXTRUDE");
+        double height = feature.GetPropertyAsDouble("EXTRUDE");
         if (height == 0)
         {
             height = defaultHeight;
         }
 
-        RenderWalls(tileLayer, building, coordinates, height);
-        RenderRoof(tileLayer, building, coordinates, height);
+        RenderWalls(tileLayer, building, coordinates, height, terrainHeightOffset);
+        RenderRoof(tileLayer, building, coordinates, height, terrainHeightOffset);
     }
 
     /// <summary>
@@ -54,7 +82,8 @@ public class BuildingRenderer : IGeoJsonRenderer
     /// <param name="building">The building GameObject</param>
     /// <param name="coordinates">The building coordinates</param>
     /// <param name="height">The building height</param>
-    private void RenderWalls(GeoJsonTileLayer tileLayer, GameObject building, Position[][] coordinates, double height)
+    /// <param name="terrainHeightOffset">The terrain height offset for the building</param>
+    private void RenderWalls(GeoJsonTileLayer tileLayer, GameObject building, Position[][] coordinates, double height, double terrainHeightOffset)
     {
         // Setup the gameobject
         GameObject walls = new GameObject("Walls"); // Create Walls gameobject
@@ -83,11 +112,11 @@ public class BuildingRenderer : IGeoJsonRenderer
             for (int point = 0; point < ring.Length - 1; point++)
             {
                 double x0 = ring[point].GetRelativeX(tileLayer.Tile.Bounds.Min.X);
-                double y0 = ring[point].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+                double y0 = ring[point].GetRelativeZ() + terrainHeightOffset; // GeoJSON uses z for height, while Unity uses y
                 double z0 = ring[point].GetRelativeY(tileLayer.Tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
                 double x1 = ring[point + 1].GetRelativeX(tileLayer.Tile.Bounds.Min.X);
-                double y1 = ring[point + 1].GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+                double y1 = ring[point + 1].GetRelativeZ() + terrainHeightOffset; // GeoJSON uses z for height, while Unity uses y
                 double z1 = ring[point + 1].GetRelativeY(tileLayer.Tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
                 vertices[vertOffset + 0] = new Vector3((float)x0, (float)y0, (float)z0);
@@ -123,7 +152,8 @@ public class BuildingRenderer : IGeoJsonRenderer
     /// <param name="building">The building GameObject</param>
     /// <param name="coordinates">The building coordinates</param>
     /// <param name="height">The building height</param>
-    private void RenderRoof(GeoJsonTileLayer tileLayer, GameObject building, Position[][] coordinates, double height)
+    /// <param name="terrainHeightOffset">The terrain height offset for the building</param>
+    private void RenderRoof(GeoJsonTileLayer tileLayer, GameObject building, Position[][] coordinates, double height, double terrainHeightOffset)
     {
         // Setup the gameobject
         GameObject roof = new GameObject("Roof"); // Create Roof gameobject
@@ -132,7 +162,7 @@ public class BuildingRenderer : IGeoJsonRenderer
         roof.transform.rotation = building.transform.rotation; // Match rotation
 
         // Triangulate the polygon coordinates for the roof using Earcut
-        EarcutLib.Data data = EarcutLib.Flatten(coordinates, tileLayer);
+        EarcutLib.Data data = EarcutLib.Flatten(coordinates, tileLayer, false);
         List<int> triangles = EarcutLib.Earcut(data.Vertices, data.Holes, data.Dimensions);
 
         // Setup the mesh components
@@ -146,7 +176,7 @@ public class BuildingRenderer : IGeoJsonRenderer
         for (int i = 0; i < data.Vertices.Count / data.Dimensions; i++)
         {
             double x = data.Vertices[i * data.Dimensions];
-            double y = data.Vertices[(i * data.Dimensions) + 2] + height; // GeoJSON uses z for height, while Unity uses y
+            double y = data.Vertices[(i * data.Dimensions) + 2] + terrainHeightOffset + height; // GeoJSON uses z for height, while Unity uses y
             double z = data.Vertices[(i * data.Dimensions) + 1];   // GeoJSON uses z for height, while Unity uses y
             vertices.Add(new Vector3((float)x, (float)y, (float)z));
         }

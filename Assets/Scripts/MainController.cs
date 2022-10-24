@@ -45,8 +45,6 @@ public class MainController : MonoBehaviour
 
         // Create the UI
         UI = new UIController(Map);
-
-        Debug.Log($"<b>Debug level:</b> <i>{Debug.unityLogger.filterLogType}</i>");
     }
 
     /// <summary>

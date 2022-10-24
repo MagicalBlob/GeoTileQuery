@@ -10,6 +10,24 @@ public class DefaultRasterRenderer : IRasterRenderer
 
     public void Render(RasterTileLayer tileLayer, Texture2D texture)
     {
+        // Check if terrain is enabled on the map to choose which rendering strategy to use
+        if (false)//TODO restore if (tileLayer.Tile.Map.ElevatedTerrain)
+        {
+            RenderElevated(tileLayer, texture);
+        }
+        else
+        {
+            RenderFlat(tileLayer, texture);
+        }
+    }
+
+    /// <summary>
+    /// Renders the raster tile layer as a flat surface
+    /// </summary>
+    /// <param name="tileLayer">The raster tile layer</param>
+    /// <param name="texture">The raster texture</param>
+    public void RenderFlat(RasterTileLayer tileLayer, Texture2D texture)
+    {
         double tileWidth = tileLayer.Tile.Bounds.Width;
         double tileHeight = tileLayer.Tile.Bounds.Height;
         int divisions = rasterTileDivisions;
@@ -66,5 +84,89 @@ public class DefaultRasterRenderer : IRasterRenderer
         tileLayer.GameObject.GetComponent<Renderer>().material.mainTexture = texture;
         meshFilter.mesh = mesh;
         meshCollider.sharedMesh = mesh;
+    }
+
+    // TODO: Maybe look into using the Unity Terrain system for this
+    /// <summary>
+    /// Renders the raster tile layer according to the elevation data
+    /// </summary>
+    /// <param name="tileLayer">The raster tile layer</param>
+    /// <param name="texture">The raster texture</param>
+    public void RenderElevated(RasterTileLayer tileLayer, Texture2D texture)
+    {
+        double tileWidth = tileLayer.Tile.Bounds.Width;
+        double tileHeight = tileLayer.Tile.Bounds.Height;
+        int divisions = rasterTileDivisions;
+        double divisionWidth = tileWidth / divisions;
+        double divisionHeight = tileHeight / divisions;
+        int pixelsPerDivision = GlobalMercator.TileSize / divisions;
+        double pixelWidth = divisionWidth / pixelsPerDivision;
+        double pixelHeight = divisionHeight / pixelsPerDivision;
+
+        for (int divisionY = 0; divisionY < divisions; divisionY++)
+        {
+            for (int divisionX = 0; divisionX < divisions; divisionX++)
+            {
+                double divisionXOrigin = divisionX * divisionWidth;
+                double divisionYOrigin = divisionY * divisionHeight;
+
+                // Setup the gameobject
+                GameObject divisionGameObject = new GameObject($"{divisionX}/{divisionY}");
+                divisionGameObject.transform.parent = tileLayer.GameObject.transform; // Set it as a child of the tile gameobject
+                divisionGameObject.transform.localPosition = new Vector3((float)divisionXOrigin, 0, (float)divisionYOrigin);
+                divisionGameObject.transform.rotation = tileLayer.GameObject.transform.rotation;
+
+                // Setup the mesh components
+                MeshRenderer meshRenderer = divisionGameObject.AddComponent<MeshRenderer>();
+                MeshFilter meshFilter = divisionGameObject.AddComponent<MeshFilter>();
+                MeshCollider meshCollider = divisionGameObject.AddComponent<MeshCollider>();
+                Mesh mesh = new Mesh();
+
+                Vector3[] vertices = new Vector3[pixelsPerDivision * pixelsPerDivision * 4];
+                int[] triangles = new int[pixelsPerDivision * pixelsPerDivision * 6]; // 2 * 3
+                Vector2[] uvs = new Vector2[pixelsPerDivision * pixelsPerDivision * 4];
+
+                for (int pixelY = 0; pixelY < pixelsPerDivision; pixelY++)
+                {
+                    for (int pixelX = 0; pixelX < pixelsPerDivision; pixelX++)
+                    {
+                        int currentPixel = (pixelY * pixelsPerDivision) + pixelX;
+                        double pixelXOrigin = pixelX * pixelWidth;
+                        double pixelYOrigin = pixelY * pixelHeight;
+
+                        // Setup vertices
+                        vertices[(currentPixel * 4) + 0] = new Vector3((float)(pixelXOrigin), (float)tileLayer.Tile.GetHeight((divisionX * pixelsPerDivision) + pixelX, (divisionY * pixelsPerDivision) + pixelY), (float)(pixelYOrigin));
+                        vertices[(currentPixel * 4) + 1] = new Vector3((float)(pixelXOrigin + pixelWidth), (float)tileLayer.Tile.GetHeight((divisionX * pixelsPerDivision) + pixelX + 1, (divisionY * pixelsPerDivision) + pixelY), (float)(pixelYOrigin));
+                        vertices[(currentPixel * 4) + 2] = new Vector3((float)(pixelXOrigin + pixelWidth), (float)tileLayer.Tile.GetHeight((divisionX * pixelsPerDivision) + pixelX + 1, (divisionY * pixelsPerDivision) + pixelY + 1), (float)(pixelYOrigin + pixelHeight));
+                        vertices[(currentPixel * 4) + 3] = new Vector3((float)(pixelXOrigin), (float)tileLayer.Tile.GetHeight((divisionX * pixelsPerDivision) + pixelX, (divisionY * pixelsPerDivision) + pixelY + 1), (float)(pixelYOrigin + pixelHeight));
+
+                        // Setup triangles
+                        triangles[(currentPixel * 6) + 0] = (currentPixel * 4) + 0;
+                        triangles[(currentPixel * 6) + 1] = (currentPixel * 4) + 2;
+                        triangles[(currentPixel * 6) + 2] = (currentPixel * 4) + 1;
+                        triangles[(currentPixel * 6) + 3] = (currentPixel * 4) + 0;
+                        triangles[(currentPixel * 6) + 4] = (currentPixel * 4) + 3;
+                        triangles[(currentPixel * 6) + 5] = (currentPixel * 4) + 2;
+
+                        // Setup uvs
+                        uvs[(currentPixel * 4) + 0] = new Vector2((float)((divisionXOrigin + pixelXOrigin) / tileWidth), (float)((divisionYOrigin + pixelYOrigin) / tileHeight));
+                        uvs[(currentPixel * 4) + 1] = new Vector2((float)((divisionXOrigin + pixelXOrigin + pixelWidth) / tileWidth), (float)((divisionYOrigin + pixelYOrigin) / tileHeight));
+                        uvs[(currentPixel * 4) + 2] = new Vector2((float)((divisionXOrigin + pixelXOrigin + pixelWidth) / tileWidth), (float)((divisionYOrigin + pixelYOrigin + pixelHeight) / tileHeight));
+                        uvs[(currentPixel * 4) + 3] = new Vector2((float)((divisionXOrigin + pixelXOrigin) / tileWidth), (float)((divisionYOrigin + pixelYOrigin + pixelHeight) / tileHeight));
+                    }
+                }
+
+                mesh.vertices = vertices;
+                mesh.triangles = triangles;
+                mesh.uv = uvs;
+
+                // Assign mesh
+                mesh.RecalculateNormals();
+                meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
+                divisionGameObject.GetComponent<Renderer>().material.mainTexture = texture;
+                meshFilter.mesh = mesh;
+                meshCollider.sharedMesh = mesh;
+            }
+        }
     }
 }

@@ -5,6 +5,8 @@ using System;
 /// </summary>
 public class RasterLayer : ILayer
 {
+    public Map Map { get; }
+
     public string Id { get; }
 
     public string DisplayName { get; }
@@ -15,7 +17,25 @@ public class RasterLayer : ILayer
 
     public DateTime LastUpdate { get; }
 
-    public bool Visible { get; set; }
+    private bool _visible;
+    public bool Visible
+    {
+        get
+        {
+            return _visible;
+        }
+        set
+        {
+            // Set the backing field
+            _visible = value;
+
+            // Update the layer visibility for all the tiles already in the map
+            foreach (Tile tile in Map.Tiles.Values)
+            {
+                tile.Layers[Id].GameObject.SetActive(Visible);
+            }
+        }
+    }
 
     public ILayerRenderer Renderer { get; }
 
@@ -24,6 +44,7 @@ public class RasterLayer : ILayer
     /// <summary>
     /// Construct a new RasterLayer
     /// </summary>
+    /// <param name="map">The map</param>
     /// <param name="id">The layer id</param>
     /// <param name="displayName">The layer display name</param>
     /// <param name="description">The layer description</param>
@@ -32,8 +53,9 @@ public class RasterLayer : ILayer
     /// <param name="visible">Whether the layer is visible</param>
     /// <param name="renderer">The layer's renderer</param>
     /// <param name="url">Url to fetch the tile data</param>
-    public RasterLayer(string id, string displayName, string description, string source, DateTime lastUpdate, bool visible, IRasterRenderer renderer, string url)
+    public RasterLayer(Map map, string id, string displayName, string description, string source, DateTime lastUpdate, bool visible, IRasterRenderer renderer, string url)
     {
+        this.Map = map;
         this.Id = id;
         this.DisplayName = displayName;
         this.Description = description;

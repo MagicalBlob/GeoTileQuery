@@ -845,8 +845,9 @@ public class EarcutLib
     /// </summary>
     /// <param name="coordinates">The coordinates for each point of each linear ring of the GeoJSON Polygon</param>
     /// <param name="tileLayer">The feature's tile layer</param>
+    /// <param name="queryHeight">Whether to query the elevation data at each point</param>
     /// <returns>A wrapper object containing the polygon vertices, holes and dimensions to use with Earcut</returns>
-    public static Data Flatten(Position[][] coordinates, GeoJsonTileLayer tileLayer)
+    public static Data Flatten(Position[][] coordinates, GeoJsonTileLayer tileLayer, bool queryHeight)
     {
         int dimensions = coordinates[0][0].Dimensions;
 
@@ -872,7 +873,16 @@ public class EarcutLib
             {
                 vertices.Add(coordinates[ring][position].GetRelativeX(tileLayer.Tile.Bounds.Min.X));
                 vertices.Add(coordinates[ring][position].GetRelativeY(tileLayer.Tile.Bounds.Min.Y));
-                vertices.Add(coordinates[ring][position].GetRelativeZ());
+                if (queryHeight)
+                {
+                    // If we're using the elevation data, get the height at the position to offset it (assumes position's at sea level in dataset)
+                    double terrainHeightOffset = tileLayer.Tile.GetHeight(GlobalMercator.LatLonToMeters(coordinates[ring][position].y, coordinates[ring][position].x));
+                    vertices.Add(coordinates[ring][position].GetRelativeZ() + terrainHeightOffset);
+                }
+                else
+                {
+                    vertices.Add(coordinates[ring][position].GetRelativeZ());
+                }
             }
 
         }

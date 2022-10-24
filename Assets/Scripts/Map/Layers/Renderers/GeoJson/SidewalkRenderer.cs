@@ -42,11 +42,23 @@ public class SidewalkRenderer : IGeoJsonRenderer
         {
             // Start point of segment AB
             Vector2D a = new Vector2D(coordinates[segment].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
-            double ay = coordinates[segment].GetRelativeZ() + sidewalkHeightOffset; // GeoJSON uses z for height, while Unity uses y
+            double ayTerrainHeightOffset = 0;
+            if (tileLayer.Tile.Map.ElevatedTerrain)
+            {
+                // If we're using the elevation data, get the height at the position to offset it (assumes position's at sea level in dataset)
+                ayTerrainHeightOffset = tileLayer.Tile.GetHeight(GlobalMercator.LatLonToMeters(coordinates[segment].y, coordinates[segment].x));
+            }
+            double ay = coordinates[segment].GetRelativeZ() + ayTerrainHeightOffset + sidewalkHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // End point of segment AB
             Vector2D b = new Vector2D(coordinates[segment + 1].GetRelativeX(tileLayer.Tile.Bounds.Min.X), coordinates[segment + 1].GetRelativeY(tileLayer.Tile.Bounds.Min.Y)); // GeoJSON uses z for height, while Unity uses y
-            double by = coordinates[segment + 1].GetRelativeZ() + sidewalkHeightOffset; // GeoJSON uses z for height, while Unity uses y
+            double byTerrainHeightOffset = 0;
+            if (tileLayer.Tile.Map.ElevatedTerrain)
+            {
+                // If we're using the elevation data, get the height at the position to offset it (assumes position's at sea level in dataset)
+                byTerrainHeightOffset = tileLayer.Tile.GetHeight(GlobalMercator.LatLonToMeters(coordinates[segment + 1].y, coordinates[segment + 1].x));
+            }
+            double by = coordinates[segment + 1].GetRelativeZ() + byTerrainHeightOffset + sidewalkHeightOffset; // GeoJSON uses z for height, while Unity uses y
 
             // Calculate AB and AB⟂ with given width
             Vector2D ab = b - a;

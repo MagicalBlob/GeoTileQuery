@@ -6,6 +6,11 @@ using System;
 public interface ILayer
 {
     /// <summary>
+    /// The map to which the layer belongs
+    /// </summary>
+    public Map Map { get; }
+
+    /// <summary>
     /// The layer's id
     /// </summary>
     string Id { get; }

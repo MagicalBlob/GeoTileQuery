@@ -14,9 +14,11 @@ public class RasterTileLayer : ITileLayer
 
     public string FullId { get { return $"{Tile.Id}/{Layer.Id}"; } }
 
-    public GameObject GameObject { get; }
+    public GameObject GameObject { get; private set; }
 
     public TileLayerState State { get; private set; }
+
+    private Texture2D rasterTexture;
 
     /// <summary>
     /// Constructs a new tile's Raster layer
@@ -29,12 +31,20 @@ public class RasterTileLayer : ITileLayer
         this.Layer = layer;
 
         // Setup the gameobject
+        SetupGameObject();
+
+        this.State = TileLayerState.Initial;
+    }
+
+    /// <summary>
+    /// Sets up the tile layer's GameObject
+    /// </summary>
+    private void SetupGameObject()
+    {
         GameObject = new GameObject(Layer.Id);
         GameObject.SetActive(Layer.Visible);
         GameObject.transform.parent = Tile.GameObject.transform; // Set it as a child of the tile gameobject
         GameObject.transform.localPosition = Vector3.zero;
-
-        this.State = TileLayerState.Initial;
     }
 
     public async Task LoadAsync(CancellationToken cancellationToken)
@@ -68,7 +78,7 @@ public class RasterTileLayer : ITileLayer
         // Render the layer if the request was successful
         if (rasterReq.result == UnityWebRequest.Result.Success)
         {
-            Texture2D rasterTexture = DownloadHandlerTexture.GetContent(rasterReq);
+            rasterTexture = DownloadHandlerTexture.GetContent(rasterReq);
             rasterTexture.wrapMode = TextureWrapMode.Clamp;
             State = TileLayerState.Loaded;
 
@@ -90,5 +100,21 @@ public class RasterTileLayer : ITileLayer
 
         // Destroy the gameobject
         GameObject.Destroy(GameObject);
+    }
+
+    public void ApplyTerrain()
+    {
+        if (State != TileLayerState.Rendered) { return; } // Can't apply terrain if the layer isn't rendered
+
+        // Update the state
+        State = TileLayerState.Loaded;
+
+        // Destroy the gameobject
+        if (GameObject != null) { GameObject.Destroy(GameObject); }
+
+        // Re-render the tile
+        SetupGameObject();
+        ((IRasterRenderer)Layer.Renderer).Render(this, rasterTexture);
+        State = TileLayerState.Rendered;
     }
 }

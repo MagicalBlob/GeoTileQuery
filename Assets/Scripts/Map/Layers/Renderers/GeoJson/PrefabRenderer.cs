@@ -39,9 +39,16 @@ public class PrefabRenderer : IGeoJsonRenderer
 
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
+        double terrainHeightOffset = 0;
+        if (tileLayer.Tile.Map.ElevatedTerrain)
+        {
+            // If we're using the elevation data, get the height at the node's position to offset it (assumes node's at sea level in dataset)
+            terrainHeightOffset = tileLayer.Tile.GetHeight(GlobalMercator.LatLonToMeters(coordinates.y, coordinates.x));
+        }
+
         // Render Node with an existing model instead
         double x = coordinates.GetRelativeX(tileLayer.Tile.Bounds.Min.X);
-        double y = coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
+        double y = terrainHeightOffset + coordinates.GetRelativeZ(); // GeoJSON uses z for height, while Unity uses y
         double z = coordinates.GetRelativeY(tileLayer.Tile.Bounds.Min.Y); // GeoJSON uses z for height, while Unity uses y
 
         // Get model name
