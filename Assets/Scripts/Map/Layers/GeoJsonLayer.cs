@@ -32,7 +32,10 @@ public class GeoJsonLayer : IFilterableLayer
             // Update the layer visibility for all the tiles already in the map
             foreach (Tile tile in Map.Tiles.Values)
             {
-                tile.Layers[Id].GameObject.SetActive(Visible);
+                if (tile.Layers.TryGetValue(Id, out ITileLayer tileLayer))
+                {
+                    tileLayer.GameObject.SetActive(Visible);
+                }
             }
         }
     }

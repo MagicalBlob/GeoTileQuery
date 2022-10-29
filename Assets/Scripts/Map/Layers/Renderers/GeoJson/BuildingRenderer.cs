@@ -11,6 +11,25 @@ public class BuildingRenderer : IGeoJsonRenderer
     /// </summary>
     private double defaultHeight = 5;
 
+    /// <summary>
+    /// The building's roof material
+    /// </summary>
+    private Material roofMaterial;
+
+    /// <summary>
+    /// The building's wall material
+    /// </summary>
+    private Material wallMaterial;
+
+    /// <summary>
+    /// Creates a new BuildingRenderer
+    /// </summary>
+    public BuildingRenderer()
+    {
+        this.roofMaterial = Resources.Load<Material>("Materials/Roof"); // TODO use Addressables instead?
+        this.wallMaterial = Resources.Load<Material>("Materials/Wall"); // TODO use Addressables instead?
+    }
+
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         Debug.LogWarning($"[BuildingRenderer] {tileLayer.FullId}: Tried to render a Node!");
@@ -140,7 +159,7 @@ public class BuildingRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Wall"); // TODO use Addressables instead?
+        meshRenderer.sharedMaterial = wallMaterial;
         meshFilter.mesh = mesh;
         meshCollider.sharedMesh = mesh;
     }
@@ -188,7 +207,7 @@ public class BuildingRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Roof"); // TODO use Addressables instead?
+        meshRenderer.sharedMaterial = roofMaterial;
         meshFilter.mesh = mesh;
         meshCollider.sharedMesh = mesh;
     }

@@ -93,15 +93,42 @@ public class Map
             _elevatedTerrain = value;
 
             // Update the terrain elevation for all the tiles already in the map
+            int count = 0;
             foreach (Tile tile in Tiles.Values)
             {
                 foreach (ITileLayer tileLayer in tile.Layers.Values)
                 {
-                    tileLayer.ApplyTerrain();
+                    _ = tileLayer.ApplyTerrainAsync(count);
                 }
+                count++;
             }
         }
     }
+
+    /// <summary>
+    /// The minimum elevation of the map in meters
+    /// </summary>
+    public double MinElevation { get; private set; }
+
+    /// <summary>
+    /// The maximum elevation of the map (in meters)
+    /// </summary>
+    public double MaxElevation { get; private set; }
+
+    /// <summary>
+    /// The minimum zoom level of the map
+    /// </summary>
+    public int MinZoomLevel { get; private set; }
+
+    /// <summary>
+    /// The maximum zoom level of the map
+    /// </summary>
+    public int MaxZoomLevel { get; private set; }
+
+    /// <summary>
+    /// Size of a tile in pixels
+    /// </summary>
+    public int TileSize { get { return GlobalMercator.TileSize; } }
 
     /// <summary>
     /// Number of tiles to be loaded in each direction relative to the origin (0 loads only the origin tile)
@@ -187,6 +214,10 @@ public class Map
         ZoomLevel = 17;
         Center = GlobalMercator.LatLonToMeters(38.704802, -9.137878);
         TileLoadDistance = new Vector2Int(4, 3);
+        MinElevation = 0;
+        MaxElevation = 5000;
+        MinZoomLevel = 15;
+        MaxZoomLevel = 20;
     }
 
     /// <summary>
@@ -229,6 +260,7 @@ public class Map
                 {
                     // The tile was loaded already
                     existingTile.Generation = CurrentTileGeneration; // Update its generation
+                    _ = existingTile.CheckNeighboursAsync(); // Check neighbours for elevation data in case they were only loaded now
                 }
             }
         }
@@ -303,15 +335,15 @@ public class Map
     {
         // Update the zoom level
         ZoomLevel += amount;
-        if (ZoomLevel < 0)
+        if (ZoomLevel < MinZoomLevel)
         {
-            Debug.LogWarning("Zoom level cannot be less than 0");
-            ZoomLevel = 0;
+            Debug.LogWarning($"Zoom level cannot be less than {MinZoomLevel}");
+            ZoomLevel = MinZoomLevel;
         }
-        if (ZoomLevel > 20)
+        if (ZoomLevel > MaxZoomLevel)
         {
-            Debug.LogWarning("Zoom level is too high, setting it to 20");
-            ZoomLevel = 20;
+            Debug.LogWarning($"Zoom level is too high, setting it to {MaxZoomLevel}");
+            ZoomLevel = MaxZoomLevel;
         }
 
         // Move the 2D camera to the new zoom level
@@ -354,7 +386,7 @@ public class Map
         Vector2Int originTile = GlobalMercator.MetersToGoogleTile(Center, ZoomLevel);
         Bounds bounds = GlobalMercator.GoogleTileBounds(originTile.x, originTile.y, ZoomLevel);
         // Calculate what is the screen height in meters if we keep the tile size on screen constant
-        double meterHeight = (camera.pixelHeight * bounds.Height) / GlobalMercator.TileSize;
+        double meterHeight = (camera.pixelHeight * bounds.Height) / TileSize;
         // Calculate the distance from the camera to the center of the tile at sea level, such that the tile size on screen is constant
         double cameraHeight = (meterHeight / 2) / System.Math.Tan((camera.fieldOfView * System.Math.PI) / 360);
         // Move the camera to the new position
@@ -412,6 +444,21 @@ public class Map
 
         // The tile is not loaded, return 0
         return 0;
+    }
+
+    /// <summary>
+    /// Decode pixel values to height values. The height will be returned in meters
+    /// </summary>
+    /// <param name="color">The queried location's pixel</param>
+    /// <returns>Height at location (meters)</returns>
+    public static double MapboxHeightFromColor(Color color)
+    {
+        // Convert from 0..1 to 0..255
+        float R = color.r * 255;
+        float G = color.g * 255;
+        float B = color.b * 255;
+
+        return -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
     }
 
     /// <summary>

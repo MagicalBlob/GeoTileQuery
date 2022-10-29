@@ -16,6 +16,19 @@ public class RoadRenderer : IGeoJsonRenderer
     /// </summary>
     private double roadWidth = 5;
 
+    /// <summary>
+    /// The road material
+    /// </summary>
+    private Material roadMaterial;
+
+    /// <summary>
+    /// Creates a new RoadRenderer
+    /// </summary>
+    public RoadRenderer()
+    {
+        this.roadMaterial = Resources.Load<Material>("Materials/Road"); // TODO use Addressables instead?
+    }
+
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         Debug.LogWarning($"[RoadRenderer] {tileLayer.FullId}: Tried to render a Node!");
@@ -145,7 +158,7 @@ public class RoadRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Road"); // TODO use Addressables instead?
+        meshRenderer.sharedMaterial = roadMaterial;
         meshFilter.mesh = mesh;
         meshCollider.sharedMesh = mesh;
     }

@@ -11,9 +11,9 @@ public class PrefabRenderer : IGeoJsonRenderer
     private bool checkGeoJson;
 
     /// <summary>
-    /// Name of the model to load
+    /// The prefab to use
     /// </summary>
-    private string model;
+    private GameObject prefab;
 
     /// <summary>
     /// Constructs a new PrefabRenderer
@@ -24,7 +24,7 @@ public class PrefabRenderer : IGeoJsonRenderer
     public PrefabRenderer()
     {
         this.checkGeoJson = true;
-        this.model = null;
+        this.prefab = null;
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public class PrefabRenderer : IGeoJsonRenderer
     public PrefabRenderer(string model)
     {
         this.checkGeoJson = false;
-        this.model = model;
+        this.prefab = Resources.Load<GameObject>($"Prefabs/{model}"); // TODO use Addressables instead?
     }
 
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
@@ -54,21 +54,20 @@ public class PrefabRenderer : IGeoJsonRenderer
         // Get model name
         if (checkGeoJson)
         {
-            model = feature.GetPropertyAsString("model");
+            prefab = Resources.Load<GameObject>($"Prefabs/{feature.GetPropertyAsString("model")}"); // TODO Actual prefabs probably shouldn't be loaded with Resources.Load
         }
 
-        GameObject prefab = Resources.Load<GameObject>($"Prefabs/{model}"); // TODO Actual prefabs probably shouldn't be loaded with Resources.Load
         if (prefab != null)
         {
             GameObject node = GameObject.Instantiate(prefab);
-            node.name = $"Node - {model}";
+            node.name = $"Node - {prefab.name}";
             node.transform.parent = feature.GameObject.transform; // Set it as a child of the Feature gameobject
             node.transform.localPosition = new Vector3((float)x, (float)y, (float)z);
             node.transform.rotation = feature.GameObject.transform.rotation;
         }
         else
         {
-            Debug.LogWarning($"[PrefabRenderer] {tileLayer.FullId}: Unable to find resource 'Prefabs/{model}'");
+            Debug.LogWarning($"[PrefabRenderer] {tileLayer.FullId}: Unable to spawn prefab, model not found");
         }
     }
 

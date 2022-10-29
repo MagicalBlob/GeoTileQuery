@@ -65,9 +65,29 @@ public class Tile
     /// </summary>
     public uint Generation { get; set; }
 
-    private CancellationTokenSource _cancellationTokenSource;
+    /// <summary>
+    /// The elevation data (meters)
+    /// </summary>
+    private double[,] heights;
+    /// <summary>
+    /// Whether we checked the north tile for elevation data
+    /// </summary>
+    private bool checkedNeighbourNorth;
+    /// <summary>
+    /// Whether we checked the east tile for elevation data
+    /// </summary>
+    private bool checkedNeighbourEast;
+    /// <summary>
+    /// Whether we checked the north-east tile for elevation data
+    /// </summary>
+    private bool checkedNeighbourNorthEast;
 
-    private Texture2D _tmpHeighmapThing; // TODO probably a better idea to only store the converted data
+    /// <summary>
+    /// The terrain data
+    /// </summary>
+    private TerrainData terrainData;
+
+    private CancellationTokenSource _cancellationTokenSource;
 
     /// <summary>
     /// Constructs a new tile
@@ -86,6 +106,7 @@ public class Tile
         this.Bounds = GlobalMercator.GoogleTileBounds(X, Y, Zoom); // Calculate tile bounds
         this.Layers = new Dictionary<string, ITileLayer>();
         this.Generation = generation;
+        this.heights = new double[Map.TileSize + 1, Map.TileSize + 1]; // +1 to prevent seams
         _cancellationTokenSource = new CancellationTokenSource();
 
         // Setup the gameobject
@@ -103,24 +124,27 @@ public class Tile
     /// </summary>
     public async Task LoadAsync()
     {
-        // Load the heightmap
-        await LoadHeightmapAsync();
+        // Load the terrain
+        await LoadTerrainAsync();
 
         // Load the layers
         if (State == TileState.TerrainLoaded)
         {
             LoadLayers();
+
+            // If we couldn't check all neighbours, schedule another check
+            _ = CheckNeighboursAsync();
         }
         else
         {
-            Debug.LogError($"Can't load layers for tile {Id} because the heightmap hasn't been loaded yet");
+            Debug.LogError($"Can't load layers for tile {Id} because the terrain is not loaded");
         }
     }
 
     /// <summary>
-    /// Load the tile's heightmap asynchronously
+    /// Load the tile's terrain asynchronously
     /// </summary>
-    private async Task LoadHeightmapAsync()
+    private async Task LoadTerrainAsync()
     {
         // Request heightmap texture
         string heightmapUrl = $"https://api.mapbox.com/v4/mapbox.terrain-rgb/{Zoom}/{X}/{Y}.pngraw?access_token={MainController.MapboxAccessToken}";
@@ -152,8 +176,51 @@ public class Tile
         // Grab the heightmap if the request was successful
         if (heightmapReq.result == UnityWebRequest.Result.Success)
         {
-            _tmpHeighmapThing = DownloadHandlerTexture.GetContent(heightmapReq);
-            _tmpHeighmapThing.wrapMode = TextureWrapMode.Clamp; // TODO actually take care of the edges
+            Texture2D heightmapTexture = DownloadHandlerTexture.GetContent(heightmapReq);
+            Color[] pixels = heightmapTexture.GetPixels();
+
+            // Convert the encoded image into the respective heights
+            for (int x = 0; x < Map.TileSize; x++)
+            {
+                for (int y = 0; y < Map.TileSize; y++)
+                {
+                    heights[x, y] = MapboxHeightFromColor(pixels[x + y * Map.TileSize]);
+                }
+            }
+
+            // Check the neighbours to prevent seams
+            CheckNeighbours();
+
+            // Clamp the north edge if we couldn't check the north tile
+            if (!checkedNeighbourNorth)
+            {
+                for (int x = 0; x < Map.TileSize; x++)
+                {
+                    heights[x, Map.TileSize] = heights[x, Map.TileSize - 1];
+                }
+            }
+
+            // Clamp the east edge if we couldn't check the east tile
+            if (!checkedNeighbourEast)
+            {
+                for (int y = 0; y < Map.TileSize; y++)
+                {
+                    heights[Map.TileSize, y] = heights[Map.TileSize - 1, y];
+                }
+            }
+
+            // Clamp the north-east corner if we couldn't check the north-east tile
+            if (!checkedNeighbourNorthEast)
+            {
+                heights[Map.TileSize, Map.TileSize] = heights[Map.TileSize - 1, Map.TileSize - 1];
+            }
+
+            // Update the state
+            State = TileState.TerrainLoaded;
+        }
+        else if (heightmapReq.responseCode == 404)
+        {
+            Debug.LogWarning($"Tile {Id} not found. Assuming it's all water...");
             State = TileState.TerrainLoaded;
         }
         else
@@ -161,6 +228,214 @@ public class Tile
             Debug.LogError(heightmapReq.error);
             State = TileState.TerrainLoadFailed;
         }
+    }
+
+    /// <summary>
+    /// Decode pixel values to height values. The height will be returned in meters
+    /// </summary>
+    /// <param name="color">The color with the encoded height</param>
+    /// <returns>Height at location (meters)</returns>
+    private double MapboxHeightFromColor(Color color)
+    {
+        // Convert from 0..1 to 0..255
+        float R = color.r * 255;
+        float G = color.g * 255;
+        float B = color.b * 255;
+
+        return -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
+    }
+
+    /// <summary>
+    /// Checks the neighbours of this tile for elevation data to prevent seams
+    /// </summary>
+    private void CheckNeighbours()
+    {
+        // North tile
+        if (!checkedNeighbourNorth)
+        {
+            if (Map.Tiles.TryGetValue($"{Zoom}/{X}/{Y - 1}", out Tile northTile) && northTile.State >= TileState.TerrainLoaded)
+            {
+                for (int x = 0; x < Map.TileSize; x++)
+                {
+                    heights[x, Map.TileSize] = northTile.heights[x, 0];
+                }
+                checkedNeighbourNorth = true;
+            }
+        }
+
+        // East tile
+        if (!checkedNeighbourEast)
+        {
+            if (Map.Tiles.TryGetValue($"{Zoom}/{X + 1}/{Y}", out Tile eastTile) && eastTile.State >= TileState.TerrainLoaded)
+            {
+                for (int y = 0; y < Map.TileSize; y++)
+                {
+                    heights[Map.TileSize, y] = eastTile.heights[0, y];
+                }
+                checkedNeighbourEast = true;
+            }
+        }
+
+        // North-East tile
+        if (!checkedNeighbourNorthEast)
+        {
+            if (Map.Tiles.TryGetValue($"{Zoom}/{X + 1}/{Y - 1}", out Tile northEastTile) && northEastTile.State >= TileState.TerrainLoaded)
+            {
+                heights[Map.TileSize, Map.TileSize] = northEastTile.heights[0, 0];
+                checkedNeighbourNorthEast = true;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Schedules a check on the neighbours of this tile for elevation data asynchronously to prevent seams
+    /// </summary>
+    public async Task CheckNeighboursAsync()
+    {
+        if (checkedNeighbourNorth && checkedNeighbourEast && checkedNeighbourNorthEast)
+        {
+            return; // If we already checked all neighbours, don't need to do anything
+        }
+
+        // Wait for the neighbours to load
+        await Task.Delay(30000);
+
+        if (GameObject == null) { return; } // If the GameObject was destroyed in the meantime, we're done here
+
+        bool checkedNeighbourNorthBefore = checkedNeighbourNorth;
+        bool checkedNeighbourEastBefore = checkedNeighbourEast;
+        bool checkedNeighbourNorthEastBefore = checkedNeighbourNorthEast;
+
+        // Check the neighbours
+        CheckNeighbours();
+
+        // Update the terrain data if it exists and we have new data from the neighbours
+        // North
+        if (terrainData != null && checkedNeighbourNorthBefore != checkedNeighbourNorth)
+        {
+            float[,] northHeights = new float[1, Map.TileSize];
+            for (int x = 0; x < Map.TileSize; x++)
+            {
+                northHeights[0, x] = (float)((heights[x, Map.TileSize] - Map.MinElevation) / (Map.MaxElevation - Map.MinElevation));
+            }
+            terrainData.SetHeights(0, Map.TileSize, northHeights);
+        }
+        // East
+        if (terrainData != null && checkedNeighbourEastBefore != checkedNeighbourEast)
+        {
+            float[,] eastHeights = new float[Map.TileSize, 1];
+            for (int y = 0; y < Map.TileSize; y++)
+            {
+                eastHeights[y, 0] = (float)((heights[Map.TileSize, y] - Map.MinElevation) / (Map.MaxElevation - Map.MinElevation));
+            }
+            terrainData.SetHeights(Map.TileSize, 0, eastHeights);
+        }
+        // North-East
+        if (terrainData != null && checkedNeighbourNorthEastBefore != checkedNeighbourNorthEast)
+        {
+            float northEastHeight = (float)((heights[Map.TileSize, Map.TileSize] - Map.MinElevation) / (Map.MaxElevation - Map.MinElevation));
+            terrainData.SetHeights(Map.TileSize, Map.TileSize, new float[1, 1] { { northEastHeight } });
+        }
+    }
+
+    /// <summary>
+    /// Get the Unity Terrain data
+    /// </summary>
+    /// <returns>The terrain data</returns>
+    /// <remarks>Will return null if the terrain data is not loaded</remarks>
+    public TerrainData GetTerrainData()
+    {
+        if (State < TileState.TerrainLoaded)
+        {
+            // The terrain data is not loaded
+            Debug.LogWarning($"Terrain data for tile {Id} is not loaded");
+            return null;
+        }
+        if (terrainData != null)
+        {
+            // Terrain data already exists, just return it
+            return terrainData;
+        }
+        else
+        {
+            // Create the terrain data
+            terrainData = new TerrainData();
+            terrainData.GetHeight(0, 0);
+            int terrainLength = Map.TileSize + 1;
+            terrainData.heightmapResolution = terrainLength;
+            terrainData.size = new Vector3((float)Bounds.Width, (float)(Map.MaxElevation - Map.MinElevation), (float)Bounds.Height);
+            float[,] tileHeights = new float[terrainLength, terrainLength];
+            for (int y = 0; y < terrainLength; y++)
+            {
+                for (int x = 0; x < terrainLength; x++)
+                {
+                    // Get the elevation value and scale it to the 0..1 range
+                    tileHeights[y, x] = (float)((heights[x, y] - Map.MinElevation) / (Map.MaxElevation - Map.MinElevation));
+                }
+            }
+            terrainData.SetHeights(0, 0, tileHeights);
+            return terrainData;
+        }
+    }
+
+    /// <summary>
+    /// Get height at given pixel location
+    /// </summary>
+    /// <param name="pixelX">The pixel X coordinate</param>
+    /// <param name="pixelY">The pixel Y coordinate</param>
+    /// <returns>Height at given location (meters)</returns>
+    /// <remarks>
+    /// Returns 0 if the tile terrain isn't loaded or the edge clamped value if the pixel is outside the tile
+    /// </remarks>
+    public double GetHeight(int pixelX, int pixelY)
+    {
+        // Check tile state
+        if (State == TileState.Initial || State == TileState.TerrainLoadFailed || State == TileState.Unloaded)
+        {
+            Debug.LogWarning($"Can't get height for tile {Id} because the terrain isn't loaded");
+            return 0;
+        }
+        // Clamp pixel coordinates
+        if (pixelX < 0)
+        {
+            pixelX = 0;
+            Debug.LogWarning($"Can't get height for tile {Id} because the pixel coordinates ({pixelX}, {pixelY}) are out of bounds");
+        }
+        else if (pixelX > Map.TileSize)
+        {
+            pixelX = Map.TileSize;
+            Debug.LogWarning($"Can't get height for tile {Id} because the pixel coordinates ({pixelX}, {pixelY}) are out of bounds");
+        }
+        if (pixelY < 0)
+        {
+            pixelY = 0;
+            Debug.LogWarning($"Can't get height for tile {Id} because the pixel coordinates ({pixelX}, {pixelY}) are out of bounds");
+        }
+        else if (pixelY > Map.TileSize)
+        {
+            pixelY = Map.TileSize;
+            Debug.LogWarning($"Can't get height for tile {Id} because the pixel coordinates ({pixelX}, {pixelY}) are out of bounds");
+        }
+        // Return the height value
+        return heights[pixelX, pixelY];
+    }
+
+    /// <summary>
+    /// Get height at given location
+    /// </summary>
+    /// <param name="point">The point on the map (WGS84)</param>
+    /// <returns>Height at given location (meters)</returns>
+    /// <remarks>
+    /// Returns the edge clamped value if the point is outside the tile
+    /// </remarks>
+    public double GetHeight(Vector2D point)
+    {
+        // Get the pixel coordinates
+        int pixelX = (int)(((point.X - Bounds.Min.X) * Map.TileSize) / Bounds.Width);
+        int pixelY = (int)(((point.Y - Bounds.Min.Y) * Map.TileSize) / Bounds.Height);
+
+        // Get the height
+        return GetHeight(pixelX, pixelY);
     }
 
     /// <summary>
@@ -213,61 +488,6 @@ public class Tile
                 State = TileState.Loaded;
             }
         });
-    }
-
-    /// <summary>
-    /// Get height at given pixel location
-    /// </summary>
-    /// <param name="pixelX">The pixel X coordinate</param>
-    /// <param name="pixelY">The pixel Y coordinate</param>
-    /// <returns>Height at given location (meters)</returns>
-    /// <remarks>
-    /// Returns 0 if the tile terrain isn't loaded
-    /// </remarks>
-    public double GetHeight(int pixelX, int pixelY)
-    {
-        if (State == TileState.Initial || State == TileState.TerrainLoadFailed || State == TileState.Unloaded)
-        {
-            Debug.LogWarning($"Can't get height for tile {Id} because the terrain isn't loaded");
-            return 0;
-        }
-        return MapboxHeightFromColor(_tmpHeighmapThing.GetPixel(pixelX, pixelY));
-    }
-
-    /// <summary>
-    /// Get height at given location
-    /// </summary>
-    /// <param name="point">The point on the map (WGS84)</param>
-    /// <returns>Height at given location (meters)</returns>
-    /// <remarks>
-    /// Returns 0 if the point is outside the tile
-    /// </remarks>
-    public double GetHeight(Vector2D point)
-    {
-        // Get the point relative to the tile origin
-        Vector2D tilePoint = point - Bounds.Min;
-
-        // Get the pixel coordinates
-        int pixelX = (int)((tilePoint.X * GlobalMercator.TileSize) / Bounds.Width);
-        int pixelY = (int)((tilePoint.Y * GlobalMercator.TileSize) / Bounds.Height);
-
-        // Get the height
-        return GetHeight(pixelX, pixelY);
-    }
-
-    /// <summary>
-    /// Decode pixel values to height values. The height will be returned in meters
-    /// </summary>
-    /// <param name="color">The queried location's pixel</param>
-    /// <returns>Height at location (meters)</returns>
-    private double MapboxHeightFromColor(Color color)
-    {
-        // Convert from 0..1 to 0..255
-        float R = color.r * 255;
-        float G = color.g * 255;
-        float B = color.b * 255;
-
-        return -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
     }
 
     /// <summary>

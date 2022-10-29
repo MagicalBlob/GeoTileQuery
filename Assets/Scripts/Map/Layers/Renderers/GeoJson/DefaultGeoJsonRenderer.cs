@@ -27,6 +27,20 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
     /// </summary>
     private double edgeWidth = 1;
 
+    /// <summary>
+    /// The default material
+    /// </summary>
+    private Material material;
+
+    /// <summary>
+    /// Creates a new DefaultGeoJsonRenderer
+    /// </summary>
+    public DefaultGeoJsonRenderer()
+    {
+        // Load the default material
+        this.material = new Material(Shader.Find("Mobile/Diffuse"));
+    }
+
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         double terrainHeightOffset = 0;
@@ -87,7 +101,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
+        meshRenderer.sharedMaterial = material;
         meshFilter.mesh = mesh;
         meshCollider.sharedMesh = mesh;
     }
@@ -161,7 +175,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
+        meshRenderer.sharedMaterial = material;
         meshFilter.mesh = mesh;
         meshCollider.sharedMesh = mesh;
     }
@@ -210,7 +224,7 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = new Material(Shader.Find("Mobile/Diffuse"));
+        meshRenderer.sharedMaterial = material;
         meshFilter.mesh = mesh;
         meshCollider.sharedMesh = mesh;
 

@@ -16,6 +16,19 @@ public class SidewalkRenderer : IGeoJsonRenderer
     /// </summary>
     private double sidewalkWidth = 1;
 
+    /// <summary>
+    /// The sidewalk material
+    /// </summary>
+    private Material sidewalkMaterial;
+
+    /// <summary>
+    /// Creates a new SideWalkRenderer
+    /// </summary>
+    public SidewalkRenderer()
+    {
+        this.sidewalkMaterial = Resources.Load<Material>("Materials/Sidewalk"); // TODO use Addressables instead?
+    }
+
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         Debug.LogWarning($"[SidewalkRenderer] {tileLayer.FullId}: Tried to render a Node!");
@@ -90,7 +103,7 @@ public class SidewalkRenderer : IGeoJsonRenderer
 
         // Assign mesh
         mesh.RecalculateNormals();
-        meshRenderer.sharedMaterial = Resources.Load<Material>("Materials/Sidewalk"); // TODO use Addressables instead?
+        meshRenderer.sharedMaterial = sidewalkMaterial;
         meshFilter.mesh = mesh;
         meshCollider.sharedMesh = mesh;
     }

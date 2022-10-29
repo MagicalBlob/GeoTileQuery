@@ -119,15 +119,18 @@ public class GeoJsonTileLayer : IFilterableTileLayer
         GameObject.Destroy(GameObject);
     }
 
-    public void ApplyTerrain()
+    public async Task ApplyTerrainAsync(int count)
     {
         if (State != TileLayerState.Rendered) { return; } // Can't apply terrain if the layer isn't rendered
 
         // Update the state
         State = TileLayerState.Loaded;
 
-        // Destroy the gameobject
-        if (GameObject != null) { GameObject.Destroy(GameObject); }
+        // HACK: Since we can't destroy/create Gameobjects outside the main thread, we do a pseudo async to not block the UI but not really. This is trash and should think of a better way to do this
+        await Task.Delay(250 * count);
+
+        // Destroy the gameobject. If the gameobject was destroyed before then the tile is probably gone, we're done here
+        if (GameObject != null) { GameObject.Destroy(GameObject); } else { return; }
 
         // Re-render the GeoJSON
         SetupGameObject();

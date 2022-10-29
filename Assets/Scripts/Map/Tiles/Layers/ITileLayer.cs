@@ -46,5 +46,5 @@ public interface ITileLayer
     /// <summary>
     /// Applies the terrain elevation to the tile layer
     /// </summary>
-    void ApplyTerrain();
+    Task ApplyTerrainAsync(int count);
 }
