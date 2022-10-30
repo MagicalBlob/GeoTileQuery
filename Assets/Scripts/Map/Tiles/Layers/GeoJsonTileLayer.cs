@@ -55,7 +55,8 @@ public class GeoJsonTileLayer : IFilterableTileLayer
         await MainController.networkSemaphore.WaitAsync(cancellationToken); // Wait for the semaphore so we don't overload the client with too many requests
         try
         {
-            string geoJsonText = await Task<string>.Run(async () => await MainController.client.GetStringAsync(string.Format(Layer.Url, Tile.Id)), cancellationToken);
+            HttpResponseMessage response = await MainController.client.GetAsync(string.Format(Layer.Url, Tile.Id), cancellationToken);
+            string geoJsonText = await response.Content.ReadAsStringAsync();
             MainController.networkSemaphore.Release(); // Release the semaphore
 
             if (cancellationToken.IsCancellationRequested)

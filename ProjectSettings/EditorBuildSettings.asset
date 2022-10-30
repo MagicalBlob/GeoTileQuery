@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Default.unity
     guid: 009b0fd0c3553134d89e3386c28874c7
+  - enabled: 1
+    path: Assets/Scenes/MobileTerrainFix.unity
+    guid: b9a918f1ba67928489ffc700d9d5b3ea
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: a20cb1d8f32b16147b7173a29b657c0a, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 1af934c0a741cfd4e92ba2babeeeaad7, type: 2}

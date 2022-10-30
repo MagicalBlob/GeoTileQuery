@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -58,6 +59,18 @@ public class GeoJsonObjectConverter : JsonConverter
                             UnityEngine.Debug.LogWarning($"Failed to parse LineString, so will set it to null (turn into an unlocated feature) and try to parse the remaining GeoJSON. Reason: {e.Message}");
                             return null;
                         }
+                        catch (TargetInvocationException e)
+                        {
+                            if (e.InnerException is InvalidGeoJsonException)
+                            {
+                                UnityEngine.Debug.LogWarning($"Failed to parse LineString, so will set it to null (turn into an unlocated feature) and try to parse the remaining GeoJSON. Reason: {e.InnerException.Message}");
+                                return null;
+                            }
+                            else
+                            {
+                                throw e;
+                            }
+                        }
                     case "MultiLineString":
                         try
                         {
@@ -67,6 +80,18 @@ public class GeoJsonObjectConverter : JsonConverter
                         {
                             UnityEngine.Debug.LogWarning($"Failed to parse MultiLineString, so will set it to null (turn into an unlocated feature) and try to parse the remaining GeoJSON. Reason: {e.Message}");
                             return null;
+                        }
+                        catch (TargetInvocationException e)
+                        {
+                            if (e.InnerException is InvalidGeoJsonException)
+                            {
+                                UnityEngine.Debug.LogWarning($"Failed to parse MultiLineString, so will set it to null (turn into an unlocated feature) and try to parse the remaining GeoJSON. Reason: {e.InnerException.Message}");
+                                return null;
+                            }
+                            else
+                            {
+                                throw e;
+                            }
                         }
                     case "Polygon":
                         try
@@ -78,6 +103,18 @@ public class GeoJsonObjectConverter : JsonConverter
                             UnityEngine.Debug.LogWarning($"Failed to parse Polygon, so will set it to null (turn into an unlocated feature) and try to parse the remaining GeoJSON. Reason: {e.Message}");
                             return null;
                         }
+                        catch (TargetInvocationException e)
+                        {
+                            if (e.InnerException is InvalidGeoJsonException)
+                            {
+                                UnityEngine.Debug.LogWarning($"Failed to parse Polygon, so will set it to null (turn into an unlocated feature) and try to parse the remaining GeoJSON. Reason: {e.InnerException.Message}");
+                                return null;
+                            }
+                            else
+                            {
+                                throw e;
+                            }
+                        }
                     case "MultiPolygon":
                         try
                         {
@@ -87,6 +124,18 @@ public class GeoJsonObjectConverter : JsonConverter
                         {
                             UnityEngine.Debug.LogWarning($"Failed to parse MultiPolygon, so will set it to null (turn into an unlocated feature) and try to parse the remaining GeoJSON. Reason: {e.Message}");
                             return null;
+                        }
+                        catch (TargetInvocationException e)
+                        {
+                            if (e.InnerException is InvalidGeoJsonException)
+                            {
+                                UnityEngine.Debug.LogWarning($"Failed to parse MultiPolygon, so will set it to null (turn into an unlocated feature) and try to parse the remaining GeoJSON. Reason: {e.InnerException.Message}");
+                                return null;
+                            }
+                            else
+                            {
+                                throw e;
+                            }
                         }
                     case "GeometryCollection":
                         return jsonObject.ToObject<GeometryCollection>(serializer);
