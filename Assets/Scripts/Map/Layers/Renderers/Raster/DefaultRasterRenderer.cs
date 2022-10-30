@@ -4,6 +4,11 @@ using UnityEngine;
 public class DefaultRasterRenderer : IRasterRenderer
 {
     /// <summary>
+    /// The default texture to use when a raster tile fails to load
+    /// </summary>
+    private Texture2D defaultTexture;
+
+    /// <summary>
     /// The default shader
     /// </summary>
     private Shader shader;
@@ -18,13 +23,20 @@ public class DefaultRasterRenderer : IRasterRenderer
     /// </summary>
     public DefaultRasterRenderer()
     {
-        // Load the default material
+        this.defaultTexture = Resources.Load<Texture2D>("Textures/DefaultRaster"); // TODO: Should we avoid using Resources.Load?
         this.shader = Shader.Find("Mobile/Diffuse");
         this.material = new Material(shader);
     }
 
     public void Render(RasterTileLayer tileLayer, Texture2D texture)
     {
+        // Check if the texture is null
+        if (texture == null)
+        {
+            // Use the default texture
+            texture = defaultTexture;
+        }
+
         // Check if terrain is enabled on the map to choose which rendering strategy to use
         if (tileLayer.Tile.Map.ElevatedTerrain)
         {
