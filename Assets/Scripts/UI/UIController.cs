@@ -75,11 +75,21 @@ public class UIController
         aboutModal = modal.Find("Content/About");
         buttons.Find("About").GetComponent<Button>().onClick.AddListener(() => { ShowModal(aboutModal, 500, 500); });
 
+        // Rotate buttons
+        buttons.Find("Rotate/Left").GetComponent<Button>().onClick.AddListener(() => Map.ChangeDirection(15));
+        buttons.Find("Rotate/Reset").GetComponent<Button>().onClick.AddListener(() => Map.ResetDirection());
+        buttons.Find("Rotate/Right").GetComponent<Button>().onClick.AddListener(() => Map.ChangeDirection(-15));
+
+        // Tilt buttons
+        buttons.Find("Tilt/Down").GetComponent<Button>().onClick.AddListener(() => Map.ChangePitch(-10));
+        buttons.Find("Tilt/Reset").GetComponent<Button>().onClick.AddListener(() => Map.ResetPitch());
+        buttons.Find("Tilt/Up").GetComponent<Button>().onClick.AddListener(() => Map.ChangePitch(10));
+
         // Navigation buttons
-        buttons.Find("Navigation/Up").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter(new Vector2D(0, 100)));
-        buttons.Find("Navigation/Down").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter(new Vector2D(0, -100)));
-        buttons.Find("Navigation/Left").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter(new Vector2D(-100, 0)));
-        buttons.Find("Navigation/Right").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter(new Vector2D(100, 0)));
+        buttons.Find("Navigation/Up").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter((8388608 >> Map.ZoomLevel) * Vector2D.FromAngle(-Map.Direction + 90))); // 8388608 was chosen because it moved about 100m at zoom level 16 which felt about right
+        buttons.Find("Navigation/Down").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter((8388608 >> Map.ZoomLevel) * Vector2D.FromAngle(-Map.Direction - 90))); // 8388608 was chosen because it moved about 100m at zoom level 16 which felt about right
+        buttons.Find("Navigation/Left").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter((8388608 >> Map.ZoomLevel) * Vector2D.FromAngle(-Map.Direction + 180))); // 8388608 was chosen because it moved about 100m at zoom level 16 which felt about right
+        buttons.Find("Navigation/Right").GetComponent<Button>().onClick.AddListener(() => Map.MoveCenter((8388608 >> Map.ZoomLevel) * Vector2D.FromAngle(-Map.Direction))); // 8388608 was chosen because it moved about 100m at zoom level 16 which felt about right
 
         // Zoom buttons
         buttons.Find("Zoom/In").GetComponent<Button>().onClick.AddListener(() => Map.Zoom(1));
@@ -91,7 +101,6 @@ public class UIController
         buttons.Find("Ruler").GetComponent<Button>().onClick.AddListener(() => Debug.Log("//TODO: Ruler"));
         buttons.Find("Terrain").GetComponent<Button>().onClick.AddListener(ToggleTerrain);
         buttons.Find("AR").GetComponent<Button>().onClick.AddListener(ToggleAR);
-        buttons.Find("Test").GetComponent<Button>().onClick.AddListener(TestButtonClicked);
     }
 
     Vector2D position;
@@ -256,13 +265,12 @@ public class UIController
         if (arMode)
         {
             Map.SwitchTo2DMode();
-            Debug.Log("Switched to 2D mode");
         }
         else
         {
             Map.SwitchToARMode();
-            Debug.Log("Switched to AR mode");
         }
+        buttons.Find("AR/Text").GetComponent<Text>().text = arMode ? "AR: Off" : "AR: On";
         arMode = !arMode;
     }
 

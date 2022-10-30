@@ -550,4 +550,25 @@ public struct Vector2D
     {
         return radian * (180 / Math.PI);
     }
+
+    /// <summary>
+    /// Convert from degrees to radian
+    /// </summary>
+    /// <param name="degrees">Angle in degrees</param>
+    /// <returns>Angle in radian</returns>
+    private static double DegreesToRadian(double degrees)
+    {
+        return degrees * (Math.PI / 180);
+    }
+
+    /// <summary>
+    /// Creates a new heading vector from an angle in degrees
+    /// </summary>
+    /// <param name="angle">Angle in degrees</param>
+    /// <returns>The heading vector</returns>
+    public static Vector2D FromAngle(double degrees)
+    {
+        double radian = DegreesToRadian(degrees);
+        return new Vector2D(Math.Cos(radian), Math.Sin(radian));
+    }
 }

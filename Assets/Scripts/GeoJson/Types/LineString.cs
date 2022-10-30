@@ -19,14 +19,19 @@ public class LineString : IGeometryObject, IGeoJsonObject
     {
         if (coordinates.Length >= 2)
         {
-            if (coordinates.Length == 2)
+            Position firstUniquePosition = coordinates[0];
+            bool secondUniquePositionFound = false;
+            for (int i = 1; i < coordinates.Length; i++)
             {
-                // LineString has two positions, so check if they are the same
-                if (coordinates[0].Equals(coordinates[1]))
+                if (!secondUniquePositionFound && !coordinates[i].Equals(firstUniquePosition))
                 {
-                    // LineString has two positions that are the same, so this is not a valid LineString
-                    throw new InvalidGeoJsonException("(Not part of GeoJSON spec) A LineString should have at least two unique positions, but this LineString only has one");
+                    secondUniquePositionFound = true;
                 }
+            }
+            if (!secondUniquePositionFound)
+            {
+                // LineString does not have at least two unique positions, so this is not a valid LineString
+                throw new InvalidGeoJsonException("(Not part of GeoJSON spec) A LineString should have at least two unique positions, but this LineString only has one");
             }
             this.coordinates = coordinates;
         }

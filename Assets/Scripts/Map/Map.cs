@@ -38,6 +38,16 @@ public class Map
     /// </summary>
     public Vector2D Center { get; private set; }
 
+    /// <summary>
+    /// The direction the map is facing relative to north
+    /// </summary>
+    public int Direction { get; private set; }
+
+    /// <summary>
+    /// The map's pitch
+    /// </summary>
+    public int Pitch { get; private set; }
+
     private bool _filtered = false;
     /// <summary>
     /// Whether the map is filtered
@@ -149,6 +159,16 @@ public class Map
     private GameObject Map2D { get; }
 
     /// <summary>
+    /// The camera for 2D mode
+    /// </summary>
+    private Camera Camera2D { get; }
+
+    /// <summary>
+    /// The height of the camera in 2D mode
+    /// </summary>
+    public double Camera2DHeight { get; private set; }
+
+    /// <summary>
     /// The root GameObject for AR mode
     /// </summary>
     private GameObject MapAR { get; }
@@ -169,6 +189,7 @@ public class Map
         Tiles = new Dictionary<string, Tile>();
         Transform mapTransform = GameObject.Find("/Map").transform;
         Map2D = mapTransform.Find("2D").gameObject;
+        Camera2D = Map2D.transform.Find("Camera").GetComponent<Camera>();
         MapAR = mapTransform.Find("AR").gameObject;
         ARTrackedImageManager = MapAR.transform.Find("AR Session Origin").GetComponent<ARTrackedImageManager>();
 
@@ -213,11 +234,13 @@ public class Map
         // Set the map's initial zoom level and center, as well as the tile load distance
         ZoomLevel = 17;
         Center = GlobalMercator.LatLonToMeters(38.704802, -9.137878);
-        TileLoadDistance = new Vector2Int(4, 3);
+        Direction = 0;
+        Pitch = 0;
+        TileLoadDistance = new Vector2Int(4, 4);
         MinElevation = 0;
         MaxElevation = 5000;
         MinZoomLevel = 15;
-        MaxZoomLevel = 20;
+        MaxZoomLevel = 19;
     }
 
     /// <summary>
@@ -346,14 +369,116 @@ public class Map
             ZoomLevel = MaxZoomLevel;
         }
 
-        // Move the 2D camera to the new zoom level
-        Update2DCameraHeight();
+        // Calculate the new 2D camera height
+        Calculate2DCameraHeight();
+
+        // Update the 2D camera
+        Update2DCamera();
 
         // Load the new tiles
         Load();
 
         // Unload all the old tiles
         Unload();
+    }
+
+    /// <summary>
+    /// Update the 2D camera height according to the current zoom level
+    /// </summary>
+    private void Calculate2DCameraHeight()
+    {
+        // Calculate the bounds of the origin tile
+        Vector2Int originTile = GlobalMercator.MetersToGoogleTile(Center, ZoomLevel);
+        Bounds bounds = GlobalMercator.GoogleTileBounds(originTile.x, originTile.y, ZoomLevel);
+
+        // Calculate what is the screen height in meters if we keep the tile size on screen constant
+        double meterHeight = (Camera2D.pixelHeight * bounds.Height) / TileSize;
+
+        // Calculate the distance from the camera to the center of the tile at sea level, such that the tile size on screen is constant
+        Camera2DHeight = (meterHeight / 2) / System.Math.Tan((Camera2D.fieldOfView * System.Math.PI) / 360);
+
+        // Update the clip planes to make sure the map is always visible
+        Camera2D.nearClipPlane = (float)(Camera2DHeight / 100);
+        Camera2D.farClipPlane = (float)(Camera2DHeight * 2);
+    }
+
+    /// <summary>
+    /// Change the map's direction by the given amount
+    /// </summary>
+    /// <param name="amount">The amount to rotate by</param>
+    public void ChangeDirection(int amount)
+    {
+        // Update the direction
+        Direction += amount;
+
+        // Clamp the direction
+        if (Direction > 180)
+        {
+            Direction -= 360;
+        }
+        else if (Direction <= -180)
+        {
+            Direction += 360;
+        }
+
+        // Update the 2D camera
+        Update2DCamera();
+    }
+
+    /// <summary>
+    /// Reset the map's direction
+    /// </summary>
+    public void ResetDirection()
+    {
+        Direction = 0;
+        Update2DCamera();
+    }
+
+    /// <summary>
+    /// Change the map's pitch by the given amount
+    /// </summary>
+    /// <param name="amount">The amount to tilt by</param>
+    public void ChangePitch(int amount)
+    {
+        // Update the pitch
+        Pitch += amount;
+
+        // Clamp the pitch
+        if (Pitch > 60)
+        {
+            Pitch = 60;
+        }
+        else if (Pitch < 0)
+        {
+            Pitch = 0;
+        }
+
+        // Update the 2D camera
+        Update2DCamera();
+    }
+
+    /// <summary>
+    /// Reset the map's pitch
+    /// </summary>
+    public void ResetPitch()
+    {
+        Pitch = 0;
+        Update2DCamera();
+    }
+
+    /// <summary>
+    /// Update the 2D camera's position and rotation
+    /// </summary>
+    private void Update2DCamera()
+    {
+        // Apply the camera height
+        Camera2D.transform.position = new Vector3(0, (float)Camera2DHeight, 0);
+
+        // Apply the camera direction rotation around the Y axis
+        Camera2D.transform.rotation = Quaternion.Euler(90, Direction, 0);
+
+        // Apply the camera pitch rotation around the X axis relative to the camera's direction
+        Camera2D.transform.RotateAround(Vector3.zero, Camera2D.transform.right, -Pitch);
     }
 
     /// <summary>
@@ -372,29 +497,6 @@ public class Map
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// Update the 2D camera height according to the current zoom level
-    /// </summary>
-    private void Update2DCameraHeight()
-    {
-        // Grab the camera
-        Transform cameraTransform = Map2D.transform.GetChild(0);
-        Camera camera = cameraTransform.GetComponent<Camera>();
-        // Calculate the bounds of the origin tile
-        Vector2Int originTile = GlobalMercator.MetersToGoogleTile(Center, ZoomLevel);
-        Bounds bounds = GlobalMercator.GoogleTileBounds(originTile.x, originTile.y, ZoomLevel);
-        // Calculate what is the screen height in meters if we keep the tile size on screen constant
-        double meterHeight = (camera.pixelHeight * bounds.Height) / TileSize;
-        // Calculate the distance from the camera to the center of the tile at sea level, such that the tile size on screen is constant
-        double cameraHeight = (meterHeight / 2) / System.Math.Tan((camera.fieldOfView * System.Math.PI) / 360);
-        // Move the camera to the new position
-        cameraTransform.position = new Vector3(cameraTransform.position.x, (float)cameraHeight, cameraTransform.position.z);
-        cameraTransform.eulerAngles = new Vector3(90, 0, 0);
-        // Update the clip planes to make sure the map is always visible
-        camera.nearClipPlane = (float)(cameraHeight / 100);
-        camera.farClipPlane = (float)(cameraHeight * 2);
     }
 
     /// <summary>
@@ -488,8 +590,11 @@ public class Map
         GameObject.transform.parent = Map2D.transform;
         GameObject.transform.SetPositionAndRotation(Map2D.transform.position, Map2D.transform.rotation);
 
+        // Calculate the new 2D camera height
+        Calculate2DCameraHeight();
+
         // Update the 2D camera
-        Update2DCameraHeight();
+        Update2DCamera();
     }
 
     /// <summary>
