@@ -136,9 +136,14 @@ public class Map
     public int MaxZoomLevel { get; private set; }
 
     /// <summary>
+    /// The map's ruler
+    /// </summary>
+    public Ruler Ruler { get; }
+
+    /// <summary>
     /// Size of a tile in pixels
     /// </summary>
-    public int TileSize { get { return GlobalMercator.TileSize; } }
+    public const int TileSize = GlobalMercator.TileSize;
 
     /// <summary>
     /// Number of tiles to be loaded in each direction relative to the origin (0 loads only the origin tile)
@@ -166,7 +171,7 @@ public class Map
     /// <summary>
     /// The height of the camera in 2D mode
     /// </summary>
-    public double Camera2DHeight { get; private set; }
+    private double Camera2DHeight { get; set; }
 
     /// <summary>
     /// The root GameObject for AR mode
@@ -187,6 +192,7 @@ public class Map
         Layers = new Dictionary<string, ILayer>();
         POIs = new List<PointOfInterest>();
         Tiles = new Dictionary<string, Tile>();
+        Ruler = new Ruler();
         Transform mapTransform = GameObject.Find("/Map").transform;
         Map2D = mapTransform.Find("2D").gameObject;
         Camera2D = Map2D.transform.Find("Camera").GetComponent<Camera>();
@@ -223,17 +229,17 @@ public class Map
         Layers.Add("Trees", new GeoJsonLayer(this, "Trees", "Trees", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, true, new PrefabRenderer("Tree"), geoJsonBaseUrl + "/Trees/{0}.geojson", "OBJECTID", new IFeatureProperty[] { new StringFeatureProperty("OBJECTID", "Object ID", "{0}"), new StringFeatureProperty("COD_SIG_NEW", "Código SIG New", "{0}"), new StringFeatureProperty("COD_SIG", "Código SIG", "{0}"), new StringFeatureProperty("MORADA", "Morada", "{0}"), new StringFeatureProperty("ESPECIE_VA", "Espécie VA", "{0}"), new StringFeatureProperty("PAP", "PAP", "{0}"), new StringFeatureProperty("MANUTENCAO", "Manutenção", "{0}"), new StringFeatureProperty("OCUPACAO", "Ocupação", "{0}"), new StringFeatureProperty("LOCAL", "Local", "{0}"), new StringFeatureProperty("TIPOLOGIA", "Tipologia", "{0}"), new StringFeatureProperty("FREG_2012", "Freguesia 2012", "{0}"), new StringFeatureProperty("NOME_VULGA", "Nome Vulgar", "{0}"), new StringFeatureProperty("GlobalID", "Global ID", "{0}") }));
 
         // Add the points of interest
-        POIs.Add(new PointOfInterest("Largo do Carmo", new Vector2D(38.711992, -9.140663)));
-        POIs.Add(new PointOfInterest("Entrecampos", new Vector2D(38.744169, -9.149994)));
-        POIs.Add(new PointOfInterest("Parque das Nações", new Vector2D(38.765514, -9.093839)));
-        POIs.Add(new PointOfInterest("Marquês de Pombal", new Vector2D(38.725249, -9.149994)));
         POIs.Add(new PointOfInterest("Alta de Lisboa", new Vector2D(38.773310, -9.153689)));
         POIs.Add(new PointOfInterest("Campolide", new Vector2D(38.733744, -9.160745)));
+        POIs.Add(new PointOfInterest("Entrecampos", new Vector2D(38.744169, -9.149994)));
+        POIs.Add(new PointOfInterest("Largo do Carmo", new Vector2D(38.711992, -9.140663)));
+        POIs.Add(new PointOfInterest("Marquês de Pombal", new Vector2D(38.725249, -9.149994)));
+        POIs.Add(new PointOfInterest("Parque das Nações", new Vector2D(38.765514, -9.093839)));
         POIs.Add(new PointOfInterest("Praça do Comércio", new Vector2D(38.706808, -9.136164)));
 
         // Set the map's initial zoom level and center, as well as the tile load distance
         ZoomLevel = 17;
-        Center = GlobalMercator.LatLonToMeters(38.704802, -9.137878);
+        Center = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
         Direction = 0;
         Pitch = 0;
         TileLoadDistance = new Vector2Int(4, 4);
@@ -564,17 +570,6 @@ public class Map
     }
 
     /// <summary>
-    /// Move the 2D camera to the given position and rotation
-    /// </summary>
-    /// <param name="position">The position to move the camera to</param>
-    /// <param name="eulerAngles">The rotation to move the camera to</param>
-    public void Test2DCamera(Vector3 position, Vector3 eulerAngles)
-    {
-        Map2D.transform.GetChild(0).position = position;
-        Map2D.transform.GetChild(0).eulerAngles = eulerAngles;
-    }
-
-    /// <summary>
     /// Switch the map to 2D mode
     /// </summary>
     public void SwitchTo2DMode()
@@ -666,32 +661,6 @@ public class Map
         else
         {
             Debug.LogWarning($"Detected `{trackedImage.referenceImage.name}` image instead!");
-        }
-    }
-
-    /// <summary>
-    /// Represents a Point of Interest on the map
-    /// </summary>
-    public struct PointOfInterest
-    {
-        /// <summary>
-        /// The name of the point of interest
-        /// </summary>
-        public string Name { get; }
-        /// <summary>
-        /// The coordinates of the point of interest (lat/lon)
-        /// </summary>
-        public Vector2D Coordinates { get; }
-
-        /// <summary>
-        /// Creates a new Point of Interest
-        /// </summary>
-        /// <param name="name">The name of the point of interest</param>
-        /// <param name="coordinates">The coordinates of the point of interest (lat/lon)</param>
-        public PointOfInterest(string name, Vector2D coordinates)
-        {
-            Name = name;
-            Coordinates = coordinates;
         }
     }
 }
