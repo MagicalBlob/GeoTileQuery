@@ -171,7 +171,7 @@ public class Map
     /// <summary>
     /// The height of the camera in 2D mode
     /// </summary>
-    private double Camera2DHeight { get; set; }
+    public double Camera2DHeight { get; private set; }
 
     /// <summary>
     /// The root GameObject for AR mode
@@ -188,15 +188,15 @@ public class Map
     /// </summary>
     public Map()
     {
-        GameObject = new GameObject("Tiles");
+        GameObject = new GameObject("Map");
         Layers = new Dictionary<string, ILayer>();
         POIs = new List<PointOfInterest>();
         Tiles = new Dictionary<string, Tile>();
-        Ruler = new Ruler();
-        Transform mapTransform = GameObject.Find("/Map").transform;
-        Map2D = mapTransform.Find("2D").gameObject;
+        Ruler = new Ruler(this);
+        Transform worldTransform = GameObject.Find("/World").transform;
+        Map2D = worldTransform.Find("2D").gameObject;
         Camera2D = Map2D.transform.Find("Camera").GetComponent<Camera>();
-        MapAR = mapTransform.Find("AR").gameObject;
+        MapAR = worldTransform.Find("AR").gameObject;
         ARTrackedImageManager = MapAR.transform.Find("AR Session Origin").GetComponent<ARTrackedImageManager>();
 
         // Add the data layers        
@@ -209,6 +209,9 @@ public class Map
         Layers.Add("StamenTerrain", new RasterLayer(this, "StamenTerrain", "Stamen - Terrain", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, false, defaultRasterRenderer, "https://stamen-tiles-c.a.ssl.fastly.net/terrain/{0}.png"));
         Layers.Add("OSMStandard", new RasterLayer(this, "OSMStandard", "OpenStreetMap", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, false, defaultRasterRenderer, "https://tile.openstreetmap.org/{0}.png"));
         Layers.Add("MapboxSatellite", new RasterLayer(this, "MapboxSatellite", "Mapbox Satellite", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, false, defaultRasterRenderer, $"https://api.mapbox.com/v4/mapbox.satellite/{{0}}.jpg?access_token={MainController.MapboxAccessToken}"));
+        Layers.Add("ThunderforestLandscape", new RasterLayer(this, "ThunderforestLandscape", "Thunderforest Landscape", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, false, defaultRasterRenderer, $"https://tile.thunderforest.com/landscape/{{0}}.png?apikey={MainController.ThunderforestApiKey}"));
+        Layers.Add("ThunderforestPioneer", new RasterLayer(this, "ThunderforestPioneer", "Thunderforest Pioneer", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, false, defaultRasterRenderer, $"https://tile.thunderforest.com/pioneer/{{0}}.png?apikey={MainController.ThunderforestApiKey}"));
+        Layers.Add("ThunderforestMobile-Atlas", new RasterLayer(this, "ThunderforestMobile-Atlas", "Thunderforest Mobile Atlas", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, false, defaultRasterRenderer, $"https://tile.thunderforest.com/mobile-atlas/{{0}}.png?apikey={MainController.ThunderforestApiKey}"));
         Layers.Add("Bikepaths", new GeoJsonLayer(this, "Bikepaths", "Bikepaths", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, true, defaultGeoJsonRenderer, geoJsonBaseUrl + "/Bikepaths/{0}.geojson", "OBJECTID", new IFeatureProperty[] { new StringFeatureProperty("OBJECTID", "Object ID", "{0}"), new StringFeatureProperty("COD_VIA", "Código Via", "{0}"), new StringFeatureProperty("DESIGNACAO", "Designação", "{0}"), new StringFeatureProperty("HIERARQUIA", "Hierarquia", "{0}"), new StringFeatureProperty("EIXO", "Eixo", "{0}"), new StringFeatureProperty("TIPOLOGIA", "Tipologia", "{0}"), new StringFeatureProperty("SITUACAO", "Situação", "{0}"), new StringFeatureProperty("IDTIPO", "ID Tipo", "{0}"), new DateFeatureProperty("DTM_UPD", "DateTime Updated", "{0}"), new StringFeatureProperty("FREGUESIA", "Freguesia", "{0}"), new StringFeatureProperty("NOME_PROJETO", "Nome Projeto", "{0}"), new StringFeatureProperty("ANO", "Ano", "{0}"), new StringFeatureProperty("COD_CICLOVIA", "Código Ciclovia", "{0}"), new StringFeatureProperty("NIVEL_SEGREGACAO", "Nível Segregação", "{0}"), new StringFeatureProperty("TIPO_INTERVENCAO", "Tipo Intervenção", "{0}"), new StringFeatureProperty("SE_ANNO_CAD_DATA", "SE Anno Cad Data", "{0}"), new StringFeatureProperty("GlobalID", "Global ID", "{0}"), new NumberFeatureProperty("Shape__Length", "Shape Length", "{0}") }));
         Layers.Add("Buildings", new GeoJsonLayer(this, "Buildings", "Buildings", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, true, new BuildingRenderer(), geoJsonBaseUrl + "/Buildings/{0}.geojson", "name", new IFeatureProperty[] { new StringFeatureProperty("ruleFile", "Rule File", "{0}"), new StringFeatureProperty("startRule", "Start Rule", "{0}"), new StringFeatureProperty("name", "Name", "{0}"), new StringFeatureProperty("OBJECTID", "Object ID", "{0}"), new NumberFeatureProperty("Altiude", "Altiude", "{0}"), new BooleanFeatureProperty("isHole", "Is Hole?", "{0}"), new StringFeatureProperty("SHAPE__ID", "Shape ID", "{0}"), new NumberFeatureProperty("EXTRUDE", "Extrude", "{0}m"), new NumberFeatureProperty("Z_Min", "Z Min", "{0}"), new NumberFeatureProperty("Z_Max", "Z Max", "{0}") }));
         Layers.Add("BuildingsLOD3", new GeoJsonLayer(this, "BuildingsLOD3", "Buildings LOD3", "DESCRIPTION", "<a href=\"https://example.com\">DATA_SOURCE</a>", System.DateTime.MinValue, true, new PrefabRenderer(), geoJsonBaseUrl + "/BuildingsLOD3/{0}.geojson", "id", new IFeatureProperty[] { new StringFeatureProperty("id", "ID", "{0}"), new StringFeatureProperty("model", "Model", "{0}") }));
@@ -338,6 +341,9 @@ public class Map
             tile.Move(-delta);
         }
 
+        // Move the ruler
+        Ruler.Move(-delta);
+
         // Load any new tiles around the center and update the generation of the existing ones
         Load();
 
@@ -381,6 +387,9 @@ public class Map
         // Update the 2D camera
         Update2DCamera();
 
+        // Zoom the ruler
+        Ruler.Zoom();
+
         // Load the new tiles
         Load();
 
@@ -406,6 +415,12 @@ public class Map
         // Update the clip planes to make sure the map is always visible
         Camera2D.nearClipPlane = (float)(Camera2DHeight / 100);
         Camera2D.farClipPlane = (float)(Camera2DHeight * 2);
+
+        // Match the clip planes for the ruler cameras
+        Camera2D.transform.Find("Ruler Node").GetComponent<Camera>().nearClipPlane = Camera2D.nearClipPlane;
+        Camera2D.transform.Find("Ruler Node").GetComponent<Camera>().farClipPlane = Camera2D.farClipPlane;
+        Camera2D.transform.Find("Ruler Edge").GetComponent<Camera>().nearClipPlane = Camera2D.nearClipPlane;
+        Camera2D.transform.Find("Ruler Edge").GetComponent<Camera>().farClipPlane = Camera2D.farClipPlane;
     }
 
     /// <summary>
@@ -503,6 +518,16 @@ public class Map
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Get the coordinates relative to the map's center
+    /// </summary>
+    /// <param name="meters">The coordinates in meters (WGS84)</param>
+    /// <returns>The coordinates in map local space</returns>
+    public Vector2D GetRelativePosition(Vector2D meters)
+    {
+        return meters - Center;
     }
 
     /// <summary>

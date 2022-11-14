@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 /// <summary>
 /// Controls the user interface
@@ -22,14 +21,9 @@ public class UIController
     public Modals Modals { get; }
 
     /// <summary>
-    /// Whether query mode is enabled
+    /// The input controller
     /// </summary>
-    public bool QueryMode { get; set; }
-
-    /// <summary>
-    /// Whether ruler mode is enabled
-    /// </summary>
-    public bool RulerMode { get; set; }
+    public InputController Input { get; }
 
     /// <summary>
     /// Whether AR mode is enabled
@@ -52,6 +46,7 @@ public class UIController
         this.Toolbars = new Toolbars(map, this, ui.Find("Toolbars").transform);
         this.Panels = new Panels(map, this, ui.Find("Panels").transform);
         this.Modals = new Modals(map, this, ui.Find("Modals").transform);
+        this.Input = new InputController(map, this);
     }
 
     /// <summary>
@@ -70,38 +65,6 @@ public class UIController
         }
 
         // Process input
-        ProcessInput();
-    }
-
-    /// <summary>
-    /// Processes input events
-    /// </summary>
-    public void ProcessInput()
-    {
-        // Query mode input
-        if (QueryMode)
-        {
-            // User clicked/tapped
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (Input.touchCount > 0)
-                {
-                    // Touch input
-                    Touch touch = Input.GetTouch(0);
-                    if (touch.phase == TouchPhase.Began && !EventSystem.current.IsPointerOverGameObject(touch.fingerId))
-                    {
-                        Modals.QueryMap(touch.position);
-                    }
-                }
-                else
-                {
-                    // Mouse input
-                    if (!EventSystem.current.IsPointerOverGameObject())
-                    {
-                        Modals.QueryMap(Input.mousePosition);
-                    }
-                }
-            }
-        }
+        Input.Update();
     }
 }

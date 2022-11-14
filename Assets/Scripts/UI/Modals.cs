@@ -584,10 +584,10 @@ public class Modals
     }
 
     /// <summary>
-    /// Queries the map from the a given screen point and 
+    /// Queries the map from the a given screen point and displays the results in the query modal
     /// </summary>
     /// <param name="screenPoint">The screen point to cast the query ray from</param>
-    public void QueryMap(Vector2 screenPoint)
+    public void ShowMapQuery(Vector2 screenPoint)
     {
         // Get the query model
         Transform queryModal = modals.Find("Content/Query");

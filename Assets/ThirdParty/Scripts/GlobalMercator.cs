@@ -171,6 +171,7 @@ public class GlobalMercator
     //Initialize the TMS Global Mercator pyramid
     public const int TileSize = 256;
     private const int EarthRadius = 6378137;
+    private const int EarthMeanRadius = 6371000;
     private const double InitialResolution = 2 * Math.PI * EarthRadius / TileSize; // 156543.03392804062 for tileSize 256 pixels
     private const double OriginShift = 2 * Math.PI * EarthRadius / 2.0; // 20037508.342789244
 
@@ -423,5 +424,39 @@ public class GlobalMercator
         }
 
         return quadKey.ToString();
+    }
+
+    /// <summary>
+    /// Calculates the distance between two points
+    /// </summary>
+    /// <param name="p1">First point (lat/lon)</param>
+    /// <param name="p2">Second point (lat/lon)</param>
+    /// <returns>Distance between two points in meters</returns>
+    /// <remarks>
+    /// Uses the Haversine formula (http://en.wikipedia.org/wiki/Haversine_formula)~
+    /// Based on http://www.movable-type.co.uk/scripts/latlong.html
+    /// </remarks>
+    public static double Distance(Vector2D p1, Vector2D p2)
+    {
+        double lat1 = DegreesToRadians(p1.X);
+        double lat2 = DegreesToRadians(p2.X);
+        double dLat = DegreesToRadians(p2.X - p1.X);
+        double dLon = DegreesToRadians(p2.Y - p1.Y);
+
+        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Cos(lat1) * Math.Cos(lat2) * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+        return EarthMeanRadius * c;
+    }
+
+    /// <summary>
+    /// Converts degrees to radians
+    /// </summary>
+    /// <param name="degrees">Angle in degrees</param>
+    /// <returns>Angle in radians</returns>
+    private static double DegreesToRadians(double degrees)
+    {
+        return degrees * (Math.PI / 180);
     }
 }

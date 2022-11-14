@@ -45,6 +45,7 @@ public class RasterTileLayer : ITileLayer
         GameObject.SetActive(Layer.Visible);
         GameObject.transform.parent = Tile.GameObject.transform; // Set it as a child of the tile gameobject
         GameObject.transform.localPosition = Vector3.zero;
+        GameObject.transform.rotation = Tile.GameObject.transform.rotation; // Match tile rotation with the tile
     }
 
     public async Task LoadAsync(CancellationToken cancellationToken)

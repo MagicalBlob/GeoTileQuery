@@ -92,12 +92,12 @@ public class Toolbars
     /// <param name="toolbar">The toolbar</param>
     private void ToggleQuery(Transform toolbar)
     {
-        toolbar.Find("Ruler").GetComponent<Button>().interactable = ui.QueryMode;
-        Color color = ui.QueryMode ? Color.white : new Color(1, 1, 1, 0.5f);
+        toolbar.Find("Ruler").GetComponent<Button>().interactable = ui.Input.Mode == InputController.InputMode.Query;
+        Color color = ui.Input.Mode == InputController.InputMode.Query ? Color.white : new Color(1, 1, 1, 0.5f);
         toolbar.Find("Ruler/Image").GetComponent<Image>().color = color;
         toolbar.Find("Ruler/Text").GetComponent<Text>().color = color;
-        toolbar.Find("Query/Text").GetComponent<Text>().text = ui.QueryMode ? "Query: Off" : "Query: On";
-        ui.QueryMode = !ui.QueryMode;
+        toolbar.Find("Query/Text").GetComponent<Text>().text = ui.Input.Mode == InputController.InputMode.Query ? "Query: Off" : "Query: On";
+        ui.Input.Mode = ui.Input.Mode == InputController.InputMode.Query ? InputController.InputMode.Normal : InputController.InputMode.Query;
     }
 
     /// <summary>
@@ -106,12 +106,23 @@ public class Toolbars
     /// <param name="toolbar">The toolbar</param>
     private void ToggleRuler(Transform toolbar)
     {
-        toolbar.Find("Query").GetComponent<Button>().interactable = ui.RulerMode;
-        Color color = ui.RulerMode ? Color.white : new Color(1, 1, 1, 0.5f);
+        toolbar.Find("Query").GetComponent<Button>().interactable = ui.Input.Mode == InputController.InputMode.Ruler;
+        Color color = ui.Input.Mode == InputController.InputMode.Ruler ? Color.white : new Color(1, 1, 1, 0.5f);
         toolbar.Find("Query/Image").GetComponent<Image>().color = color;
         toolbar.Find("Query/Text").GetComponent<Text>().color = color;
-        toolbar.Find("Ruler/Text").GetComponent<Text>().text = ui.RulerMode ? "Ruler: Off" : "Ruler: On";
-        ui.RulerMode = !ui.RulerMode;
+        toolbar.Find("Ruler/Text").GetComponent<Text>().text = ui.Input.Mode == InputController.InputMode.Ruler ? "Ruler: Off" : "Ruler: On";
+        if (ui.Input.Mode == InputController.InputMode.Ruler)
+        {
+            ui.Panels.Close();
+            map.Ruler.Clear();
+            ui.Input.Mode = InputController.InputMode.Normal;
+        }
+        else
+        {
+            ui.Panels.UpdateRulerText();
+            ui.Panels.Show("Ruler");
+            ui.Input.Mode = InputController.InputMode.Ruler;
+        }
     }
 
     /// <summary>

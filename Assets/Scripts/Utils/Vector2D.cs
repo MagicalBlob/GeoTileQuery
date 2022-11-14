@@ -222,7 +222,14 @@ public struct Vector2D
     /// <returns>The unsigned angle in degrees between from and to</returns>
     public static double Angle(Vector2D from, Vector2D to)
     {
-        return RadianToDegrees(Math.Acos(Dot(from.Normalized, to.Normalized)));
+        double denominator = Math.Sqrt(from.SqrMagnitude * to.SqrMagnitude);
+        if (denominator < Single.Epsilon)
+        {
+            return 0.0;
+        }
+
+        double dot = Math.Clamp(Dot(from, to) / denominator, -1.0, 1.0);
+        return RadianToDegrees(Math.Acos(dot));
     }
 
     /// <summary>
@@ -398,7 +405,7 @@ public struct Vector2D
     /// <summary>
     /// Returns the signed angle in degrees between from and to.
     /// 
-    /// The angle returned is the signed acute clockwise angle between the two vectors. This means the smaller of the two possible angles between the two vectors is used. The result is never greater than 180 degrees or smaller than -180 degrees.
+    /// The angle returned is the signed acute clockwise angle between the two vectors. This means the smaller of the two possible angles between the two vectors is used. The result is never greater than 180 degrees nor smaller or equal -180 degrees (-180 < angle <= 180).
     /// </summary>
     /// <param name="from">The vector from which the angular difference is measured</param>
     /// <param name="to">The vector to which the angular difference is measured</param>
@@ -407,7 +414,14 @@ public struct Vector2D
     {
         double unsigned = Angle(from, to);
         int sign = Math.Sign(from.X * to.Y - from.Y * to.X);
-        return sign * unsigned;
+        if (sign == 0)
+        {
+            return unsigned;
+        }
+        else
+        {
+            return sign * unsigned;
+        }
     }
 
     /// <summary>
