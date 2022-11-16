@@ -49,10 +49,10 @@ public class EarcutLib
 
             // minX, minY and invSize are later used to transform coords into integers for z-order calculation
             invSize = Math.Max(maxX - minX, maxY - minY);
-            invSize = invSize != 0 ? 1 / invSize : 0;
+            invSize = invSize != 0 ? 32767 / invSize : 0;
         }
 
-        EarcutLinked(outerNode, triangles, dimensions, minX, minY, invSize);
+        EarcutLinked(outerNode, triangles, dimensions, minX, minY, invSize, 0);
 
         return triangles;
     }
@@ -138,9 +138,9 @@ public class EarcutLib
             if (invSize != 0 ? IsEarHashed(ear, minX, minY, invSize) : IsEar(ear))
             {
                 // cut off the triangle
-                triangles.Add(prev.i / dimensions);
-                triangles.Add(ear.i / dimensions);
-                triangles.Add(next.i / dimensions);
+                triangles.Add(prev.i / dimensions | 0);
+                triangles.Add(ear.i / dimensions | 0);
+                triangles.Add(next.i / dimensions | 0);
 
                 RemoveNode(ear);
 
@@ -190,11 +190,19 @@ public class EarcutLib
         if (Area(a, b, c) >= 0) { return false; } // reflex, can't be an ear
 
         // now make sure we don't have other points inside the potential ear
-        Node p = ear.next.next;
+        double ax = a.x, bx = b.x, cx = c.x, ay = a.y, by = b.y, cy = c.y;
 
-        while (p != ear.prev)
+        // triangle bbox; min & max are calculated like this for speed
+        double x0 = ax < bx ? (ax < cx ? ax : cx) : (bx < cx ? bx : cx),
+               y0 = ay < by ? (ay < cy ? ay : cy) : (by < cy ? by : cy),
+               x1 = ax > bx ? (ax > cx ? ax : cx) : (bx > cx ? bx : cx),
+               y1 = ay > by ? (ay > cy ? ay : cy) : (by > cy ? by : cy);
+
+        Node p = c.next;
+        while (p != a)
         {
-            if (PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
+            if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1 &&
+                PointInTriangle(ax, ay, bx, by, cx, cy, p.x, p.y) &&
                 Area(p.prev, p, p.next) >= 0)
             {
                 return false;
@@ -213,15 +221,17 @@ public class EarcutLib
 
         if (Area(a, b, c) >= 0) { return false; } // reflex, can't be an ear
 
+        double ax = a.x, bx = b.x, cx = c.x, ay = a.y, by = b.y, cy = c.y;
+
         // triangle bbox; min & max are calculated like this for speed
-        double minTX = a.x < b.x ? (a.x < c.x ? a.x : c.x) : (b.x < c.x ? b.x : c.x);
-        double minTY = a.y < b.y ? (a.y < c.y ? a.y : c.y) : (b.y < c.y ? b.y : c.y);
-        double maxTX = a.x > b.x ? (a.x > c.x ? a.x : c.x) : (b.x > c.x ? b.x : c.x);
-        double maxTY = a.y > b.y ? (a.y > c.y ? a.y : c.y) : (b.y > c.y ? b.y : c.y);
+        double x0 = ax < bx ? (ax < cx ? ax : cx) : (bx < cx ? bx : cx),
+               y0 = ay < by ? (ay < cy ? ay : cy) : (by < cy ? by : cy),
+               x1 = ax > bx ? (ax > cx ? ax : cx) : (bx > cx ? bx : cx),
+               y1 = ay > by ? (ay > cy ? ay : cy) : (by > cy ? by : cy);
 
         // z-order range for the current triangle bbox;
-        int minZ = ZOrder(minTX, minTY, minX, minY, invSize);
-        int maxZ = ZOrder(maxTX, maxTY, minX, minY, invSize);
+        int minZ = ZOrder(x0, y0, minX, minY, invSize);
+        int maxZ = ZOrder(x1, y1, minX, minY, invSize);
 
         Node p = ear.prevZ;
         Node n = ear.nextZ;
@@ -229,17 +239,15 @@ public class EarcutLib
         // look for points inside the triangle in both directions
         while (p != null && p.z >= minZ && n != null && n.z <= maxZ)
         {
-            if (p != ear.prev && p != ear.next &&
-                PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-                Area(p.prev, p, p.next) >= 0)
+            if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1 && p != a && p != c &&
+                PointInTriangle(ax, ay, bx, by, cx, cy, p.x, p.y) && Area(p.prev, p, p.next) >= 0)
             {
                 return false;
             }
             p = p.prevZ;
 
-            if (n != ear.prev && n != ear.next &&
-                PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
-                Area(n.prev, n, n.next) >= 0)
+            if (n.x >= x0 && n.x <= x1 && n.y >= y0 && n.y <= y1 && n != a && n != c &&
+                PointInTriangle(ax, ay, bx, by, cx, cy, n.x, n.y) && Area(n.prev, n, n.next) >= 0)
             {
                 return false;
             }
@@ -249,9 +257,8 @@ public class EarcutLib
         // look for remaining points in decreasing z-order
         while (p != null && p.z >= minZ)
         {
-            if (p != ear.prev && p != ear.next &&
-                PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-                Area(p.prev, p, p.next) >= 0)
+            if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1 && p != a && p != c &&
+                PointInTriangle(ax, ay, bx, by, cx, cy, p.x, p.y) && Area(p.prev, p, p.next) >= 0)
             {
                 return false;
             }
@@ -261,9 +268,8 @@ public class EarcutLib
         // look for remaining points in increasing z-order
         while (n != null && n.z <= maxZ)
         {
-            if (n != ear.prev && n != ear.next &&
-                PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
-                Area(n.prev, n, n.next) >= 0)
+            if (n.x >= x0 && n.x <= x1 && n.y >= y0 && n.y <= y1 && n != a && n != c &&
+                PointInTriangle(ax, ay, bx, by, cx, cy, n.x, n.y) && Area(n.prev, n, n.next) >= 0)
             {
                 return false;
             }
@@ -285,9 +291,9 @@ public class EarcutLib
             if (!Equals(a, b) && Intersects(a, p, p.next, b) && LocallyInside(a, b) && LocallyInside(b, a))
             {
 
-                triangles.Add(a.i / dimensions);
-                triangles.Add(p.i / dimensions);
-                triangles.Add(b.i / dimensions);
+                triangles.Add(a.i / dimensions | 0);
+                triangles.Add(p.i / dimensions | 0);
+                triangles.Add(b.i / dimensions | 0);
 
                 // remove two nodes involved
                 RemoveNode(p);
@@ -321,8 +327,8 @@ public class EarcutLib
                     c = FilterPoints(c, c.next);
 
                     // run earcut on each half
-                    EarcutLinked(a, triangles, dimensions, minX, minY, invSize);
-                    EarcutLinked(c, triangles, dimensions, minX, minY, invSize);
+                    EarcutLinked(a, triangles, dimensions, minX, minY, invSize, 0);
+                    EarcutLinked(c, triangles, dimensions, minX, minY, invSize, 0);
                     return;
                 }
                 b = b.next;
@@ -352,7 +358,6 @@ public class EarcutLib
         for (int i = 0; i < queue.Count; i++)
         {
             outerNode = EliminateHole(queue[i], outerNode);
-            outerNode = FilterPoints(outerNode, outerNode.next);
         }
 
         return outerNode;
@@ -375,11 +380,8 @@ public class EarcutLib
         Node bridgeReverse = SplitPolygon(bridge, hole);
 
         // filter collinear points around the cuts
-        Node filteredBridge = FilterPoints(bridge, bridge.next);
         FilterPoints(bridgeReverse, bridgeReverse.next);
-
-        // Check if input node was removed by the filtering
-        return outerNode == bridge ? filteredBridge : outerNode;
+        return FilterPoints(bridge, bridge.next);
     }
 
     // David Eberly's algorithm for finding a bridge between hole and outer polygon
@@ -401,12 +403,8 @@ public class EarcutLib
                 if (x <= hx && x > qx)
                 {
                     qx = x;
-                    if (x == hx)
-                    {
-                        if (hy == p.y) { return p; }
-                        if (hy == p.next.y) { return p.next; }
-                    }
                     m = p.x < p.next.x ? p : p.next;
+                    if (x == hx) { return m; } // hole touches outer segment; pick leftmost endpoint
                 }
             }
             p = p.next;
@@ -416,8 +414,6 @@ public class EarcutLib
         {
             return null;
         }
-
-        if (hx == qx) return m; // hole touches outer segment; pick leftmost endpoint
 
         // look for points inside the triangle of hole point, segment intersection and endpoint;
         // if there are no points found, we have a valid connection;
@@ -465,7 +461,7 @@ public class EarcutLib
         Node p = start;
         do
         {
-            if (p.z == null)
+            if (p.z == 0)
             {
                 p.z = ZOrder(p.x, p.y, minX, minY, invSize);
             }
@@ -553,8 +549,8 @@ public class EarcutLib
     private static int ZOrder(double x, double y, double minX, double minY, double invSize)
     {
         // coords are transformed into non-negative 15-bit integer range
-        int xI = (int)(32767 * (x - minX) * invSize);
-        int yI = (int)(32767 * (y - minY) * invSize);
+        int xI = (int)((x - minX) * invSize) | 0;
+        int yI = (int)((y - minY) * invSize) | 0;
 
         xI = (xI | (xI << 8)) & 0x00FF00FF;
         xI = (xI | (xI << 4)) & 0x0F0F0F0F;
@@ -589,9 +585,9 @@ public class EarcutLib
     // check if a point lies within a convex triangle
     private static bool PointInTriangle(double ax, double ay, double bx, double by, double cx, double cy, double px, double py)
     {
-        return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
-               (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
-               (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
+        return (cx - px) * (ay - py) >= (ax - px) * (cy - py) &&
+               (ax - px) * (by - py) >= (bx - px) * (ay - py) &&
+               (bx - px) * (cy - py) >= (cx - px) * (by - py);
     }
 
     // check if a diagonal between two polygon nodes is valid (lies in polygon interior)
@@ -777,7 +773,7 @@ public class EarcutLib
             this.next = null;
 
             // z-order curve value
-            this.z = null;
+            this.z = 0;
 
             // previous and next nodes in z-order
             this.prevZ = null;

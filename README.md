@@ -16,7 +16,7 @@ Regarding the licensing of assets, see the [Assets](#assets) section.
 
 |  Name  |  Version  | License | Original Source Code |
 |--------|-----------|---------|------------|
-| Earcut | `2.2.3` | [`LICENSES/earcut/LICENSE`](LICENSES/earcut/LICENSE) | [https://github.com/mapbox/earcut](https://github.com/mapbox/earcut) |
+| Earcut | `2.2.4` | [`LICENSES/earcut/LICENSE`](LICENSES/earcut/LICENSE) | [https://github.com/mapbox/earcut](https://github.com/mapbox/earcut) |
 | Global Map Tiles | `---` | [`LICENSES/globalmaptiles/LICENSE`](LICENSES/globalmaptiles/LICENSE) | [https://gist.github.com/maptiler/fddb5ce33ba995d5523de9afdf8ef118](https://gist.github.com/maptiler/fddb5ce33ba995d5523de9afdf8ef118) |
 
 ## Assets
