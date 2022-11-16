@@ -70,14 +70,21 @@ public class InputController
     /// </summary>
     public void Update()
     {
-        ProcessKeyboardInput();
-        if (Input.touchSupported && Input.touchCount > 0)
+        if (Application.platform == RuntimePlatform.Android && Input.touchCount > 0)
         {
             ProcessTouchInput();
         }
         else
         {
-            ProcessMouseInput();
+            ProcessKeyboardInput();
+            if (Input.touchSupported && Input.touchCount > 0)
+            {
+                ProcessTouchInput();
+            }
+            else
+            {
+                ProcessMouseInput();
+            }
         }
     }
 
@@ -439,6 +446,11 @@ public class InputController
         switch (Mode)
         {
             case InputMode.Normal:
+                if (ui.ARMode)
+                {
+                    return; // Rotation and tilt are already available in AR mode by moving the device around
+                }
+
                 // Determine the sign of the delta positions Y values
                 int firstYSign = Math.Sign(firstDeltaPosition.y);
                 int secondYSign = Math.Sign(secondDeltaPosition.y);

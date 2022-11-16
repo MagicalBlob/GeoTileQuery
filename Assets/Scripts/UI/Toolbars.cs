@@ -144,12 +144,50 @@ public class Toolbars
         if (ui.ARMode)
         {
             map.SwitchTo2DMode();
+            ToggleRotateAndTiltButtons(toolbar, true);
         }
         else
         {
+            ToggleRotateAndTiltButtons(toolbar, false);
             map.SwitchToARMode();
         }
         toolbar.Find("AR/Text").GetComponent<Text>().text = ui.ARMode ? "AR: Off" : "AR: On";
         ui.ARMode = !ui.ARMode;
+    }
+
+    /// <summary>
+    /// Enables AR button
+    /// </summary>
+    internal void EnableARButton()
+    {
+        Transform arButton = toolbars.Find("Main/AR");
+        Text text = arButton.Find("Text").GetComponent<Text>();
+        arButton.GetComponent<Button>().interactable = true;
+        text.text = ui.ARMode ? "AR: On" : "AR: Off";
+        text.color = Color.white;
+        arButton.Find("Image").GetComponent<Image>().color = Color.white;
+    }
+
+    /// <summary>
+    /// Toggle rotate and tilt buttons
+    /// </summary>
+    /// <param name="toolbar">The toolbar</param>
+    /// <param name="enabled">Whether the buttons should be enabled</param>
+    private void ToggleRotateAndTiltButtons(Transform toolbar, bool enabled)
+    {
+        Color color = enabled ? Color.white : new Color(1, 1, 1, 0.5f);
+
+        toolbar.Find("Rotate/Left").GetComponent<Button>().interactable = enabled;
+        toolbar.Find("Rotate/Left/Image").GetComponent<Image>().color = color;
+        toolbar.Find("Rotate/Reset").GetComponent<Button>().interactable = enabled;
+        toolbar.Find("Rotate/Reset/Image").GetComponent<Image>().color = color;
+        toolbar.Find("Rotate/Right").GetComponent<Button>().interactable = enabled;
+        toolbar.Find("Rotate/Right/Image").GetComponent<Image>().color = color;
+        toolbar.Find("Tilt/Down").GetComponent<Button>().interactable = enabled;
+        toolbar.Find("Tilt/Down/Image").GetComponent<Image>().color = color;
+        toolbar.Find("Tilt/Reset").GetComponent<Button>().interactable = enabled;
+        toolbar.Find("Tilt/Reset/Image").GetComponent<Image>().color = color;
+        toolbar.Find("Tilt/Up").GetComponent<Button>().interactable = enabled;
+        toolbar.Find("Tilt/Up/Image").GetComponent<Image>().color = color;
     }
 }
