@@ -135,7 +135,7 @@ public class Tile
             // If we couldn't check all neighbours, schedule another check
             _ = CheckNeighboursAsync();
         }
-        else
+        else if (State != TileState.Unloaded)
         {
             Debug.LogError($"Can't load layers for tile {Id} because the terrain is not loaded");
         }

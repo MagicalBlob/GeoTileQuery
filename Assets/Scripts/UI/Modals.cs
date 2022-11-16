@@ -11,6 +11,11 @@ using UnityEngine.UI;
 public class Modals
 {
     /// <summary>
+    /// Whether the modal is currently open
+    /// </summary>
+    public bool IsOpen { get { return current.activeSelf; } }
+
+    /// <summary>
     /// Reference to the map
     /// </summary>
     private Map map;
@@ -103,7 +108,7 @@ public class Modals
     /// <summary>
     /// Closes the current modal
     /// </summary>
-    private void Close()
+    public void Close()
     {
         modals.gameObject.SetActive(false);
         current.SetActive(false);
@@ -565,9 +570,9 @@ public class Modals
         debugText.Append(SystemInfo.batteryStatus);
         debugText.Append(")");
 
-        debugText.Append("\nDebug level: ");
+        debugText.Append("\n\nDebug level: ");
         debugText.Append(Debug.unityLogger.filterLogType);
-        debugText.Append("\n\nAvailable semaphore threads: ");
+        debugText.Append("\nAvailable semaphore threads: ");
         debugText.Append(MainController.networkSemaphore.CurrentCount);
         debugText.Append("\nTiles: ");
         debugText.Append(map.Tiles.Count);

@@ -89,16 +89,12 @@ public class RasterTileLayer : ITileLayer
         }
         else if (rasterReq.responseCode == 404)
         {
-            Debug.LogWarning($"Raster tile {FullId} not found, using default texture...");
-
             // Render the tile
             ((IRasterRenderer)Layer.Renderer).Render(this, null);
             State = TileLayerState.Rendered;
         }
         else if (rasterReq.responseCode == 503)
         {
-            Debug.LogWarning($"Raster tile {FullId} is unavailable, using default texture...");
-
             // Render the tile
             ((IRasterRenderer)Layer.Renderer).Render(this, null);
             State = TileLayerState.Rendered;
