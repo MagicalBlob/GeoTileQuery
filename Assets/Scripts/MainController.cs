@@ -25,11 +25,6 @@ public class MainController : MonoBehaviour
     public static string MapboxAccessToken { get; private set; }
 
     /// <summary>
-    /// The Thunderforest API key
-    /// </summary>
-    public static string ThunderforestApiKey { get; private set; }
-
-    /// <summary>
     /// An HTTP client for making tile requests
     /// </summary>
     public static readonly HttpClient client = new HttpClient();
@@ -46,7 +41,6 @@ public class MainController : MonoBehaviour
     {
         // Grab secrets
         MapboxAccessToken = Resources.Load<TextAsset>("Config/Secrets/Mapbox").text;
-        ThunderforestApiKey = Resources.Load<TextAsset>("Config/Secrets/Thunderforest").text;
 
         // Create the map
         Map = new Map();

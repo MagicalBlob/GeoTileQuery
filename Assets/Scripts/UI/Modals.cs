@@ -13,7 +13,7 @@ public class Modals
     /// <summary>
     /// Whether the modal is currently open
     /// </summary>
-    public bool IsOpen { get { return current.activeSelf; } }
+    public bool IsOpen { get { return current == null ? false : current.activeSelf; } }
 
     /// <summary>
     /// Reference to the map
@@ -221,8 +221,8 @@ public class Modals
         // Get the layer view
         GameObject layerView = modal.transform.Find("Layer").gameObject;
         layerView.SetActive(true);
-        string lastUpdate = layer.LastUpdate == DateTime.MinValue ? "Unknown" : layer.LastUpdate.ToString("yyyy-MM-ddTHH:mm:sszzz", System.Globalization.CultureInfo.InvariantCulture);
-        layerView.transform.Find("Info").GetComponent<Text>().text = $"<b>{layer.DisplayName.ToUpper()}</b>\n<b>Description:</b> {layer.Description}\n<b>Source:</b> {layer.Source}\n<b>Last update:</b> {lastUpdate}";
+        string lastUpdate = layer.LastUpdate == DateTime.MinValue ? "<i>Unknown</i>" : layer.LastUpdate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        layerView.transform.Find("Info").GetComponent<Text>().text = $"<b>Name:</b> {layer.DisplayName}\n<b>Description:</b> {layer.Description}\n<b>Source:</b> {layer.Source}\n<b>Last update:</b> {lastUpdate}";
 
         GameObject layerPropertiesView = layerView.transform.Find("Properties").gameObject;
         if (layer is IFilterableLayer)
@@ -628,69 +628,60 @@ public class Modals
                 for (int i = 0; i < ((IFilterableLayer)feature.TileLayer.Layer).FeatureProperties.Length; i++)
                 {
                     IFeatureProperty property = ((IFilterableLayer)feature.TileLayer.Layer).FeatureProperties[i];
-                    string valueString;
+                    bool hasValue = false;
+                    string valueString = "<i>No value</i>";
                     switch (property)
                     {
                         case StringFeatureProperty stringP:
                             string valueStr = feature.GetPropertyAsNullableString(stringP.Key);
-                            if (valueStr == null)
+                            if (valueStr != null)
                             {
-                                valueString = "<i>No value</i>";
-                            }
-                            else
-                            {
+                                hasValue = true;
                                 valueString = valueStr;
                             }
                             break;
                         case NumberFeatureProperty numberP:
                             double? valueNum = feature.GetPropertyAsNullableDouble(numberP.Key);
-                            if (valueNum == null)
+                            if (valueNum != null)
                             {
-                                valueString = "<i>No value</i>";
-                            }
-                            else
-                            {
+                                hasValue = true;
                                 valueString = $"{System.Math.Round(valueNum.Value, 2)}";
                             }
                             break;
                         case BooleanFeatureProperty booleanP:
                             bool? valueBool = feature.GetPropertyAsNullableBool(booleanP.Key);
-                            if (valueBool == null)
+                            if (valueBool != null)
                             {
-                                valueString = "<i>No value</i>";
-                            }
-                            else
-                            {
+                                hasValue = true;
                                 valueString = $"{valueBool.Value}";
                             }
                             break;
                         case DateFeatureProperty dateP:
                             DateTime? valueDate = feature.GetPropertyAsNullableDateTime(dateP.Key);
-                            if (valueDate == null)
+                            if (valueDate != null)
                             {
-                                valueString = "<i>No value</i>";
-                            }
-                            else
-                            {
+                                hasValue = true;
                                 valueString = $"{valueDate.Value.ToString("yyyy-MM-ddTHH:mm:sszzz", System.Globalization.CultureInfo.InvariantCulture)}";
                             }
                             break;
                         case CategoryFeatureProperty categoryP:
                             string valueCat = feature.GetPropertyAsNullableString(categoryP.Key);
-                            if (valueCat == null)
+                            if (valueCat != null)
                             {
-                                valueString = "<i>No value</i>";
-                            }
-                            else
-                            {
+                                hasValue = true;
                                 valueString = valueCat;
                             }
                             break;
                         default:
-                            valueString = "<i>Unknown property type</i>";
+                            string valueDef = feature.GetPropertyAsNullableString(property.Key);
+                            if (valueDef != null)
+                            {
+                                hasValue = true;
+                                valueString = $"<i>Unknown property type with value: {valueDef}</i>";
+                            }
                             break;
                     }
-                    featureProperties = $"{featureProperties}{(i > 0 ? "\n" : "")}<b>{property.DisplayName}:</b> {String.Format(property.FormatString, valueString)}";
+                    featureProperties = $"{featureProperties}{(i > 0 ? "\n" : "")}<b>{property.DisplayName}:</b> {(hasValue ? String.Format(property.FormatString, valueString) : valueString)}";
                 }
 
                 queryModal.Find("Feature Properties").gameObject.SetActive(true);

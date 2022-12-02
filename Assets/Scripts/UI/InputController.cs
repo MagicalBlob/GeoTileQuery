@@ -70,20 +70,23 @@ public class InputController
     /// </summary>
     public void Update()
     {
-        if (Application.platform == RuntimePlatform.Android && Input.touchCount > 0)
+        if (!ui.Modals.IsOpen) // Don't process map input if a modal is open
         {
-            ProcessTouchInput();
-        }
-        else
-        {
-            ProcessKeyboardInput();
-            if (Input.touchSupported && Input.touchCount > 0)
+            if (Application.platform == RuntimePlatform.Android && Input.touchCount > 0)
             {
                 ProcessTouchInput();
             }
             else
             {
-                ProcessMouseInput();
+                ProcessKeyboardInput();
+                if (Input.touchSupported && Input.touchCount > 0)
+                {
+                    ProcessTouchInput();
+                }
+                else
+                {
+                    ProcessMouseInput();
+                }
             }
         }
     }

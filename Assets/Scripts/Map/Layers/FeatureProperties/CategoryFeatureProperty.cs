@@ -60,6 +60,10 @@ public struct CategoryFeatureProperty : IFeatureProperty
                     return value == null ? false : value == Categories[(int)FilterValue];
                 case FilterOperator.NotEquals:
                     return value == null ? false : value != Categories[(int)FilterValue];
+                case FilterOperator.IsEmpty:
+                    return value == null ? true : value == string.Empty;
+                case FilterOperator.IsNotEmpty:
+                    return value == null ? false : value != string.Empty;
                 case FilterOperator.IsNull:
                     return value == null;
                 case FilterOperator.IsNotNull:
@@ -83,6 +87,14 @@ public struct CategoryFeatureProperty : IFeatureProperty
         /// Whether the feature's property value is not equal to the filter value
         /// </summary>
         NotEquals,
+        /// <summary>
+        /// Whether the feature's property value is empty
+        /// </summary>
+        IsEmpty,
+        /// <summary>
+        /// Whether the feature's property value is not empty
+        /// </summary>
+        IsNotEmpty,
         /// <summary>
         /// Whether the feature's property value starts is null
         /// </summary>
