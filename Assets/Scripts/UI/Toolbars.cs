@@ -73,7 +73,7 @@ public class Toolbars
         mainToolbar.Find("Terrain").GetComponent<Button>().onClick.AddListener(() => { ToggleTerrain(mainToolbar); });
         mainToolbar.Find("AR").GetComponent<Button>().onClick.AddListener(() => { ToggleAR(mainToolbar); });
         mainToolbar.Find("Debug").GetComponent<Button>().onClick.AddListener(() => { ui.Modals.Show("Debug"); });
-        mainToolbar.Find("About").GetComponent<Button>().onClick.AddListener(() => { ui.Modals.Show("About", 500, 500); });
+        mainToolbar.Find("About").GetComponent<Button>().onClick.AddListener(() => { ui.Modals.Show("About", 900, 1000); });
     }
 
     /// <summary>
