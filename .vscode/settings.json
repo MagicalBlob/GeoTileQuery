@@ -23,5 +23,6 @@
         "**/ProjectSettings": true,
         "**/Packages": true,
         "**/Assets/Scenes": true,
-    }
+    },
+    "csharp2plantuml.inputPath": "Assets"
 }
