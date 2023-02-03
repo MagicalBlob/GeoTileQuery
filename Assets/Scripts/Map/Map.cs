@@ -234,7 +234,7 @@ public class Map
         POIs.Add(new PointOfInterest("Praça do Comércio", new Vector2D(38.706808, -9.136164)));
 
         // Set the map's initial zoom level and center, as well as the tile load distance
-        ZoomLevel = 18;
+        ZoomLevel = 17;
         Center = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
         Direction = 0;
         Pitch = 0;

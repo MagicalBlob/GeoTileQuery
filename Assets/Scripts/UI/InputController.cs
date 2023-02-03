@@ -296,6 +296,16 @@ public class InputController
                 previousMousePosition = null;
             }
         }
+        if (Input.mouseScrollDelta.y > 0)
+        {
+            // Scroll up
+            map.Zoom(1);
+        }
+        else if (Input.mouseScrollDelta.y < 0)
+        {
+            // Scroll down
+            map.Zoom(-1);
+        }
     }
 
     /// <summary>
