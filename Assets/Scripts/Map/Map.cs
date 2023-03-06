@@ -203,7 +203,7 @@ public class Map
         // Add the data layers        
         IRasterRenderer defaultRasterRenderer = new DefaultRasterRenderer();
         IGeoJsonRenderer defaultGeoJsonRenderer = new DefaultGeoJsonRenderer();
-        bool useLocalhost = true;
+        bool useLocalhost = false;
         string geoJsonBaseUrl = useLocalhost ? "http://localhost:8123" : "http://192.168.68.114:8123";// : "https://tese.flamino.eu/api/tiles/";
         Layers.Add("OSMStandard", new RasterLayer(this, "OSMStandard", "OpenStreetMap", "OpenStreetMap standard style", "OpenStreetMap", DateTime.MinValue, false, defaultRasterRenderer, "https://tile.openstreetmap.org/{0}.png"));
         Layers.Add("MapboxSatellite", new RasterLayer(this, "MapboxSatellite", "Satellite", "Satellite and Aerial imagery", "Mapbox", DateTime.MinValue, false, defaultRasterRenderer, $"https://api.mapbox.com/v4/mapbox.satellite/{{0}}.jpg?access_token={MainController.MapboxAccessToken}"));
