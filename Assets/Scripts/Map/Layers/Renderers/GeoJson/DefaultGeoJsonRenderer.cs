@@ -41,6 +41,15 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         this.material = new Material(Shader.Find("Mobile/Diffuse"));
     }
 
+    /// <summary>
+    /// Creates a new DefaultGeoJsonRenderer with the specified material
+    /// </summary>
+    /// <param name="material">The material to use</param>
+    public DefaultGeoJsonRenderer(Material material)
+    {
+        this.material = material;
+    }
+
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
         double terrainHeightOffset = 0;

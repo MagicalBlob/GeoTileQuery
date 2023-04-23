@@ -2021,12 +2021,12 @@ MonoBehaviour:
     BY 3.0</a>. Data by <a href=\"http://openstreetmap.org\">OpenStreetMap</a>, under
     <a href=\"http://creativecommons.org/licenses/by-sa/3.0\">CC BY SA</a>.\r\n\r\n<b>C\xE2mara
     Municipal de Lisboa</b>\r\nLayers: Bikepaths, Buildings, BuildingsLOD3, Environment,
-    Interventions, Lamps, Rails, Roads, TrafficRestrictions, Trees\r\nLicensed under
-    Creative Commons CCZero (<a href=\"https://opendefinition.org/licenses/cc-zero/\">https://opendefinition.org/licenses/cc-zero/</a>)\r\n\r\n<b>EDP
+    Interventions, Lamps, Rails, Roads, RoadsOld, Sidewalks, TrafficRestrictions,
+    Trees\r\nLicensed under Creative Commons CCZero (<a href=\"https://opendefinition.org/licenses/cc-zero/\">https://opendefinition.org/licenses/cc-zero/</a>)\r\n\r\n<b>EDP
     Distribui\xE7\xE3o</b>\r\nLayers: Electrical\r\nLicensed under Creative Commons
     CCZero (<a href=\"https://opendefinition.org/licenses/cc-zero/\">https://opendefinition.org/licenses/cc-zero/</a>)\r\n\r\n<b>EMEL</b>\r\nLayers:
     Signs\r\nLicensed under Creative Commons CCZero (<a href=\"https://opendefinition.org/licenses/cc-zero/\">https://opendefinition.org/licenses/cc-zero/</a>)\r\n\r\n<b>U-Shift
-    - Instituto Superior T\xE9cnico</b>\r\nLayers: Sidewalks"
+    - Instituto Superior T\xE9cnico</b>\r\nLayers: PedNet"
 --- !u!222 &341938228
 CanvasRenderer:
   m_ObjectHideFlags: 0
