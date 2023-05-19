@@ -25,7 +25,7 @@ public class MainController : MonoBehaviour
     public static string MapboxAccessToken { get; private set; }
 
     /// <summary>
-    /// An HTTP client for making tile requests
+    /// An HTTP client for making the requests (using a static client allows us to reuse the same connection)
     /// </summary>
     public static readonly HttpClient client = new HttpClient();
 
@@ -41,6 +41,9 @@ public class MainController : MonoBehaviour
     {
         // Grab secrets
         MapboxAccessToken = Resources.Load<TextAsset>("Config/Secrets/Mapbox").text;
+
+        // Set the HTTP client user agent
+        client.DefaultRequestHeaders.UserAgent.ParseAdd($"{Application.productName}/{Application.version} ({Application.identifier})");
 
         // Create the map
         Map = new Map();

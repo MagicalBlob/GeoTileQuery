@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.UI;
@@ -519,15 +520,11 @@ public class Modals
     {
         StringBuilder debugText = new StringBuilder();
 
-        debugText.Append("Version: ");
-        debugText.Append(Application.version);
+        debugText.Append($"{Application.productName} ({Application.identifier}) v{Application.version}");
 
-        debugText.Append("\n\nInstant FPS: ");
-        float instantFps = GetInstantFps();
-        debugText.Append((int)instantFps);
-        debugText.Append("\nAverage FPS: ");
-        float averageFps = GetAverageFps();
-        debugText.Append((int)averageFps);
+        debugText.Append($"\nUnity {Application.unityVersion} ({Application.platform})");
+
+        debugText.Append($"\n\nInstant FPS: {(int)GetInstantFps()}\t\t\t\tAverage FPS: {(int)GetAverageFps()}");
 
         debugText.Append("\n\nSystem Memory: ");
         debugText.Append(SystemInfo.systemMemorySize);
@@ -603,7 +600,13 @@ public class Modals
         {
             // Hit something
             Vector2D hitLatLon = map.WorldToLatLon(hit.point);
-            string queryInfo = $"<b>Coordinates:</b>\n\t<b>- Latitude:</b> {hitLatLon.X}\n\t<b>- Longitude:</b> {hitLatLon.Y}\n\t<b>- Height:</b> {map.GetHeight(hit.point).ToString("0.00")} m";
+
+            // Use the Nominatim API to get the address of the hit point
+            string nominatimUrl = $"https://nominatim.openstreetmap.org/reverse?format=json&lat={hitLatLon.X}&lon={hitLatLon.Y}&addressdetails=0";
+            string nominatimResponse = MainController.client.GetStringAsync(nominatimUrl).Result;
+            string address = JObject.Parse(nominatimResponse)["display_name"].ToString();
+
+            string queryInfo = $"<b>Coordinates:</b>\n\t<b>- Latitude:</b> {hitLatLon.X}\n\t<b>- Longitude:</b> {hitLatLon.Y}\n\t<b>- Height:</b> {map.GetHeight(hit.point).ToString("0.00")} m\n<b>Address:</b> {address}";
 
             // Check if the hit object is part of a map feature
             FeatureBehaviour featureBehaviour = hit.transform.GetComponentInParent<FeatureBehaviour>();
@@ -614,7 +617,7 @@ public class Modals
                 queryModal.Find("Feature Properties").gameObject.SetActive(false);
 
                 // Show the query modal
-                Show("Query", 750, 195);
+                Show("Query", 750, 255);
             }
             else
             {
@@ -696,7 +699,7 @@ public class Modals
                 }
 
                 // Show the query modal
-                Show("Query", 750, 500);
+                Show("Query", 750, 560);
             }
         }
         else
