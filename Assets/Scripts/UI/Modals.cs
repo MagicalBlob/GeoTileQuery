@@ -153,6 +153,47 @@ public class Modals
             longitudeInput.text = $"{longitude}";
         });
 
+        // Go button
+        locationModal.Find("Go").GetComponent<Button>().onClick.AddListener(() =>
+        {
+            double latitude, longitude;
+            try { latitude = Convert.ToDouble(latitudeInput.text); } catch { latitude = 0; }
+            try { longitude = Convert.ToDouble(longitudeInput.text); } catch { longitude = 0; }
+            map.MoveCenter(latitude, longitude);
+        });
+
+        // Search query input field
+        InputField searchQueryInput = locationModal.Find("Search Query").GetComponent<InputField>();
+        searchQueryInput.onEndEdit.AddListener((string value) =>
+        {
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                locationModal.Find("Find").GetComponent<Button>().onClick.Invoke();
+            }
+        });
+
+        // Find button
+        locationModal.Find("Find").GetComponent<Button>().onClick.AddListener(() =>
+        {
+            // Use the Nominatim API to find the coordinates of the query
+            // TODO: Currently hardcoded limit of 1 result and country code PT, make this configurable
+            string nominatimUrl = $"https://nominatim.openstreetmap.org/search?format=json&countrycodes=pt&q={searchQueryInput.text}";
+            string nominatimResponse = MainController.client.GetStringAsync(nominatimUrl).Result;
+            JArray nominatimResults = JArray.Parse(nominatimResponse);
+            if (nominatimResults.Count == 0)
+            {
+                latitudeInput.text = "0";
+                longitudeInput.text = "0";
+                Debug.LogWarning($"Nominatim returned 0 results for the query '{searchQueryInput.text}'");
+                return;
+            }
+            latitudeInput.text = nominatimResults[0]["lat"].ToString();
+            longitudeInput.text = nominatimResults[0]["lon"].ToString();
+
+            // Call the Go button
+            locationModal.Find("Go").GetComponent<Button>().onClick.Invoke();
+        });
+
         // Point of Interest dropdown
         Dropdown poiDropdown = locationModal.Find("Point of Interest").GetComponent<Dropdown>();
         List<Dropdown.OptionData> poiOptions = new List<Dropdown.OptionData>();
@@ -167,18 +208,13 @@ public class Modals
         longitudeInput.text = $"{position.Y}";
         poiDropdown.onValueChanged.AddListener((int value) =>
         {
+            // Get the coordinates of the selected POI
             Vector2D position = map.POIs[value].Coordinates;
             latitudeInput.text = $"{position.X}";
             longitudeInput.text = $"{position.Y}";
-        });
 
-        // Go button
-        locationModal.Find("Go").GetComponent<Button>().onClick.AddListener(() =>
-        {
-            double latitude, longitude;
-            try { latitude = Convert.ToDouble(latitudeInput.text); } catch { latitude = 0; }
-            try { longitude = Convert.ToDouble(longitudeInput.text); } catch { longitude = 0; }
-            map.MoveCenter(latitude, longitude);
+            // Call the Go button
+            locationModal.Find("Go").GetComponent<Button>().onClick.Invoke();
         });
     }
 

@@ -65,7 +65,7 @@ public class Toolbars
         mainToolbar.Find("Zoom/Out").GetComponent<Button>().onClick.AddListener(() => map.Zoom(-1));
 
         // Other buttons
-        mainToolbar.Find("Location").GetComponent<Button>().onClick.AddListener(() => { ui.Modals.Show("Location", 500, 205); });
+        mainToolbar.Find("Location").GetComponent<Button>().onClick.AddListener(() => { ui.Modals.Show("Location", 500, 265); });
         mainToolbar.Find("Layers").GetComponent<Button>().onClick.AddListener(() => { ui.Modals.Show("Layers"); });
         mainToolbar.Find("Filter").GetComponent<Button>().onClick.AddListener(() => { ToggleFilters(mainToolbar); });
         mainToolbar.Find("Query").GetComponent<Button>().onClick.AddListener(() => { ToggleQuery(mainToolbar); });
