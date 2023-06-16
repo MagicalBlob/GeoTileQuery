@@ -69,6 +69,7 @@ public class Toolbars
         mainToolbar.Find("Layers").GetComponent<Button>().onClick.AddListener(() => { ui.Modals.Show("Layers"); });
         mainToolbar.Find("Filter").GetComponent<Button>().onClick.AddListener(() => { ToggleFilters(mainToolbar); });
         mainToolbar.Find("Query").GetComponent<Button>().onClick.AddListener(() => { ToggleQuery(mainToolbar); });
+        mainToolbar.Find("Route").GetComponent<Button>().onClick.AddListener(() => { ToggleRoute(mainToolbar); });
         mainToolbar.Find("Ruler").GetComponent<Button>().onClick.AddListener(() => { ToggleRuler(mainToolbar); });
         mainToolbar.Find("Terrain").GetComponent<Button>().onClick.AddListener(() => { ToggleTerrain(mainToolbar); });
         mainToolbar.Find("AR").GetComponent<Button>().onClick.AddListener(() => { ToggleAR(mainToolbar); });
@@ -92,12 +93,43 @@ public class Toolbars
     /// <param name="toolbar">The toolbar</param>
     private void ToggleQuery(Transform toolbar)
     {
+        toolbar.Find("Route").GetComponent<Button>().interactable = ui.Input.Mode == InputController.InputMode.Query;
         toolbar.Find("Ruler").GetComponent<Button>().interactable = ui.Input.Mode == InputController.InputMode.Query;
         Color color = ui.Input.Mode == InputController.InputMode.Query ? Color.white : new Color(1, 1, 1, 0.5f);
+        toolbar.Find("Route/Image").GetComponent<Image>().color = color;
+        toolbar.Find("Route/Text").GetComponent<Text>().color = color;
         toolbar.Find("Ruler/Image").GetComponent<Image>().color = color;
         toolbar.Find("Ruler/Text").GetComponent<Text>().color = color;
         toolbar.Find("Query/Text").GetComponent<Text>().text = ui.Input.Mode == InputController.InputMode.Query ? "Query: Off" : "Query: On";
         ui.Input.Mode = ui.Input.Mode == InputController.InputMode.Query ? InputController.InputMode.Normal : InputController.InputMode.Query;
+    }
+
+    /// <summary>
+    /// Toggles route mode
+    /// </summary>
+    /// <param name="toolbar">The toolbar</param>
+    private void ToggleRoute(Transform toolbar)
+    {
+        toolbar.Find("Query").GetComponent<Button>().interactable = ui.Input.Mode == InputController.InputMode.Route;
+        toolbar.Find("Ruler").GetComponent<Button>().interactable = ui.Input.Mode == InputController.InputMode.Route;
+        Color color = ui.Input.Mode == InputController.InputMode.Route ? Color.white : new Color(1, 1, 1, 0.5f);
+        toolbar.Find("Query/Image").GetComponent<Image>().color = color;
+        toolbar.Find("Query/Text").GetComponent<Text>().color = color;
+        toolbar.Find("Ruler/Image").GetComponent<Image>().color = color;
+        toolbar.Find("Ruler/Text").GetComponent<Text>().color = color;
+        toolbar.Find("Route/Text").GetComponent<Text>().text = ui.Input.Mode == InputController.InputMode.Route ? "Route: Off" : "Route: On";
+        if (ui.Input.Mode == InputController.InputMode.Route)
+        {
+            ui.Panels.Close();
+            map.Route.Clear();
+            ui.Input.Mode = InputController.InputMode.Normal;
+        }
+        else
+        {
+            ui.Panels.ClearRouteText();
+            ui.Panels.Show("Route");
+            ui.Input.Mode = InputController.InputMode.Route;
+        }
     }
 
     /// <summary>
@@ -107,9 +139,12 @@ public class Toolbars
     private void ToggleRuler(Transform toolbar)
     {
         toolbar.Find("Query").GetComponent<Button>().interactable = ui.Input.Mode == InputController.InputMode.Ruler;
+        toolbar.Find("Route").GetComponent<Button>().interactable = ui.Input.Mode == InputController.InputMode.Ruler;
         Color color = ui.Input.Mode == InputController.InputMode.Ruler ? Color.white : new Color(1, 1, 1, 0.5f);
         toolbar.Find("Query/Image").GetComponent<Image>().color = color;
         toolbar.Find("Query/Text").GetComponent<Text>().color = color;
+        toolbar.Find("Route/Image").GetComponent<Image>().color = color;
+        toolbar.Find("Route/Text").GetComponent<Text>().color = color;
         toolbar.Find("Ruler/Text").GetComponent<Text>().text = ui.Input.Mode == InputController.InputMode.Ruler ? "Ruler: Off" : "Ruler: On";
         if (ui.Input.Mode == InputController.InputMode.Ruler)
         {

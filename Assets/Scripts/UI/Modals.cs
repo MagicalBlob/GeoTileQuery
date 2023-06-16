@@ -175,20 +175,18 @@ public class Modals
         // Find button
         locationModal.Find("Find").GetComponent<Button>().onClick.AddListener(() =>
         {
-            // Use the Nominatim API to find the coordinates of the query
-            // TODO: Currently hardcoded limit of 1 result and country code PT, make this configurable
-            string nominatimUrl = $"https://nominatim.openstreetmap.org/search?format=json&countrycodes=pt&q={searchQueryInput.text}";
-            string nominatimResponse = MainController.client.GetStringAsync(nominatimUrl).Result;
-            JArray nominatimResults = JArray.Parse(nominatimResponse);
-            if (nominatimResults.Count == 0)
+            // Geocode the query
+            OSMServices.GeocodingQueryResult? queryCoordinates = OSMServices.GetCoordinates(searchQueryInput.text);
+            if (!queryCoordinates.HasValue)
             {
                 latitudeInput.text = "0";
                 longitudeInput.text = "0";
-                Debug.LogWarning($"Nominatim returned 0 results for the query '{searchQueryInput.text}'");
+                Debug.LogWarning($"Found 0 results for the query '{searchQueryInput.text}'");
                 return;
             }
-            latitudeInput.text = nominatimResults[0]["lat"].ToString();
-            longitudeInput.text = nominatimResults[0]["lon"].ToString();
+            searchQueryInput.text = queryCoordinates.Value.DisplayName;
+            latitudeInput.text = queryCoordinates.Value.Coordinates.X.ToString();
+            longitudeInput.text = queryCoordinates.Value.Coordinates.Y.ToString();
 
             // Call the Go button
             locationModal.Find("Go").GetComponent<Button>().onClick.Invoke();
@@ -637,12 +635,7 @@ public class Modals
             // Hit something
             Vector2D hitLatLon = map.WorldToLatLon(hit.point);
 
-            // Use the Nominatim API to get the address of the hit point
-            string nominatimUrl = $"https://nominatim.openstreetmap.org/reverse?format=json&lat={hitLatLon.X}&lon={hitLatLon.Y}&addressdetails=0";
-            string nominatimResponse = MainController.client.GetStringAsync(nominatimUrl).Result;
-            string address = JObject.Parse(nominatimResponse)["display_name"].ToString();
-
-            string queryInfo = $"<b>Coordinates:</b>\n\t<b>- Latitude:</b> {hitLatLon.X}\n\t<b>- Longitude:</b> {hitLatLon.Y}\n\t<b>- Height:</b> {map.GetHeight(hit.point).ToString("0.00")} m\n<b>Address:</b> {address}";
+            string queryInfo = $"<b>Coordinates:</b>\n\t<b>- Latitude:</b> {hitLatLon.X}\n\t<b>- Longitude:</b> {hitLatLon.Y}\n\t<b>- Height:</b> {map.GetHeight(hit.point).ToString("0.00")} m\n<b>Address:</b> {OSMServices.GetAddress(hitLatLon)}";
 
             // Check if the hit object is part of a map feature
             FeatureBehaviour featureBehaviour = hit.transform.GetComponentInParent<FeatureBehaviour>();

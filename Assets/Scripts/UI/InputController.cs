@@ -50,6 +50,11 @@ public class InputController
     private int? selectedRulerNode;
 
     /// <summary>
+    /// The action to perform when the mouse is released during query mode
+    /// </summary>
+    private QueryAction queryAction;
+
+    /// <summary>
     /// The action to perform on the ruler node when the mouse is released
     /// </summary>
     private RulerNodeAction rulerNodeAction;
@@ -78,7 +83,10 @@ public class InputController
             }
             else
             {
-                ProcessKeyboardInput();
+                if (Mode != InputMode.Route || Mode == InputMode.Route && EventSystem.current.currentSelectedGameObject?.GetComponent<UnityEngine.UI.InputField>() == null)
+                {
+                    ProcessKeyboardInput();
+                }
                 if (Input.touchSupported && Input.touchCount > 0)
                 {
                     ProcessTouchInput();
@@ -316,23 +324,26 @@ public class InputController
     {
         switch (Mode)
         {
+            case InputMode.Query:
+                queryAction = QueryAction.Query; // Assume query until there's movement
+                break;
             case InputMode.Ruler:
                 // Layer masks
-                int rulerNodeMask = 1 << 6; // Ruler Node layer is 6
-                int rulerEdgeMask = 1 << 7; // Ruler Edge layer is 7
-                int notRulerMask = ~rulerNodeMask & ~rulerEdgeMask;
+                int overlayNodeLayerMask = 1 << 6; // Overlay Node layer is 6
+                int overlayEdgeLayerMask = 1 << 7; // Overlay Edge layer is 7
+                int notRulerMask = ~overlayNodeLayerMask & ~overlayEdgeLayerMask;
 
                 // Create a ray at the screen point
                 Ray ray = Camera.main.ScreenPointToRay(position);
 
                 // Check if the ray hits a ruler node
-                if (Physics.Raycast(ray, out RaycastHit rulerNodeHit, Mathf.Infinity, rulerNodeMask))
+                if (Physics.Raycast(ray, out RaycastHit rulerNodeHit, Mathf.Infinity, overlayNodeLayerMask))
                 {
                     selectedRulerNode = int.Parse(rulerNodeHit.transform.gameObject.name);
                     rulerNodeAction = RulerNodeAction.Remove; // Assume node removal until there's movement
                 }
                 // Check if the ray hits a ruler edge
-                else if (Physics.Raycast(ray, out RaycastHit rulerEdgeHit, Mathf.Infinity, rulerEdgeMask))
+                else if (Physics.Raycast(ray, out RaycastHit rulerEdgeHit, Mathf.Infinity, overlayEdgeLayerMask))
                 {
                     // Create a new node at the hit point before the edge's node
                     selectedRulerNode = map.Ruler.AddNodeBefore(int.Parse(rulerEdgeHit.transform.gameObject.name), map.WorldToLatLon(rulerEdgeHit.point));
@@ -364,17 +375,18 @@ public class InputController
     /// <param name="deltaPosition">The change in position since the last update</param>
     private void OnPositionInputMoved(Vector2 position, Vector2 deltaPosition)
     {
+
         switch (Mode)
         {
             case InputMode.Normal:
-                Vector2 previousPosition = position - deltaPosition;
-                Ray previousPositionRay = Camera.main.ScreenPointToRay(previousPosition);
-                Ray positionRay = Camera.main.ScreenPointToRay(position);
-                if (Physics.Raycast(previousPositionRay, out RaycastHit previousHit) && Physics.Raycast(positionRay, out RaycastHit hit))
-                {
-                    Vector2D delta = new Vector2D(hit.point.x - previousHit.point.x, hit.point.z - previousHit.point.z);
-                    map.MoveCenter(-delta);
-                }
+                MoveMapDelta(position, deltaPosition);
+                break;
+            case InputMode.Query:
+                queryAction = QueryAction.Move; // There's movement, so it's not a query
+                MoveMapDelta(position, deltaPosition);
+                break;
+            case InputMode.Route:
+                MoveMapDelta(position, deltaPosition);
                 break;
             case InputMode.Ruler:
                 switch (rulerNodeAction)
@@ -402,6 +414,23 @@ public class InputController
     }
 
     /// <summary>
+    /// Moves the map by the delta position
+    /// </summary>
+    /// <param name="position">The position of the touch or mouse</param>
+    /// <param name="deltaPosition">The change in position since the last update</param>
+    private void MoveMapDelta(Vector2 position, Vector2 deltaPosition)
+    {
+        Vector2 previousPosition = position - deltaPosition;
+        Ray previousPositionRay = Camera.main.ScreenPointToRay(previousPosition);
+        Ray positionRay = Camera.main.ScreenPointToRay(position);
+        if (Physics.Raycast(previousPositionRay, out RaycastHit previousHit) && Physics.Raycast(positionRay, out RaycastHit hit))
+        {
+            Vector2D delta = new Vector2D(hit.point.x - previousHit.point.x, hit.point.z - previousHit.point.z);
+            map.MoveCenter(-delta);
+        }
+    }
+
+    /// <summary>
     /// Called when a touch ends or a mouse button is released
     /// </summary>
     /// <param name="position">The position of the touch or mouse</param>
@@ -410,7 +439,11 @@ public class InputController
         switch (Mode)
         {
             case InputMode.Query:
-                ui.Modals.ShowMapQuery(position);
+                if (queryAction == QueryAction.Query)
+                {
+                    ui.Modals.ShowMapQuery(position);
+                }
+                queryAction = QueryAction.None;
                 break;
             case InputMode.Ruler:
                 // Create a ray at the screen point
@@ -588,9 +621,32 @@ public class InputController
         /// </summary>
         Query,
         /// <summary>
+        /// Route mode
+        /// </summary>
+        Route,
+        /// <summary>
         /// Ruler mode
         /// </summary>
         Ruler
+    }
+
+    /// <summary>
+    /// Types of interactions with the map when in query mode
+    /// </summary>
+    private enum QueryAction
+    {
+        /// <summary>
+        /// No action
+        /// </summary>
+        None,
+        /// <summary>
+        /// Move the map
+        /// </summary>
+        Move,
+        /// <summary>
+        /// Query the map
+        /// </summary>
+        Query
     }
 
     /// <summary>

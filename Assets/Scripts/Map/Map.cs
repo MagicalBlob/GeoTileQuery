@@ -137,6 +137,11 @@ public class Map
     public int MaxZoomLevel { get; private set; }
 
     /// <summary>
+    /// The map's route
+    /// </summary>
+    public Route Route { get; }
+
+    /// <summary>
     /// The map's ruler
     /// </summary>
     public Ruler Ruler { get; }
@@ -193,6 +198,7 @@ public class Map
         Layers = new Dictionary<string, ILayer>();
         POIs = new List<PointOfInterest>();
         Tiles = new Dictionary<string, Tile>();
+        Route = new Route(this);
         Ruler = new Ruler(this);
         Transform worldTransform = GameObject.Find("/World").transform;
         Map2D = worldTransform.Find("2D").gameObject;
@@ -336,6 +342,9 @@ public class Map
             tile.Move(-delta);
         }
 
+        // Move the route
+        Route.Move(-delta);
+
         // Move the ruler
         Ruler.Move(-delta);
 
@@ -382,6 +391,9 @@ public class Map
         // Update the 2D camera
         Update2DCamera();
 
+        // Zoom the route
+        Route.Zoom();
+
         // Zoom the ruler
         Ruler.Zoom();
 
@@ -411,11 +423,11 @@ public class Map
         Camera2D.nearClipPlane = (float)(Camera2DHeight / 100);
         Camera2D.farClipPlane = (float)(Camera2DHeight * 2);
 
-        // Match the clip planes for the ruler cameras
-        Camera2D.transform.Find("Ruler Node").GetComponent<Camera>().nearClipPlane = Camera2D.nearClipPlane;
-        Camera2D.transform.Find("Ruler Node").GetComponent<Camera>().farClipPlane = Camera2D.farClipPlane;
-        Camera2D.transform.Find("Ruler Edge").GetComponent<Camera>().nearClipPlane = Camera2D.nearClipPlane;
-        Camera2D.transform.Find("Ruler Edge").GetComponent<Camera>().farClipPlane = Camera2D.farClipPlane;
+        // Match the clip planes for the overlay cameras
+        Camera2D.transform.Find("Overlay Node").GetComponent<Camera>().nearClipPlane = Camera2D.nearClipPlane;
+        Camera2D.transform.Find("Overlay Node").GetComponent<Camera>().farClipPlane = Camera2D.farClipPlane;
+        Camera2D.transform.Find("Overlay Edge").GetComponent<Camera>().nearClipPlane = Camera2D.nearClipPlane;
+        Camera2D.transform.Find("Overlay Edge").GetComponent<Camera>().farClipPlane = Camera2D.farClipPlane;
     }
 
     /// <summary>
