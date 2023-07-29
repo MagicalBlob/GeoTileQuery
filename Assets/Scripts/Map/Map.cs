@@ -209,8 +209,11 @@ public class Map
         // Add the data layers        
         IRasterRenderer defaultRasterRenderer = new DefaultRasterRenderer();
         IGeoJsonRenderer defaultGeoJsonRenderer = new DefaultGeoJsonRenderer();
-        bool useLocalhost = false;
-        string geoJsonBaseUrl = useLocalhost ? "http://localhost:8123" : "http://192.168.68.114:8123";// : "https://tese.flamino.eu/api/tiles/";
+        //string localGeoJsonTileServer = "http://localhost:8123";
+        //string remoteGeoJsonTileServer = "http://192.168.68.114:8123";
+        //string localStaticFiles = "http://localhost:8000/api/tiles/";
+        string remoteStaticFiles = "https://tese.flamino.eu/api/tiles/";
+        string geoJsonBaseUrl = remoteStaticFiles;
         Layers.Add("OSMStandard", new RasterLayer(this, "OSMStandard", "OpenStreetMap", "OpenStreetMap standard style", "OpenStreetMap", DateTime.MinValue, false, defaultRasterRenderer, "https://tile.openstreetmap.org/{0}.png"));
         Layers.Add("MapboxSatellite", new RasterLayer(this, "MapboxSatellite", "Satellite", "Satellite and Aerial imagery", "Mapbox", DateTime.MinValue, false, defaultRasterRenderer, $"https://api.mapbox.com/v4/mapbox.satellite/{{0}}.jpg?access_token={MainController.MapboxAccessToken}"));
         Layers.Add("StamenWatercolor", new RasterLayer(this, "StamenWatercolor", "Watercolor", "A watercolor styled design, reminiscent of hand drawn maps", "Stamen Design", DateTime.MinValue, true, defaultRasterRenderer, "https://stamen-tiles-b.a.ssl.fastly.net/watercolor/{0}.jpg"));

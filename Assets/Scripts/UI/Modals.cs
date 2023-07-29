@@ -265,7 +265,7 @@ public class Modals
             IFilterableLayer filterableLayer = (IFilterableLayer)layer;
 
             // Get the layer properties list entry prefab
-            GameObject propertiesList = layerPropertiesView.transform.Find("Viewport/Content").gameObject;
+            GameObject propertiesList = layerPropertiesView.transform.Find("List/Viewport/Content").gameObject;
             GameObject listEntryPrefab = Resources.Load<GameObject>("UI/Layer Properties List Entry");
 
             // Remove all existing list entries

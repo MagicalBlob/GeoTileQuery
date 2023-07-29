@@ -25,6 +25,12 @@ public class OSMServices
             {
                 return null;
             }
+            if (nominatimResults[0]["display_name"] == null || nominatimResults[0]["lat"] == null || nominatimResults[0]["lon"] == null)
+            {
+                Debug.LogWarning($"Nominatim result for '{address}' is missing some fields. display_name: {nominatimResults[0]["display_name"]}, lat: {nominatimResults[0]["lat"]}, lon: {nominatimResults[0]["lon"]}");
+                Debug.LogWarning(nominatimResults[0].ToString());
+                return null;
+            }
             //return new Vector2D(double.Parse(nominatimResults[0]["lat"].ToString()), double.Parse(nominatimResults[0]["lon"].ToString()));
             return new GeocodingQueryResult(nominatimResults[0]["display_name"].ToString(), new Vector2D(double.Parse(nominatimResults[0]["lat"].ToString()), double.Parse(nominatimResults[0]["lon"].ToString())));
         }
@@ -75,6 +81,12 @@ public class OSMServices
         try
         {
             string nominatimResponse = MainController.client.GetStringAsync(nominatimUrl).Result;
+            if (JObject.Parse(nominatimResponse)["display_name"] == null)
+            {
+                Debug.LogWarning($"Nominatim result for '{coordinates}' is missing display_name field");
+                Debug.LogWarning(nominatimResponse);
+                return "<i>Unable to get address</i>";
+            }
             return JObject.Parse(nominatimResponse)["display_name"].ToString();
         }
         catch (System.Net.Http.HttpRequestException e)
