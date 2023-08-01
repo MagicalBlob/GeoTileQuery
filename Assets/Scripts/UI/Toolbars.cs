@@ -149,7 +149,6 @@ public class Toolbars
         if (ui.Input.Mode == InputController.InputMode.Ruler)
         {
             ui.Panels.Close();
-            map.Ruler.Clear();
             ui.Input.Mode = InputController.InputMode.Normal;
         }
         else
