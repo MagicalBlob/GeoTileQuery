@@ -15,8 +15,8 @@ public class OSMServices
     /// </remarks>
     public static GeocodingQueryResult? GetCoordinates(string address)
     {
-        // TODO: Currently hardcoded to country code PT, make this configurable
-        string nominatimUrl = $"https://nominatim.openstreetmap.org/search?format=json&countrycodes=pt&q={address}";
+        // TODO: Currently hardcoded to country code PT and adds Lisboa as the city, make this configurable
+        string nominatimUrl = $"https://nominatim.openstreetmap.org/search?format=json&countrycodes=pt&q={address}, Lisboa";
         try
         {
             string nominatimResponse = MainController.client.GetStringAsync(nominatimUrl).Result;

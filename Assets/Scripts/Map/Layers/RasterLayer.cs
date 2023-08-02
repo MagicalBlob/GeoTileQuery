@@ -40,6 +40,10 @@ public class RasterLayer : ILayer
         }
     }
 
+    public int MinZoom { get; }
+
+    public int MaxZoom { get; }
+
     public ILayerRenderer Renderer { get; }
 
     public string Url { get; }
@@ -54,9 +58,11 @@ public class RasterLayer : ILayer
     /// <param name="source">The layer source</param>
     /// <param name="lastUpdate">The layer last update date</param>
     /// <param name="visible">Whether the layer is visible</param>
+    /// <param name="minZoom">The layer minimum zoom level</param>
+    /// <param name="maxZoom">The layer maximum zoom level</param>
     /// <param name="renderer">The layer's renderer</param>
     /// <param name="url">Url to fetch the tile data</param>
-    public RasterLayer(Map map, string id, string displayName, string description, string source, DateTime lastUpdate, bool visible, IRasterRenderer renderer, string url)
+    public RasterLayer(Map map, string id, string displayName, string description, string source, DateTime lastUpdate, bool visible, int minZoom, int maxZoom, IRasterRenderer renderer, string url)
     {
         this.Map = map;
         this.Id = id;
@@ -65,6 +71,8 @@ public class RasterLayer : ILayer
         this.Source = source;
         this.LastUpdate = lastUpdate;
         this.Visible = visible;
+        this.MinZoom = minZoom;
+        this.MaxZoom = maxZoom;
         this.Renderer = renderer;
         this.Url = url;
     }

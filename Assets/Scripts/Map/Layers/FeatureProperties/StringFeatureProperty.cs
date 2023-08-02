@@ -50,21 +50,21 @@ public struct StringFeatureProperty : IFeatureProperty
             switch (Filter)
             {
                 case FilterOperator.Equals:
-                    return value == null ? false : value == FilterValue;
+                    return value == null ? false : value.ToLower() == FilterValue.ToLower();
                 case FilterOperator.NotEquals:
-                    return value == null ? false : value != FilterValue;
+                    return value == null ? false : value.ToLower() != FilterValue.ToLower();
                 case FilterOperator.Contains:
-                    return value == null ? false : value.Contains(FilterValue);
+                    return value == null ? false : value.ToLower().Contains(FilterValue.ToLower());
                 case FilterOperator.DoesNotContain:
-                    return value == null ? false : !value.Contains(FilterValue);
+                    return value == null ? false : !value.ToLower().Contains(FilterValue.ToLower());
                 case FilterOperator.StartsWith:
-                    return value == null ? false : value.StartsWith(FilterValue);
+                    return value == null ? false : value.ToLower().StartsWith(FilterValue.ToLower());
                 case FilterOperator.EndsWith:
-                    return value == null ? false : value.EndsWith(FilterValue);
+                    return value == null ? false : value.ToLower().EndsWith(FilterValue.ToLower());
                 case FilterOperator.IsEmpty:
-                    return value == null ? true : value == string.Empty;
+                    return value == null ? true : value.ToLower() == string.Empty;
                 case FilterOperator.IsNotEmpty:
-                    return value == null ? false : value != string.Empty;
+                    return value == null ? false : value.ToLower() != string.Empty;
                 case FilterOperator.IsNull:
                     return value == null;
                 case FilterOperator.IsNotNull:

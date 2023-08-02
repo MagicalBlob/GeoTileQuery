@@ -50,6 +50,13 @@ public class RasterTileLayer : ITileLayer
 
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
+        // Check that the current zoom level is within the layer's zoom range
+        if (Tile.Zoom < Layer.MinZoom || Tile.Zoom > Layer.MaxZoom)
+        {
+            State = TileLayerState.Rendered;
+            return;
+        }
+
         // Request raster texture
         using UnityWebRequest rasterReq = UnityWebRequestTexture.GetTexture(string.Format(Layer.Url, Tile.Id));
         UnityWebRequestAsyncOperation rasterOp = rasterReq.SendWebRequest();

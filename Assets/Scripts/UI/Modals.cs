@@ -314,7 +314,7 @@ public class Modals
                         filterDropdown.value = (int)stringP.Filter;
                         filterValueInput.gameObject.SetActive(true);
                         filterValueInput.text = stringP.FilterValue;
-                        filterValueInput.placeholder.GetComponent<Text>().text = "Filter value (case sensitive)";
+                        filterValueInput.placeholder.GetComponent<Text>().text = "Filter value (case insensitive)";
                         filterValueDropdown.gameObject.SetActive(false);
                         // Add event listeners
                         filterDropdown.onValueChanged.AddListener((int value) =>
@@ -607,6 +607,10 @@ public class Modals
         debugText.Append(MainController.networkSemaphore.CurrentCount);
         debugText.Append("\nTiles: ");
         debugText.Append(map.Tiles.Count);
+        debugText.Append("\tZoom: ");
+        debugText.Append(map.ZoomLevel);
+        debugText.Append("\tCenter: ");
+        debugText.Append(map.Center);
 
         debugTextDisplay.text = debugText.ToString();
     }

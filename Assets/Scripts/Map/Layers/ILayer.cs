@@ -41,6 +41,16 @@ public interface ILayer
     bool Visible { get; set; }
 
     /// <summary>
+    /// The layer's minimum zoom level for which it is visible (inclusive)
+    /// </summary>
+    int MinZoom { get; }
+
+    /// <summary>
+    /// The layer's maximum zoom level for which it is visible (inclusive)
+    /// </summary>
+    int MaxZoom { get; }
+
+    /// <summary>
     /// The layer's renderer
     /// </summary>
     ILayerRenderer Renderer { get; }
