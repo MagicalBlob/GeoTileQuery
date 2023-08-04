@@ -319,6 +319,7 @@ public class Modals
                         // Add event listeners
                         filterDropdown.onValueChanged.AddListener((int value) =>
                         {
+                            filterValueInput.gameObject.SetActive(value != (int)StringFeatureProperty.FilterOperator.IsEmpty && value != (int)StringFeatureProperty.FilterOperator.IsNotEmpty && value != (int)StringFeatureProperty.FilterOperator.IsNull && value != (int)StringFeatureProperty.FilterOperator.IsNotNull);
                             StringFeatureProperty updatedProperty = (StringFeatureProperty)filterableLayer.FeatureProperties[propertyIndex];
                             updatedProperty.Filter = (StringFeatureProperty.FilterOperator)value;
                             filterableLayer.FeatureProperties[propertyIndex] = updatedProperty;
@@ -349,6 +350,7 @@ public class Modals
                         // Add event listeners
                         filterDropdown.onValueChanged.AddListener((int value) =>
                         {
+                            filterValueInput.gameObject.SetActive(value != (int)NumberFeatureProperty.FilterOperator.IsNull && value != (int)NumberFeatureProperty.FilterOperator.IsNotNull);
                             NumberFeatureProperty updatedProperty = (NumberFeatureProperty)filterableLayer.FeatureProperties[propertyIndex];
                             updatedProperty.Filter = (NumberFeatureProperty.FilterOperator)value;
                             filterableLayer.FeatureProperties[propertyIndex] = updatedProperty;
@@ -386,6 +388,7 @@ public class Modals
                         // Add event listeners
                         filterDropdown.onValueChanged.AddListener((int value) =>
                         {
+                            filterValueInput.gameObject.SetActive(value != (int)BooleanFeatureProperty.FilterOperator.IsNull && value != (int)BooleanFeatureProperty.FilterOperator.IsNotNull);
                             BooleanFeatureProperty updatedProperty = (BooleanFeatureProperty)filterableLayer.FeatureProperties[propertyIndex];
                             updatedProperty.Filter = (BooleanFeatureProperty.FilterOperator)value;
                             filterableLayer.FeatureProperties[propertyIndex] = updatedProperty;
@@ -423,6 +426,7 @@ public class Modals
                         // Add event listeners
                         filterDropdown.onValueChanged.AddListener((int value) =>
                         {
+                            filterValueInput.gameObject.SetActive(value != (int)DateFeatureProperty.FilterOperator.IsNull && value != (int)DateFeatureProperty.FilterOperator.IsNotNull);
                             DateFeatureProperty updatedProperty = (DateFeatureProperty)filterableLayer.FeatureProperties[propertyIndex];
                             updatedProperty.Filter = (DateFeatureProperty.FilterOperator)value;
                             filterableLayer.FeatureProperties[propertyIndex] = updatedProperty;
@@ -465,6 +469,7 @@ public class Modals
                         // Add event listeners
                         filterDropdown.onValueChanged.AddListener((int value) =>
                         {
+                            filterValueDropdown.gameObject.SetActive(value != (int)CategoryFeatureProperty.FilterOperator.IsEmpty && value != (int)CategoryFeatureProperty.FilterOperator.IsNotEmpty && value != (int)CategoryFeatureProperty.FilterOperator.IsNull && value != (int)CategoryFeatureProperty.FilterOperator.IsNotNull);
                             CategoryFeatureProperty updatedProperty = (CategoryFeatureProperty)filterableLayer.FeatureProperties[propertyIndex];
                             updatedProperty.Filter = (CategoryFeatureProperty.FilterOperator)value;
                             filterableLayer.FeatureProperties[propertyIndex] = updatedProperty;
