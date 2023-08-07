@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,12 +61,17 @@ public class GeoJsonTileLayer : IFilterableTileLayer
             return;
         }
 
+        DateTime loadCalled = DateTime.Now;
         await MainController.networkSemaphore.WaitAsync(cancellationToken); // Wait for the semaphore so we don't overload the client with too many requests
         try
         {
+            DateTime afterSemaphore = DateTime.Now;
             HttpResponseMessage response = await MainController.client.GetAsync(string.Format(Layer.Url, Tile.Id), cancellationToken);
+            DateTime afterRequestA = DateTime.Now;
             string geoJsonText = await response.Content.ReadAsStringAsync();
+            DateTime afterRequestB = DateTime.Now;
             MainController.networkSemaphore.Release(); // Release the semaphore
+            DateTime afterRequest = DateTime.Now;
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -82,6 +88,7 @@ public class GeoJsonTileLayer : IFilterableTileLayer
             {
                 // Parse the GeoJSON text
                 geoJson = GeoJson.Parse(geoJsonText);
+                DateTime afterParse = DateTime.Now;
 
                 // Check if it's a FeatureCollection
                 if (geoJson.GetType() == typeof(FeatureCollection))
@@ -89,6 +96,47 @@ public class GeoJsonTileLayer : IFilterableTileLayer
                     // Render the GeoJSON
                     ((FeatureCollection)geoJson).Render(this);
                     State = TileLayerState.Rendered;
+                    DateTime afterRender = DateTime.Now;
+
+                    // TODO: Remove this and timers when done testing performance
+                    bool showPerformance = false;
+                    if (showPerformance && (Layer.Id == "Buildings" || Layer.Id == "Roads" || Layer.Id == "Trees"))
+                    {
+                        double semaphoreTime = (afterSemaphore - loadCalled).TotalSeconds;
+                        double requestTimeA = (afterRequestA - afterSemaphore).TotalSeconds;
+                        double requestTimeB = (afterRequestB - afterRequestA).TotalSeconds;
+                        double requestTimeC = (afterRequest - afterRequestB).TotalSeconds;
+                        double requestTime = (afterRequest - afterSemaphore).TotalSeconds;
+                        double parseTime = (afterParse - afterRequest).TotalSeconds;
+                        double renderTime = (afterRender - afterParse).TotalSeconds;
+                        double totalTime = (afterRender - loadCalled).TotalSeconds;
+
+                        // Check which of the three stages took the longest
+                        if (requestTime > parseTime && requestTime > renderTime)
+                        {
+                            // Check which of the request stages took the longest
+                            if (requestTimeA > requestTimeB && requestTimeA > requestTimeC)
+                            {
+                                Debug.Log($"{FullId} : Semaphore > {semaphoreTime} | [REQUEST] > {requestTime} ( [A] > {requestTimeA} | B > {requestTimeB} | C > {requestTimeC} ) | Parse > {parseTime} | Render > {renderTime} | TOTAL > {totalTime}");
+                            }
+                            else if (requestTimeB > requestTimeC)
+                            {
+                                Debug.Log($"{FullId} : Semaphore > {semaphoreTime} | [REQUEST] > {requestTime} ( A > {requestTimeA} | [B] > {requestTimeB} | C > {requestTimeC} ) | Parse > {parseTime} | Render > {renderTime} | TOTAL > {totalTime}");
+                            }
+                            else
+                            {
+                                Debug.Log($"{FullId} : Semaphore > {semaphoreTime} | [REQUEST] > {requestTime} ( A > {requestTimeA} | B > {requestTimeB} | [C] > {requestTimeC} ) | Parse > {parseTime} | Render > {renderTime} | TOTAL > {totalTime}");
+                            }
+                        }
+                        else if (parseTime > renderTime)
+                        {
+                            Debug.Log($"{FullId} : Semaphore > {semaphoreTime} | Request > {requestTime} | [PARSE] > {parseTime} | Render > {renderTime} | TOTAL > {totalTime}");
+                        }
+                        else
+                        {
+                            Debug.Log($"{FullId} : Semaphore > {semaphoreTime} | Request > {requestTime} | Parse > {parseTime} | [RENDER] > {renderTime} | TOTAL > {totalTime}");
+                        }
+                    }
 
                     // Apply the filters
                     ApplyFilters();

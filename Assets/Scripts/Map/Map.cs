@@ -210,11 +210,11 @@ public class Map
         // Add the data layers        
         IRasterRenderer defaultRasterRenderer = new DefaultRasterRenderer();
         IGeoJsonRenderer defaultGeoJsonRenderer = new DefaultGeoJsonRenderer();
-        string localGeoJsonTileServer = "http://localhost:8123";
-        //string remoteGeoJsonTileServer = "http://192.168.68.114:8123";
-        //string localStaticFiles = "http://localhost:8000/api/tiles/";
+        string geoJsonTileServer = "http://192.168.68.114:8123";
+        string localStaticFilesWamp = "http://192.168.68.114/api/tiles/";
+        string localStaticFilesPython = "http://192.168.68.114:8000/api/tiles/";
         string remoteStaticFiles = "https://tese.flamino.eu/api/tiles/";
-        string geoJsonBaseUrl = localGeoJsonTileServer;
+        string geoJsonBaseUrl = geoJsonTileServer;
         Layers.Add("OSMStandard", new RasterLayer(this, "OSMStandard", "OpenStreetMap", "OpenStreetMap standard style", "OpenStreetMap", DateTime.MinValue, false, 15, 19, defaultRasterRenderer, "https://tile.openstreetmap.org/{0}.png"));
         Layers.Add("MapboxSatellite", new RasterLayer(this, "MapboxSatellite", "Satellite", "Satellite and Aerial imagery", "Mapbox", DateTime.MinValue, false, 15, 22, defaultRasterRenderer, $"https://api.mapbox.com/v4/mapbox.satellite/{{0}}.jpg?access_token={MainController.MapboxAccessToken}"));
         Layers.Add("StamenWatercolor", new RasterLayer(this, "StamenWatercolor", "Watercolor", "A watercolor styled design, reminiscent of hand drawn maps", "Stamen Design", DateTime.MinValue, true, 15, 19, defaultRasterRenderer, "https://stamen-tiles-b.a.ssl.fastly.net/watercolor/{0}.jpg"));
@@ -246,7 +246,7 @@ public class Map
         POIs.Add(new PointOfInterest("Praça do Comércio", new Vector2D(38.706808, -9.136164)));
 
         // Set the map's initial zoom level and center, as well as the tile load distance
-        ZoomLevel = 17;
+        ZoomLevel = 18;
         Center = GlobalMercator.LatLonToMeters(38.706808, -9.136164);
         Direction = 0;
         Pitch = 0;
@@ -690,8 +690,8 @@ public class Map
                     }
                 }
 
-                // Match position and rotation with parent
-                GameObject.transform.SetPositionAndRotation(trackedImage.transform.position, trackedImage.transform.rotation);
+                // Match position with parent (we're ignoring rotation because Unity's Terrain can't be rotated)
+                GameObject.transform.SetPositionAndRotation(trackedImage.transform.position, Quaternion.identity);
             }
         }
         else

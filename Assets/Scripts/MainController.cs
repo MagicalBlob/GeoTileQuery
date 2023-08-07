@@ -1,3 +1,25 @@
+/*
+
+    This place is a message... and part of a system of messages... pay attention to it!
+
+    Sending this message was important to us. We considered ourselves to be a powerful culture.
+
+    This place is not a place of honor... no highly esteemed deed is commemorated here... nothing valued is here.
+
+    What is here was dangerous and repulsive to us. This message is a warning about danger.
+
+    The danger is in a particular location... it increases towards a center... the center of danger is here... of a particular size and shape, and below us.
+
+    The danger is still present, in your time, as it was in ours.
+
+    The danger is to the body, and it can kill.
+
+    The form of the danger is an emanation of energy.
+
+    The danger is unleashed only if you substantially disturb this place physically. This place is best shunned and left uninhabited.
+
+*/
+
 using UnityEngine;
 using System.Net.Http;
 using System.Threading;
@@ -27,12 +49,17 @@ public class MainController : MonoBehaviour
     /// <summary>
     /// An HTTP client for making the requests (using a static client allows us to reuse the same connection)
     /// </summary>
-    public static readonly HttpClient client = new HttpClient();
+    private static readonly HttpClientHandler handler = new HttpClientHandler()
+    {
+        Proxy = null,
+        UseProxy = false,
+    };
+    public static readonly HttpClient client = new HttpClient(handler);
 
     /// <summary>
     /// A semaphore for limiting the number of concurrent tile requests
     /// </summary>
-    public static readonly SemaphoreSlim networkSemaphore = new SemaphoreSlim(6, 6);
+    public static SemaphoreSlim networkSemaphore;
 
     /// <summary>
     /// Called by Unity when the script instance is being loaded.
@@ -61,11 +88,14 @@ public class MainController : MonoBehaviour
         if (Application.platform != RuntimePlatform.Android)
         {
             // We're not running on Android
+            networkSemaphore = new SemaphoreSlim(16, 16);
             Debug.Log("Not running on Android, AR will not be available");
         }
         else
         {
-            // We're running on Android, check for AR support
+            // We're running on Android
+            networkSemaphore = new SemaphoreSlim(6, 6);
+            // Check if the device supports AR
             while ((ARSession.state == ARSessionState.None) || (ARSession.state == ARSessionState.CheckingAvailability))
             {
                 Debug.Log("Checking Android device for AR support...");
