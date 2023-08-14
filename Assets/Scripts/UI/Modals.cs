@@ -559,7 +559,7 @@ public class Modals
     {
         StringBuilder debugText = new StringBuilder();
 
-        debugText.Append($"{Application.productName} ({Application.identifier}) v{Application.version}");
+        debugText.Append($"{Application.productName} (eu.flamino.tese) v{Application.version}");
 
         debugText.Append($"\nUnity {Application.unityVersion} ({Application.platform})");
 
@@ -606,16 +606,22 @@ public class Modals
         debugText.Append(SystemInfo.batteryStatus);
         debugText.Append(")");
 
-        debugText.Append("\n\nDebug level: ");
+        debugText.Append("\n\nDebug build: ");
+        debugText.Append(Debug.isDebugBuild ? "Yes" : "No");
+        debugText.Append("\t\tDebug level: ");
         debugText.Append(Debug.unityLogger.filterLogType);
         debugText.Append("\nAvailable semaphore threads: ");
         debugText.Append(MainController.networkSemaphore.CurrentCount);
         debugText.Append("\nTiles: ");
         debugText.Append(map.Tiles.Count);
-        debugText.Append("\tZoom: ");
+        debugText.Append("\t\tZoom: ");
         debugText.Append(map.ZoomLevel);
-        debugText.Append("\tCenter: ");
+        debugText.Append("\t\tCenter: ");
         debugText.Append(map.Center);
+        debugText.Append("\t\tDirection: ");
+        debugText.Append(map.Direction);
+        debugText.Append("\t\tPitch: ");
+        debugText.Append(map.Pitch);
 
         debugTextDisplay.text = debugText.ToString();
     }
