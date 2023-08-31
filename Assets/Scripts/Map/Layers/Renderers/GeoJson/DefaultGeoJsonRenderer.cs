@@ -52,6 +52,12 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
 
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
+        // Only render nodes at zoom levels 17 and above (Level of Detail)
+        if (tileLayer.Tile.Zoom <= 16)
+        {
+            return;
+        }
+
         double terrainHeightOffset = 0;
         if (tileLayer.Tile.Map.ElevatedTerrain)
         {
@@ -126,7 +132,6 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         // Setup the mesh components
         MeshRenderer meshRenderer = edge.AddComponent<MeshRenderer>();
         MeshFilter meshFilter = edge.AddComponent<MeshFilter>();
-        MeshCollider meshCollider = edge.AddComponent<MeshCollider>();
         Mesh mesh = new Mesh();
 
         // Setup vertices
@@ -186,7 +191,12 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = material;
         meshFilter.mesh = mesh;
-        meshCollider.sharedMesh = mesh;
+        // Only add a mesh collider if the current zoom level is higher than 16 (Level of Detail)
+        if (tileLayer.Tile.Zoom > 16)
+        {
+            MeshCollider meshCollider = edge.AddComponent<MeshCollider>();
+            meshCollider.sharedMesh = mesh;
+        }
     }
 
     public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
@@ -212,7 +222,6 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         // Setup the mesh components
         MeshRenderer meshRenderer = area.AddComponent<MeshRenderer>();
         MeshFilter meshFilter = area.AddComponent<MeshFilter>();
-        MeshCollider meshCollider = area.AddComponent<MeshCollider>();
         Mesh mesh = new Mesh();
 
         // Setup vertices
@@ -235,7 +244,12 @@ public class DefaultGeoJsonRenderer : IGeoJsonRenderer
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = material;
         meshFilter.mesh = mesh;
-        meshCollider.sharedMesh = mesh;
+        // Only add a mesh collider if the current zoom level is higher than 16 (Level of Detail)
+        if (tileLayer.Tile.Zoom > 16)
+        {
+            MeshCollider meshCollider = area.AddComponent<MeshCollider>();
+            meshCollider.sharedMesh = mesh;
+        }
 
         // TODO we're getting an extra vertex because GeoJSON polygon's line rings loop around, should we cut it?
         //Debug.Log($"Mesh>Vertices:{meshFilter.mesh.vertexCount},Triangles:{meshFilter.mesh.triangles.Length / 3},Normals:{meshFilter.mesh.normals.Length}");

@@ -39,6 +39,12 @@ public class PrefabRenderer : IGeoJsonRenderer
 
     public void RenderNode(GeoJsonTileLayer tileLayer, Feature feature, Position coordinates)
     {
+        // Only render nodes at zoom levels 17 and above (Level of Detail)
+        if (tileLayer.Tile.Zoom <= 16)
+        {
+            return;
+        }
+
         double terrainHeightOffset = 0;
         if (tileLayer.Tile.Map.ElevatedTerrain)
         {

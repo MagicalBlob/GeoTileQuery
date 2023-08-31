@@ -90,7 +90,11 @@ public class BuildingRenderer : IGeoJsonRenderer
             height = defaultHeight;
         }
 
-        RenderWalls(tileLayer, building, coordinates, height, terrainHeightOffset);
+        // Render the building walls only if the current zoom level is higher than 16 (Level of Detail)
+        if (tileLayer.Tile.Zoom > 16)
+        {
+            RenderWalls(tileLayer, building, coordinates, height, terrainHeightOffset);
+        }
         RenderRoof(tileLayer, building, coordinates, height, terrainHeightOffset);
     }
 
@@ -187,7 +191,6 @@ public class BuildingRenderer : IGeoJsonRenderer
         // Setup the mesh components
         MeshRenderer meshRenderer = roof.AddComponent<MeshRenderer>();
         MeshFilter meshFilter = roof.AddComponent<MeshFilter>();
-        MeshCollider meshCollider = roof.AddComponent<MeshCollider>();
         Mesh mesh = new Mesh();
 
         // Setup vertices
@@ -209,6 +212,11 @@ public class BuildingRenderer : IGeoJsonRenderer
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = roofMaterial;
         meshFilter.mesh = mesh;
-        meshCollider.sharedMesh = mesh;
+        // Only add a mesh collider if the current zoom level is higher than 16 (Level of Detail)
+        if (tileLayer.Tile.Zoom > 16)
+        {
+            MeshCollider meshCollider = roof.AddComponent<MeshCollider>();
+            meshCollider.sharedMesh = mesh;
+        }
     }
 }

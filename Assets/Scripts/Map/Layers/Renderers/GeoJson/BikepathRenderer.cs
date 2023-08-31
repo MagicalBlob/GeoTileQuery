@@ -45,7 +45,6 @@ public class BikepathRenderer : IGeoJsonRenderer
         // Setup the mesh components
         MeshRenderer meshRenderer = edge.AddComponent<MeshRenderer>();
         MeshFilter meshFilter = edge.AddComponent<MeshFilter>();
-        MeshCollider meshCollider = edge.AddComponent<MeshCollider>();
         Mesh mesh = new Mesh();
 
         // Setup vertices
@@ -105,7 +104,12 @@ public class BikepathRenderer : IGeoJsonRenderer
         mesh.RecalculateNormals();
         meshRenderer.sharedMaterial = bikepathMaterial;
         meshFilter.mesh = mesh;
-        meshCollider.sharedMesh = mesh;
+        // Only add a mesh collider if the current zoom level is higher than 16 (Level of Detail)
+        if (tileLayer.Tile.Zoom > 16)
+        {
+            MeshCollider meshCollider = edge.AddComponent<MeshCollider>();
+            meshCollider.sharedMesh = mesh;
+        }
     }
 
     public void RenderArea(GeoJsonTileLayer tileLayer, Feature feature, Position[][] coordinates)
