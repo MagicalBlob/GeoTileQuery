@@ -119,6 +119,12 @@ public class InputController
             }
         }
 
+        // Print log to file
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            Logger.WriteLogToFile($"log_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.txt");
+        }
+
         // Navigation buttons
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {

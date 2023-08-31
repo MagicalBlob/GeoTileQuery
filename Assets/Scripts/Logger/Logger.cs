@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 /// <summary>
 /// The application log
@@ -69,6 +70,20 @@ public class Logger : ILogHandler
             message.Render(parent);
         }
         instance.toPrint.Clear();
+    }
+
+    /// <summary>
+    /// Writes the log to a file
+    /// </summary>
+    /// <param name="path">The file path to write to</param>
+    public static void WriteLogToFile(string path)
+    {
+        StringBuilder sb = new StringBuilder();
+        foreach (ILogMessage message in instance.messages)
+        {
+            sb.AppendLine(message.ToString());
+        }
+        System.IO.File.WriteAllText(path, sb.ToString());
     }
 
     /// <summary>
