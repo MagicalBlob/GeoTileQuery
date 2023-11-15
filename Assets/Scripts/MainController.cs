@@ -62,12 +62,17 @@ public class MainController : MonoBehaviour
     public static SemaphoreSlim networkSemaphore;
 
     /// <summary>
+    /// Whether the performance metrics are enabled
+    /// </summary>
+    public static readonly bool DebugMetrics = false;
+
+    /// <summary>
     /// Called by Unity when the script instance is being loaded.
     /// </summary>
     private void Awake()
     {
         // Grab secrets
-        MapboxAccessToken = Resources.Load<TextAsset>("Config/Secrets/Mapbox").text;
+        MapboxAccessToken = Resources.Load<TextAsset>("Config/Secrets/Mapbox").text; // It's a .txt file with just the API key inside
 
         // Set the HTTP client user agent
         client.DefaultRequestHeaders.UserAgent.ParseAdd($"{Application.productName}/{Application.version} ({Application.identifier})");
@@ -88,7 +93,8 @@ public class MainController : MonoBehaviour
         if (Application.platform != RuntimePlatform.Android)
         {
             // We're not running on Android
-            networkSemaphore = new SemaphoreSlim(16, 16);
+            //networkSemaphore = new SemaphoreSlim(16, 16);
+            networkSemaphore = new SemaphoreSlim(12, 12);
             Debug.Log("Not running on Android, AR will not be available");
         }
         else

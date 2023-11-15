@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.UI;
@@ -533,6 +532,12 @@ public class Modals
     public void Update()
     {
         UpdateAverageFps();
+
+        // Write debug info to the log
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Debug.Log($"[PERF] Instant FPS: {GetInstantFps()} | Average FPS: {GetAverageFps()} | Available semaphore threads: {MainController.networkSemaphore.CurrentCount} | Tiles: {map.Tiles.Count} | Memory (Total): {Profiler.GetTotalReservedMemoryLong() / 1000000} MB | Memory (Allocated): {Profiler.GetTotalAllocatedMemoryLong() / 1000000} MB | Memory (Unused): {Profiler.GetTotalUnusedReservedMemoryLong() / 1000000} MB | Zoom: {map.ZoomLevel} | Center: {map.Center}");
+        }
     }
 
     /// <summary>

@@ -75,15 +75,14 @@ public class Logger : ILogHandler
     /// <summary>
     /// Writes the log to a file
     /// </summary>
-    /// <param name="path">The file path to write to</param>
-    public static void WriteLogToFile(string path)
+    public static void WriteToFile()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
         foreach (ILogMessage message in instance.messages)
         {
             sb.AppendLine(message.ToString());
         }
-        System.IO.File.WriteAllText(path, sb.ToString());
+        System.IO.File.WriteAllText($"log_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt", sb.ToString());
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -58,6 +59,9 @@ public class RasterTileLayer : ITileLayer
         }
 
         // Request raster texture
+        DateTime loadCalled = DateTime.Now;
+        await MainController.networkSemaphore.WaitAsync(); // Wait for the semaphore so we don't overload the client with too many requests
+        DateTime afterSemaphore = DateTime.Now;
         using UnityWebRequest rasterReq = UnityWebRequestTexture.GetTexture(string.Format(Layer.Url, Tile.Id));
         UnityWebRequestAsyncOperation rasterOp = rasterReq.SendWebRequest();
 
@@ -68,6 +72,7 @@ public class RasterTileLayer : ITileLayer
             {
                 // Cancel the request
                 rasterReq.Abort();
+                MainController.networkSemaphore.Release(); // Release the semaphore
                 State = TileLayerState.Unloaded;
                 return;
             }
@@ -76,38 +81,61 @@ public class RasterTileLayer : ITileLayer
 
         if (cancellationToken.IsCancellationRequested)
         {
+            MainController.networkSemaphore.Release(); // Release the semaphore
             State = TileLayerState.Unloaded;
             return;
         }
 
         // If the gameobject was destroyed before the request finished, we're done here
-        if (GameObject == null) { return; }
+        if (GameObject == null)
+        {
+            MainController.networkSemaphore.Release(); // Release the semaphore
+            return;
+        }
 
         // Render the layer if the request was successful
         if (rasterReq.result == UnityWebRequest.Result.Success)
         {
             rasterTexture = DownloadHandlerTexture.GetContent(rasterReq);
+            MainController.networkSemaphore.Release(); // Release the semaphore
+            DateTime afterRequest = DateTime.Now;
             rasterTexture.wrapMode = TextureWrapMode.Clamp;
             State = TileLayerState.Loaded;
 
             // Render the tile
             ((IRasterRenderer)Layer.Renderer).Render(this, rasterTexture);
             State = TileLayerState.Rendered;
+            DateTime afterRender = DateTime.Now;
+
+            // TODO: Remove this and timers when done testing performance
+            if (MainController.DebugMetrics)
+            {
+                double semaphoreTime = (afterSemaphore - loadCalled).TotalMilliseconds;
+                double requestTime = (afterRequest - afterSemaphore).TotalMilliseconds;
+                double renderTime = (afterRender - afterRequest).TotalMilliseconds;
+                double totalTime = (afterRender - loadCalled).TotalMilliseconds;
+                double totalWithoutSemaphore = totalTime - semaphoreTime;
+
+                Debug.Log($"[PERF] {Tile.Id} > Layer ({Layer.Id}): {totalTime} ms [wo/Semaphore: {totalWithoutSemaphore} ms] (Semaphore: {semaphoreTime} ms | Request: {requestTime} ms | Render: {renderTime} ms)");
+            }
         }
         else if (rasterReq.responseCode == 404)
         {
+            MainController.networkSemaphore.Release(); // Release the semaphore
             // Render the tile
             ((IRasterRenderer)Layer.Renderer).Render(this, null);
             State = TileLayerState.Rendered;
         }
         else if (rasterReq.responseCode == 503)
         {
+            MainController.networkSemaphore.Release(); // Release the semaphore
             // Render the tile
             ((IRasterRenderer)Layer.Renderer).Render(this, null);
             State = TileLayerState.Rendered;
         }
         else
         {
+            MainController.networkSemaphore.Release(); // Release the semaphore
             Debug.LogError($"Failed to load `{FullId}`: {rasterReq.error}");
             State = TileLayerState.LoadFailed;
         }

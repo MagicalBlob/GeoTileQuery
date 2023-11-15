@@ -115,6 +115,7 @@ public class InputController
             else
             {
                 // Close the app
+                Logger.WriteToFile();
                 Application.Quit();
             }
         }
@@ -122,7 +123,7 @@ public class InputController
         // Print log to file
         if (Input.GetKeyDown(KeyCode.P))
         {
-            Logger.WriteLogToFile($"log_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.txt");
+            Logger.WriteToFile();
         }
 
         // Navigation buttons

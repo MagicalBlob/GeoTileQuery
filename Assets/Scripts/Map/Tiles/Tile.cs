@@ -147,6 +147,9 @@ public class Tile
     private async Task LoadTerrainAsync()
     {
         // Request heightmap texture
+        DateTime loadTerrainCalled = DateTime.Now;
+        await MainController.networkSemaphore.WaitAsync(); // Wait for the semaphore so we don't overload the client with too many requests
+        DateTime afterSemaphore = DateTime.Now;
         string heightmapUrl = $"https://api.mapbox.com/v4/mapbox.terrain-rgb/{Zoom}/{X}/{Y}.pngraw?access_token={MainController.MapboxAccessToken}";
         using UnityWebRequest heightmapReq = UnityWebRequestTexture.GetTexture(heightmapUrl);
         UnityWebRequestAsyncOperation heightmapOp = heightmapReq.SendWebRequest();
@@ -158,6 +161,7 @@ public class Tile
             {
                 // Cancel the request
                 heightmapReq.Abort();
+                MainController.networkSemaphore.Release(); // Release the semaphore
                 State = TileState.Unloaded;
                 return;
             }
@@ -166,18 +170,26 @@ public class Tile
 
         if (_cancellationTokenSource.Token.IsCancellationRequested)
         {
+            MainController.networkSemaphore.Release(); // Release the semaphore
             State = TileState.Unloaded;
             return;
         }
 
         // If the gameobject was destroyed before the request finished, we're done here
-        if (GameObject == null) { return; }
+        if (GameObject == null)
+        {
+            MainController.networkSemaphore.Release(); // Release the semaphore
+            return;
+        }
 
         // Grab the heightmap if the request was successful
         if (heightmapReq.result == UnityWebRequest.Result.Success)
         {
             Texture2D heightmapTexture = DownloadHandlerTexture.GetContent(heightmapReq);
+            MainController.networkSemaphore.Release(); // Release the semaphore
+            DateTime afterRequest = DateTime.Now;
             Color[] pixels = heightmapTexture.GetPixels();
+            DateTime afterPixels = DateTime.Now;
 
             // Convert the encoded image into the respective heights
             for (int x = 0; x < Map.TileSize; x++)
@@ -187,6 +199,7 @@ public class Tile
                     heights[x, y] = MapboxHeightFromColor(pixels[x + y * Map.TileSize]);
                 }
             }
+            DateTime afterConversion = DateTime.Now;
 
             // Check the neighbours to prevent seams
             CheckNeighbours();
@@ -217,14 +230,29 @@ public class Tile
 
             // Update the state
             State = TileState.TerrainLoaded;
+            DateTime afterTerrain = DateTime.Now;
+            // TODO: Remove this and timers when done testing performance
+            if (MainController.DebugMetrics)
+            {
+                double semaphoreTime = (afterSemaphore - loadTerrainCalled).TotalMilliseconds;
+                double requestTime = (afterRequest - afterSemaphore).TotalMilliseconds;
+                double pixelsTime = (afterPixels - afterRequest).TotalMilliseconds;
+                double conversionTime = (afterConversion - afterPixels).TotalMilliseconds;
+                double neighboursTime = (afterTerrain - afterConversion).TotalMilliseconds;
+                double totalTime = (afterTerrain - loadTerrainCalled).TotalMilliseconds;
+                double totalWithoutSemaphore = totalTime - semaphoreTime;
+                Debug.Log($"[PERF] {Id} > Terrain: {totalTime} ms [wo/Semaphore: {totalWithoutSemaphore} ms] (Semaphore: {semaphoreTime} ms | Request: {requestTime} ms | Pixels: {pixelsTime} ms | Conversion: {conversionTime} ms | Neighbours: {neighboursTime} ms)");
+            }
         }
         else if (heightmapReq.responseCode == 404)
         {
+            MainController.networkSemaphore.Release(); // Release the semaphore
             Debug.LogWarning($"Tile {Id} not found. Assuming it's all water...");
             State = TileState.TerrainLoaded;
         }
         else
         {
+            MainController.networkSemaphore.Release(); // Release the semaphore
             Debug.LogError(heightmapReq.error);
             State = TileState.TerrainLoadFailed;
         }
@@ -443,6 +471,7 @@ public class Tile
     /// </summary>
     private void LoadLayers()
     {
+        DateTime loadLayersCalled = DateTime.Now;
         List<Task> layerLoadTasks = new List<Task>();
         foreach (ILayer layer in Map.Layers.Values)
         {
@@ -486,6 +515,14 @@ public class Tile
             if (State != TileState.LayersLoadFailed)
             {
                 State = TileState.Loaded;
+            }
+
+            DateTime afterLayers = DateTime.Now;
+            // TODO: Remove this and timers when done testing performance
+            if (MainController.DebugMetrics)
+            {
+                double layersTime = (afterLayers - loadLayersCalled).TotalMilliseconds;
+                Debug.Log($"[PERF] {Id} > Layers: {layersTime} ms | Load tile finished at {afterLayers:HH:mm:ss.fff} ({afterLayers.Ticks / TimeSpan.TicksPerMillisecond} ms)");
             }
         });
     }
